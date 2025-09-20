@@ -1,7 +1,5 @@
-
 from django.shortcuts import render, redirect
 from django.conf import settings
-from django.http import JsonResponse
 from ..oauth.decorators import login_required
 from ..index.models import GraderUser
 
@@ -10,10 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-
-
-
-# old: HTML view for rankings
+# Create your views here.
 @login_required
 def rankings_view(request, season):
     if settings.TJIOI_MODE:
@@ -45,16 +40,3 @@ def rankings_view(request, season):
     context = {"rankings": rankings}
 
     return render(request, "rankings/rankings.html", context)
-
-    def get(self, request, season):
-        if settings.TJIOI_MODE:
-            return Response({"error": "TJIOI mode enabled."}, status=403)
-        if int(season) != settings.CURRENT_SEASON:
-            return Response({"error": "Invalid season."}, status=400)
-        users = GraderUser.objects.filter(is_tjioi=False, is_staff=False)
-        serializer = GraderUserRankingSerializer(users, many=True)
-        rankings = [r for r in serializer.data if r["usaco_rating"] > 800 or r["cf_rating"] > 0 or r["inhouse"] > 0]
-        rankings.sort(key=lambda x: x["index"], reverse=True)
-        for i, r in enumerate(rankings):
-            r["rank"] = i + 1
-        return Response({"rankings": rankings})

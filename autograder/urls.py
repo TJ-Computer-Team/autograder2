@@ -16,17 +16,13 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include, re_path
-from rest_framework import permissions
-
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = (
     [
-    path("djangoadmin/", admin.site.urls),
-    # Modern DRF API endpoints
-    path("api/", include("autograder.api.urls")),
+        path("djangoadmin/", admin.site.urls),
         path("", include("autograder.apps.index.urls", namespace="index")),
         path("oauth/", include("autograder.apps.oauth.urls", namespace="oauth")),
         path(
