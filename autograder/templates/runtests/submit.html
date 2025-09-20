@@ -50,6 +50,35 @@
                     <option value="python" {% if last_sub_lang == 'python' %}selected{% endif %}>Python</option>
                 </select>
 
+                <!-- Editor Toggle Controls -->
+                <div style="margin: 10px 0; padding: 10px; background: #2a2a2a; border-radius: 8px; border: 1px solid #444;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <span style="color: #ddd; font-weight: bold;">Code Editor</span>
+                            <div style="display: flex; gap: 5px; background: #333; border-radius: 6px; padding: 3px;">
+                                <button type="button" id="advancedBtn" style="padding: 8px 16px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; background: white; color: #333;">
+                                    Advanced
+                                </button>
+                                <button type="button" id="simpleBtn" style="padding: 8px 16px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; background: #666; color: #ccc;">
+                                    Simple
+                                </button>
+                            </div>
+                        </div>
+                        <div style="color: #888; font-size: 12px;">
+                            <span id="editorStatus">Syntax highlighting • Auto-completion • Themes</span>
+                        </div>
+                    </div>
+                    
+                    <!-- ACE Editor -->
+                    <div id="aceEditorContainer" style="position: relative;">
+                        <div id="aceEditor" style="width: 100%; height: 400px; border: 1px solid #555; border-radius: 4px;"></div>
+                        <div style="position: absolute; bottom: 0; right: 0; background: #333; color: #ccc; padding: 4px 8px; font-size: 11px; border-radius: 4px 0 4px 0; border-left: 1px solid #555; border-top: 1px solid #555;">
+                            Lines: <span id="lineCount">1</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Simple Textarea (hidden by default) -->
+                    <div id="simpleEditorContainer" style="display: none; position: relative;">
                 <textarea
                     id="codeinput"
                     name="code"
@@ -57,7 +86,13 @@
                     cols="150"
                     spellcheck="false"
                     maxlength="60000"
-                    placeholder=""></textarea>
+                            placeholder="Enter your code here..."
+                            style="width: 100%; height: 400px; padding: 10px; background: #1a1a1a; color: white; border: 1px solid #555; border-radius: 4px; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 14px; line-height: 1.5; resize: vertical;"></textarea>
+                        <div style="position: absolute; bottom: 8px; right: 8px; background: #333; color: #ccc; padding: 4px 8px; font-size: 11px; border-radius: 4px; border: 1px solid #555;">
+                            <span id="textareaStats">1 lines • 0 chars</span>
+                        </div>
+                    </div>
+                </div>
 
                 <label class="custom-file-upload">
                     <input type="file" name="files" class="custom-file"/>
@@ -69,8 +104,149 @@
     </form>
 </div>
 
+<!-- ACE Editor CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ext-language_tools.js"></script>
+
 <script type="text/javascript">
-    document.getElementById("codeinput").addEventListener("keydown", function (e) {
+    let aceEditor;
+    let currentMode = 'advanced'; // 'advanced' or 'simple'
+    let codeValue = '';
+
+    // Language mode mapping
+    function getLanguageMode(lang) {
+        switch (lang) {
+            case 'cpp': return 'c_cpp';
+            case 'java': return 'java';
+            case 'python': return 'python';
+            default: return 'text';
+        }
+    }
+
+    // Initialize ACE Editor
+    function initializeAceEditor() {
+        aceEditor = ace.edit("aceEditor");
+        aceEditor.setTheme("ace/theme/monokai");
+        aceEditor.session.setMode(`ace/mode/${getLanguageMode(document.getElementById('lang').value)}`);
+        aceEditor.setOptions({
+            fontSize: 14,
+            showPrintMargin: false,
+            wrap: true,
+            enableBasicAutocompletion: true,
+            enableSnippets: true,
+            enableLiveAutocompletion: false,
+            tabSize: 2,
+            useSoftTabs: true,
+            maxLines: 30,
+            minLines: 20,
+        });
+        
+        aceEditor.setValue(codeValue);
+        aceEditor.clearSelection();
+        
+        // Update line count and sync value
+        aceEditor.session.on('change', function() {
+            codeValue = aceEditor.getValue();
+            document.getElementById('lineCount').textContent = aceEditor.session.getLength();
+            // Sync with hidden textarea for form submission
+            if (currentMode === 'advanced') {
+                document.getElementById('codeinput').value = codeValue;
+            }
+        });
+        
+        // Set initial line count
+        document.getElementById('lineCount').textContent = aceEditor.session.getLength();
+    }
+
+    // Toggle between editors
+    function toggleEditor(mode) {
+        const aceContainer = document.getElementById('aceEditorContainer');
+        const simpleContainer = document.getElementById('simpleEditorContainer');
+        const advancedBtn = document.getElementById('advancedBtn');
+        const simpleBtn = document.getElementById('simpleBtn');
+        const editorStatus = document.getElementById('editorStatus');
+        
+        if (mode === 'advanced') {
+            // Switch to ACE editor
+            if (currentMode === 'simple') {
+                codeValue = document.getElementById('codeinput').value;
+                aceEditor.setValue(codeValue);
+                aceEditor.clearSelection();
+            }
+            
+            aceContainer.style.display = 'block';
+            simpleContainer.style.display = 'none';
+            
+            advancedBtn.style.background = 'white';
+            advancedBtn.style.color = '#333';
+            simpleBtn.style.background = '#666';
+            simpleBtn.style.color = '#ccc';
+            
+            editorStatus.textContent = 'Syntax highlighting • Auto-completion • Themes';
+            currentMode = 'advanced';
+            
+        } else {
+            // Switch to simple textarea
+            if (currentMode === 'advanced') {
+                codeValue = aceEditor.getValue();
+                document.getElementById('codeinput').value = codeValue;
+            }
+            
+            aceContainer.style.display = 'none';
+            simpleContainer.style.display = 'block';
+            
+            advancedBtn.style.background = '#666';
+            advancedBtn.style.color = '#ccc';
+            simpleBtn.style.background = 'white';
+            simpleBtn.style.color = '#333';
+            
+            editorStatus.textContent = 'Plain text editor';
+            currentMode = 'simple';
+            
+            updateTextareaStats();
+        }
+    }
+
+    // Update textarea statistics
+    function updateTextareaStats() {
+        const textarea = document.getElementById('codeinput');
+        const lines = textarea.value.split('\n').length;
+        const chars = textarea.value.length;
+        document.getElementById('textareaStats').textContent = `${lines} lines • ${chars} chars`;
+    }
+
+    // Language change handler
+    function handleLanguageChange() {
+        if (aceEditor && currentMode === 'advanced') {
+            aceEditor.session.setMode(`ace/mode/${getLanguageMode(document.getElementById('lang').value)}`);
+        }
+    }
+
+    // Initialize everything when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeAceEditor();
+        
+        // Button event listeners
+        document.getElementById('advancedBtn').addEventListener('click', function() {
+            toggleEditor('advanced');
+        });
+        
+        document.getElementById('simpleBtn').addEventListener('click', function() {
+            toggleEditor('simple');
+        });
+        
+        // Language change listener
+        document.getElementById('lang').addEventListener('change', handleLanguageChange);
+        
+        // Textarea event listeners for simple mode
+        const textarea = document.getElementById('codeinput');
+        textarea.addEventListener('input', function() {
+            codeValue = this.value;
+            updateTextareaStats();
+        });
+        
+        // Tab key handling for textarea
+        textarea.addEventListener("keydown", function (e) {
         const max = 60000;
         const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
         if (this.value.length >= max && !allowed.includes(e.key)) {
@@ -83,7 +259,17 @@
             const end = this.selectionEnd;
             this.value = this.value.substring(0, start) + "\t" + this.value.substring(end);
             this.selectionStart = this.selectionEnd = start + 1;
-        }
+                updateTextareaStats();
+            }
+        });
+        
+        // Form submission handler
+        document.querySelector('form').addEventListener('submit', function(e) {
+            // Ensure the form gets the current code value
+            if (currentMode === 'advanced' && aceEditor) {
+                document.getElementById('codeinput').value = aceEditor.getValue();
+            }
+        });
     });
 </script>
 
