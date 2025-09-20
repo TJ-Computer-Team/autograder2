@@ -14,5 +14,4 @@ urlpatterns = [
     path("info/", views.info_view, name="info"),
     path("mobile/", views.mobile_home, name="mobile"),
     path("toggle_particles/", views.toggle_particles, name="toggle_particles"),
-    path("api/user/", views.api_user, name="api_user"),
 ]

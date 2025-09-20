@@ -1,10 +1,8 @@
 from ..oauth.decorators import login_required
-from django.views.decorators.http import require_POST, require_http_methods
+from django.views.decorators.http import require_POST
 from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 from django_user_agents.utils import get_user_agent
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from .models import GraderUser
 from ..rankings.models import RatingChange
 
@@ -63,7 +61,6 @@ def profile_view(request):
 
 @login_required
 @require_POST
-@csrf_exempt
 def update_stats(request):
     usaco = request.POST.get("usaco_div", "").strip()
     cf = request.POST.get("cf_handle", "").strip()
@@ -82,11 +79,7 @@ def update_stats(request):
         request.user.cf_handle = cf
 
     request.user.save()
-
-    response = redirect("index:profile")
-    response["Access-Control-Allow-Origin"] = "http://localhost:5173"
-    response["Access-Control-Allow-Credentials"] = "true"
-    return response
+    return redirect("index:profile")
 
 
 @login_required
@@ -131,42 +124,3 @@ def toggle_particles(request):
     user.save()
     next_url = request.GET.get("next", "/")
     return redirect(next_url)
-
-
-@require_http_methods(["GET"])
-@csrf_exempt
-def api_user(request):
-    """API endpoint to get current user data"""
-    # Add CORS headers
-    response = JsonResponse({})
-    response["Access-Control-Allow-Origin"] = "http://localhost:5173"
-    response["Access-Control-Allow-Credentials"] = "true"
-    response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
-    response["Access-Control-Allow-Headers"] = "Accept, Content-Type"
-
-    if request.method == "OPTIONS":
-        return response
-
-    if request.user.is_authenticated:
-        response = JsonResponse({
-            'id': request.user.id,
-            'username': request.user.username,
-            'display_name': request.user.display_name,
-            'usaco_division': request.user.usaco_division,
-            'cf_handle': request.user.cf_handle,
-            'is_staff': request.user.is_staff,
-            'particles_enabled': request.user.particles_enabled,
-            'session_id': request.session.session_key,
-            'backend': getattr(request.user, 'backend', None),
-        })
-    else:
-        response = JsonResponse({
-            'error': 'Not authenticated',
-            'session_id': request.session.session_key,
-            'session_keys': list(request.session.keys()),
-        }, status=401)
-
-    # Add CORS headers to the actual response
-    response["Access-Control-Allow-Origin"] = "http://localhost:5173"
-    response["Access-Control-Allow-Credentials"] = "true"
-    return response

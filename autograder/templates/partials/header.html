@@ -3,7 +3,7 @@
 <div class="navbar">
     <ul class="nb">
         <li id="logoHolder" class="nb"><img class="logo" src="{% static 'images/logo.png' %}"></li>
-        <li class="nb"><a {% if active == "profile" %} class="cactive" {% endif %} href="{% url "index:profile" %}">hi</a></li>
+        <li class="nb"><a {% if active == "profile" %} class="cactive" {% endif %} href="{% url "index:profile" %}">Home</a></li>
         <li class="nb"><a {% if active == "status" %} class="cactive" {% endif %} href="{% url "runtests:status" page=1 mine=False %}">Submissions</a></li>
         <li class="nb"><a {% if active == "contests" %} class="cactive" {% endif %} href="{% url "contests:contests" %}">Contests</a></li>
         <li class="nb"><a {% if active == "problems" %} class="cactive" {% endif %} href="{% url "problems:problemset" %}">Problemset</a></li>
