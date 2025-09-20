@@ -1,1 +1,0 @@
-This is like a wrapper on top of the existing django architecture cuz i don't want to mess with that. It takes the postgress things the django outputs and serilizes them to json and ships it using a REST API to the frontend.

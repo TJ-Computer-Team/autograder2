@@ -21,8 +21,8 @@ uv run manage.py migrate
 
 if [ ! -f "$SCRIPT_DIR/$FIRST_RUN_LOG" ]; then
     echo "Creating filler data..."
-    mkdir -p /home/tjctgrader/autograder2/media/problem_testcases
-    cp /home/tjctgrader/autograder2/dev/example_testcases.zip /home/tjctgrader/autograder2/media/problem_testcases
+    mkdir -p /home/tjctgrader/autograder/media/problem_testcases
+    cp /home/tjctgrader/autograder/dev/example_testcases.zip /home/tjctgrader/autograder/media/problem_testcases
     cp "$SCRIPT_DIR/filler_data.py" $PROJECT_ROOT
     uv run filler_data.py
     rm -rf filler_data.py

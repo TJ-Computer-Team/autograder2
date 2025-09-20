@@ -9,7 +9,6 @@ dependencies = [
     "celery>=5.5.3",
     "datetime>=5.5",
     "django>=5.1.7",
-    "django-cors-headers>=4.4.0",
     "django-user-agents>=0.4.0",
     "gunicorn>=23.0.0",
     "logging>=0.4.9.6",
@@ -23,6 +22,4 @@ dependencies = [
     "ua-parser>=1.0.1",
     "user-agents>=2.2.0",
     "uvicorn>=0.35.0",
-    "djangorestframework>=3.15.1",
-    "drf-yasg>=1.21.7",
 ]
