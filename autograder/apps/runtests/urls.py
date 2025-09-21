@@ -34,4 +34,5 @@ urlpatterns = [
     ),
     path("submission/<int:id>/", views.submission_view, name="submission"),
     path("process_submit/", views.submit_post, name="submit_post"),
+    path("run_code/", views.run_code_post, name="run_code_post"),
 ]
