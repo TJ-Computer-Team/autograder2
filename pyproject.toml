@@ -13,7 +13,6 @@ dependencies = [
     "datetime>=5.5",
     "django>=5.1.7",
     "django-user-agents>=0.4.0",
-    "gunicorn>=23.0.0",
     "logging>=0.4.9.6",
     "psycopg>=3.2.9",
     "python-decouple>=3.8",
