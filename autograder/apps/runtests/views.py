@@ -29,9 +29,10 @@ def submit_view(request, cid=None, pid=None):
     if pid is not None:
         problem = get_object_or_404(Problem, id=pid)
 
-        if (not request.user.is_staff and problem.secret) or not (
-            settings.TJIOI_MODE == problem.contest.tjioi
-        ):
+        if (
+            not request.user.is_staff
+            and (problem.secret or problem.contest.start > timezone.now())
+        ) or not (settings.TJIOI_MODE == problem.contest.tjioi):
             return redirect("runtests:submit")
 
         context["problem"] = problem
@@ -43,6 +44,8 @@ def submit_view(request, cid=None, pid=None):
         )
         if not request.user.is_staff:
             problems = problems.filter(secret=False)
+            if contest.start > timezone.now():
+                return redirect("runtests:submit")
 
         problems = problems.order_by("id")
         context["contest"] = contest
@@ -51,7 +54,7 @@ def submit_view(request, cid=None, pid=None):
     else:
         problems = Problem.objects.filter(contest__tjioi=settings.TJIOI_MODE)
         if not request.user.is_staff:
-            problems = problems.filter(secret=False)
+            problems = problems.filter(secret=False, contest__start__lte=timezone.now())
 
         problems = problems.order_by("id")
         context["problems"] = problems

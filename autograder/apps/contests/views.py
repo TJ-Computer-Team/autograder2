@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
 from django.conf import settings
 from django.utils import timezone
+from django.http import HttpResponse
 from ..oauth.decorators import login_required, admin_required
 from .models import Contest
 from ..problems.models import Problem
@@ -16,6 +17,8 @@ logger = logging.getLogger(__name__)
 @login_required
 def contests_view(request):
     contests = Contest.objects.filter(tjioi=settings.TJIOI_MODE).order_by("-start")
+    if not request.user.is_staff:
+        contests = contests.filter(start__lte=timezone.now())
     context = {"contests": contests}
     return render(request, "contest/contests.html", context)
 
@@ -28,14 +31,11 @@ def contest_view(request, cid):
     if problems is None:
         problems = []
 
-    now = timezone.now()
-    contest_start = contest.start
     contest_end = contest.end
     time_message = contest_end
     time_type = "end"
-    if now < contest_start:
-        time_type = "start"
-        time_message = contest_start
+    if timezone.now() < contest.start:
+        return HttpResponse("Contest has not started yet", status=403)
 
     ordered = []
     for problem in problems:
@@ -94,7 +94,8 @@ def contest_standings_view(request, cid):
     problems = Problem.objects.filter(contest_id=cid)
     contest = get_object_or_404(Contest, id=cid)
 
-    logger.error(standings)
+    if timezone.now() < contest.start:
+        return HttpResponse("Contest has not started yet", status=403)
 
     context = {
         "title": standings["title"],
@@ -111,6 +112,8 @@ def contest_standings_view(request, cid):
 @login_required
 def contest_status_view(request, cid, mine_only, page):
     contest = get_object_or_404(Contest, id=cid)
+    if timezone.now() < contest.start:
+        return HttpResponse("Contest has not started yet", status=403)
     subs = Submission.objects.filter(contest=contest)
     if not request.user.is_staff:
         subs = subs.filter(usr__is_staff=False)
