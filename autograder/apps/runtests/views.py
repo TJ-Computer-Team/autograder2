@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 from django.conf import settings
 from django.utils import timezone
@@ -166,4 +166,3 @@ def submit_post(request):
             "Too many requests! Please wait at least 30 seconds between submissions!",
             status=429,
         )
-

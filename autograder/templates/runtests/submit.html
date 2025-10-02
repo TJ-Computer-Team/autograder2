@@ -100,10 +100,11 @@
 </div>
 
 <!-- Input/Output Section -->
+<!--
 <div class="main-block">
     <div class="title">Input/Output</div>
     <div style="display: flex; gap: 2em; margin-top: 1em;">
-        <!-- Input Section -->
+
         <div style="flex: 1;">
             <div style="margin-bottom: 1em;">
                 <div class="problem-text" style="margin-bottom: 0.5em; text-align: left; font-size: 1.2em;">Input</div>
@@ -119,7 +120,6 @@
             </div>
         </div>
         
-        <!-- Output Section -->
         <div style="flex: 1;">
             <div style="margin-bottom: 1em;">
                 <div class="problem-text" style="margin-bottom: 0.5em; text-align: left; font-size: 1.2em;">Output</div>
@@ -135,7 +135,6 @@
         </div>
     </div>
     
-    <!-- Run Code Button -->
     <div style="margin-top: 1.5em; text-align: center;">
         <button type="button" onclick="runCode()" class="button" style="padding: 1em 2em; width: auto; margin: 0; font-size: 1.2em; background-color: rgb(34, 139, 34); border-radius: 0;" onmouseover="this.style.backgroundColor='rgb(50, 180, 50)'" onmouseout="this.style.backgroundColor='rgb(34, 139, 34)'">
             ▶ Run Code
@@ -145,6 +144,7 @@
         </div>
     </div>
 </div>
+-->
 
 <script>
     // Input/Output functionality
@@ -242,7 +242,6 @@
 </script>
 </div>
 
-<!-- ACE Editor CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ext-language_tools.js"></script>
 
@@ -251,7 +250,6 @@
     let currentMode = 'advanced'; // 'advanced' or 'simple'
     let codeValue = '';
 
-    // Language mode mapping
     function getLanguageMode(lang) {
         switch (lang) {
             case 'cpp': return 'c_cpp';
