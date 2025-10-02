@@ -166,36 +166,4 @@ def submit_post(request):
             "Too many requests! Please wait at least 30 seconds between submissions!",
             status=429,
         )
-        
-@login_required
-@require_POST
-def run_code_post(request):
-    """Process code execution request for testing (similar to submit_post but without saving to database)"""
-    try:
-        lang = request.POST.get("lang")
-        code = request.POST.get("code")
-        input_data = request.POST.get("input", "")
 
-        if lang not in ["python", "cpp", "java"]:
-            return JsonResponse({"error": "Invalid language"}, status=400)
-
-        if not code or not code.strip():
-            return JsonResponse({"error": "No code provided"}, status=400)
-
-        if len(code) > 60000:
-            return JsonResponse({"error": "Code too long (max 60,000 characters)"}, status=413)
-
-        # Temporarily disabled to avoid overloading submission queue
-        # TODO: Implement actual code execution service for testing later
-
-        return JsonResponse({
-            "success": True,
-            "output": "Running code on here will be implemented later!\n\nCode validation passed:\n- Language: " + lang.upper() + "\n- Code length: " + str(len(code)) + " characters\n- Input length: " + str(len(input_data)) + " characters",
-            "language": lang,
-            "verdict": "SKIP",  # Skip verdict to indicate not actually executed
-            "runtime": -1,
-            "memory": -1
-        })
-
-    except Exception as e:
-        return JsonResponse({"error": f"Execution failed: {str(e)}"}, status=500)
