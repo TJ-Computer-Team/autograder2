@@ -31,10 +31,9 @@ def contest_view(request, cid):
     if problems is None:
         problems = []
 
-    contest_end = contest.end
-    time_message = contest_end
+    time_message = contest.end
     time_type = "end"
-    if timezone.now() < contest.start:
+    if not request.user.is_staff and timezone.now() < contest.start:
         return HttpResponse("Contest has not started yet", status=403)
 
     ordered = []
@@ -58,7 +57,7 @@ def contest_view(request, cid):
     user_id_map = {user.id: idx for idx, user in enumerate(users)}
 
     for sub in subs:
-        if sub.timestamp > contest_end:
+        if sub.timestamp > contest.end or sub.timestamp < contest.start:
             continue
         ind = user_id_map.get(sub.usr_id)
         pind = None
