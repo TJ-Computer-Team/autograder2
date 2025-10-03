@@ -12,11 +12,9 @@
     <li class="cnb">
       <a {% if active == "submissions" %} class="cactive" {% endif %} href="{% url "contests:status" cid=cid mine_only="mine" page=1 %}">My Submissions</a>
     </li>
-    {% if contest_over %}
      <li class="cnb">
       <a {% if active == "status" %} class="cactive" {% endif %} href="{% url "contests:status" cid=cid mine_only="all" page=1 %}">All Submissions</a>
     </li>
-    {% endif %}
     <li class="cnb">
       <a {% if active == "standings" %} class="cactive" {% endif %} href="{% url "contests:standings" cid %}">Standings</a>
     </li>
