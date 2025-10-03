@@ -15,12 +15,12 @@ class SubmissionAdmin(admin.ModelAdmin):
         "timestamp",
     )
     list_filter = ("verdict", "language", "problem", "usr", "contest")
-    search_fields = ("usr__username", "problem", "verdict")
+    search_fields = ("usr__display_name", "problem__name", "verdict")
     ordering = ("-timestamp",)
     readonly_fields = ("timestamp",)
 
     fieldsets = (
-        (None, {"fields": ("usr", "contest", "problem", "language", "code")}),
+        (None, {"fields": ("usr__display_name", "contest", "problem", "language", "code")}),
         (
             "Result Info",
             {"fields": ("verdict", "runtime", "timestamp", "insight")},
