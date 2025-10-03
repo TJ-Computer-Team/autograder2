@@ -129,8 +129,6 @@ def run_code_handler(tl, ml, lang, pid, sid, code):
                 None,
                 None,
             )
-            logger.error(time_used)
-            logger.error(tl)
         except Exception as e:
             verdict_overall = "Grader Error"
             insight_overall = f"Grader Error: {e}"

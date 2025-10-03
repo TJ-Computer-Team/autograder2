@@ -107,6 +107,7 @@ def run_code(
         logger.error(elapsed)
         logger.error(tl)
         if elapsed >= tl:
+            logger.error("hi guys im here")
             return "Time Limit Exceeded", "", tl
         else:
             return "Runtime Error", stderr_text, elapsed
