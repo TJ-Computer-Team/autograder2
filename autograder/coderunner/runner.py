@@ -107,7 +107,7 @@ def run_code(
 
     if proc.returncode != 0:
         stderr_text = stderr.decode("utf-8", errors="ignore")
-        logger.error(stderr_text)
+        logger.error(stderr)
         return "Runtime Error", stderr_text, elapsed
 
     try:
