@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 def get_standings(cid):
     contest = Contest.objects.get(id=cid)
 
-    problems = list(Problem.objects.filter(contest=contest).order_by("id"))
+    problems = list(Problem.objects.filter(contest=contest).order_by("contest_letter"))
     pid_index = {p.contest_letter: i for i, p in enumerate(problems)}
     start, end = contest.start, contest.end
 

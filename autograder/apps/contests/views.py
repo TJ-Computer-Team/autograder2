@@ -91,7 +91,7 @@ def contest_view(request, cid):
 @login_required
 def contest_standings_view(request, cid):
     standings = get_standings(cid)
-    problems = Problem.objects.filter(contest_id=cid)
+    problems = Problem.objects.filter(contest_id=cid).order_by("contest_letter")
     contest = get_object_or_404(Contest, id=cid)
 
     if not request.user.is_staff and timezone.now() < contest.start:
