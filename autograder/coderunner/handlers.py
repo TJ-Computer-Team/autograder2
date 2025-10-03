@@ -1,11 +1,13 @@
 import subprocess
 import shutil
 import os
+import re
 from pathlib import Path
 from .runner import run_code
 from ..apps.runtests.models import Submission
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -13,6 +15,13 @@ logger = logging.getLogger(__name__)
 env_copy = os.environ.copy()
 
 env_copy["PATH"] = "/usr/bin:" + env_copy["PATH"]
+
+
+def natural_key(s):
+    return [
+        int(text) if text.isdigit() else text.lower()
+        for text in re.split(r"(\d+)", s.name)
+    ]
 
 
 def broadcast_status_update(submission_id, new_message, runtime=-1):
@@ -93,7 +102,7 @@ def run_code_handler(tl, ml, lang, pid, sid, code):
     overall_time = 0
 
     try:
-        entries = sorted(test_dir.iterdir(), key=lambda p: p.name)
+        entries = sorted(test_dir.iterdir(), key=natural_key)
     except Exception:
         return {"error": "Test cases not found"}
 
