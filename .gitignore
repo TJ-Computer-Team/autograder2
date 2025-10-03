@@ -7,4 +7,3 @@ __pycache__
 collected_static
 media
 ./filler_data.py
-./filler_data.pydb.sqlite3
