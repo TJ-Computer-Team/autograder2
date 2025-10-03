@@ -94,7 +94,7 @@ def contest_standings_view(request, cid):
     problems = Problem.objects.filter(contest_id=cid)
     contest = get_object_or_404(Contest, id=cid)
 
-    if timezone.now() < contest.start:
+    if not request.user.is_staff and timezone.now() < contest.start:
         return HttpResponse("Contest has not started yet", status=403)
 
     context = {
@@ -112,7 +112,7 @@ def contest_standings_view(request, cid):
 @login_required
 def contest_status_view(request, cid, mine_only, page):
     contest = get_object_or_404(Contest, id=cid)
-    if timezone.now() < contest.start:
+    if not request.user.is_staff and timezone.now() < contest.start:
         return HttpResponse("Contest has not started yet", status=403)
     subs = Submission.objects.filter(contest=contest)
     if not request.user.is_staff:
