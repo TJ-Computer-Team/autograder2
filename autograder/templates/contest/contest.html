@@ -74,15 +74,15 @@
     </a>
 </div>
 <script>
+    const contestTimestamp = {{ timeStatus|date:"U" }};
     let myVar = setInterval(myTimer, 1000);
 
     function myTimer() {
-        let targetTime = new Date("{{ timeStatus|date:'Y-m-d\\TH:i:s\\Z' }}");
+        let targetTime = new Date(contestTimestamp * 1000);
         let now = new Date();
         let diff = targetTime - now;
 
         if (diff > 0) {
-            let d = new Date(diff);
             let days = Math.floor(diff / (24 * 60 * 60 * 1000));
             let hours = Math.floor(diff / (60 * 60 * 1000)) % 24;
             let minutes = Math.floor(diff / (60 * 1000)) % 60;
