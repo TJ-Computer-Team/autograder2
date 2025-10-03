@@ -31,8 +31,8 @@ def contest_view(request, cid):
     if problems is None:
         problems = []
 
-    time_message = contest.end
-    time_type = "end"
+    time_message = contest.start if timezone.now() < contest.start else contest.end
+    time_type = "start" if timezone.now() < contest.start else "end"
     if not request.user.is_staff and timezone.now() < contest.start:
         return HttpResponse("Contest has not started yet", status=403)
 
