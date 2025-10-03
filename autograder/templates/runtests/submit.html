@@ -31,11 +31,11 @@
                     {% for p in problems %}
                         <option value="{{ p.id }}"
                             {% if problem and p.id == problem.id %}selected{% endif %}>
-                            {{ p.id }} - {{ p.name }}
+                            {{ p.id }}: {{ p.name }}
                         </option>
                     {% endfor %}
                 {% elif problem %}
-                    <option value="{{ problem.id }}" selected>{{ problem.id }} - {{ problem.name }}</option>
+                    <option value="{{ problem.id }}" selected>{{ problem.id }}: {{ problem.name }}</option>
                 {% else %}
                     <option disabled selected>No problems available</option>
                 {% endif %}

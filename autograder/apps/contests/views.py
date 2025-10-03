@@ -27,7 +27,7 @@ def contests_view(request):
 def contest_view(request, cid):
     contest = get_object_or_404(Contest, pk=cid)
 
-    problems = list(Problem.objects.filter(contest=contest).order_by("id"))
+    problems = list(Problem.objects.filter(contest=contest).order_by("contest_letter"))
     if problems is None:
         problems = []
 
@@ -42,7 +42,8 @@ def contest_view(request, cid):
             {
                 "name": problem.name,
                 "problem": problem,
-                "pid": problem.id,
+                "id": problem.id,
+                "letter": problem.contest_letter,
                 "points": getattr(problem, "points", 0),
                 "solves": 0,
                 "available": (
@@ -62,7 +63,7 @@ def contest_view(request, cid):
         ind = user_id_map.get(sub.usr_id)
         pind = None
         for j, prob in enumerate(ordered):
-            if prob["pid"] == getattr(sub, "problem_id", None):
+            if prob["id"] == getattr(sub, "problem_id", None):
                 pind = j
                 break
         if pind is None or ind is None:

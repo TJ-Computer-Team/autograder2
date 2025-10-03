@@ -11,7 +11,7 @@ def get_standings(cid):
     contest = Contest.objects.get(id=cid)
 
     problems = list(Problem.objects.filter(contest=contest).order_by("id"))
-    pid_index = {p.id: i for i, p in enumerate(problems)}
+    pid_index = {p.contest_letter: i for i, p in enumerate(problems)}
     start, end = contest.start, contest.end
 
     users = GraderUser.objects.filter(is_staff=False)
@@ -34,7 +34,7 @@ def get_standings(cid):
 
     for s in subs:
         user_data = stats.get(s.usr_id)
-        prob_idx = pid_index.get(s.problem.id)
+        prob_idx = pid_index.get(s.problem.contest_letter)
 
         if user_data is None or prob_idx is None:
             continue

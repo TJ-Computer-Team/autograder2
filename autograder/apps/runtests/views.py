@@ -47,7 +47,7 @@ def submit_view(request, cid=None, pid=None):
             if contest.start > timezone.now():
                 return redirect("runtests:submit")
 
-        problems = problems.order_by("id")
+        problems = problems.order_by("contest_letter")
         context["contest"] = contest
         context["problems"] = problems
 

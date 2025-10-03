@@ -6,6 +6,7 @@ class Problem(models.Model):
     name = models.CharField(max_length=255)
     contest = models.ForeignKey("contests.Contest", on_delete=models.CASCADE)
     points = models.IntegerField()
+    contest_letter = models.CharField(max_length=1, default="A")
 
     statement = models.TextField()
     inputtxt = models.TextField()

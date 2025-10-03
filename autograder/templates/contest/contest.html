@@ -36,16 +36,12 @@
     </tr>
     {% for problem in problems %}
     <tr>
-        <td class="centertext">{{ "ABCDEFGHIJKLMNOPQRSTUVWXYZ"|char_at:forloop.counter0 }}</td>
-            {% if problem.available %}
+        <td class="centertext">{{problem.letter}}</td>
         <td class="centertext">
-            <a href="{% url "problems:problem" pid=problem.pid %}">
+            <a href="{% url "problems:problem" pid=problem.id %}">
             {{ problem.name }}
             </a>
         </td>
-        {% else %}
-        <td class="centertext">Problem Not Available</td>
-        {% endif %}
         <td class="centertext">{{ problem.points }}</td>
         <td class="centertext">{{ problem.solves }}</td>
     </tr>
