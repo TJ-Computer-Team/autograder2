@@ -102,15 +102,12 @@ def run_code(
         stdin_file.close()
     stdout_file.close()
 
+    if elapsed >= tl:
+        return "Time Limit Exceeded", "", tl
+
     if proc.returncode != 0:
         stderr_text = stderr.decode("utf-8", errors="ignore")
-        logger.error(elapsed)
-        logger.error(tl)
-        if elapsed >= tl:
-            logger.error("hi guys im here")
-            return "Time Limit Exceeded", "", tl
-        else:
-            return "Runtime Error", stderr_text, elapsed
+        return "Runtime Error", stderr_text, elapsed
 
     try:
         output_text = out_path.read_text()
