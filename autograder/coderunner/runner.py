@@ -3,6 +3,9 @@ import time
 from pathlib import Path
 from typing import Optional, Tuple
 from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def run_code(
@@ -101,6 +104,8 @@ def run_code(
 
     if proc.returncode != 0:
         stderr_text = stderr.decode("utf-8", errors="ignore")
+        logger.error(elapsed)
+        logger.error(tl)
         if elapsed >= tl:
             return "Time Limit Exceeded", "", tl
         else:
