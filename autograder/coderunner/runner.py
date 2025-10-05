@@ -32,7 +32,7 @@ def run_code(
         "--cgroup_mem_max",
         str(ml * 1024 * 1024),
         "--cgroup_pids_max",
-        "64",
+        "256",
     ]
 
     cfg = (
