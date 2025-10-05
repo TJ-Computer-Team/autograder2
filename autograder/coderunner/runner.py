@@ -79,7 +79,13 @@ def run_code(
         cmd += ["/usr/bin/python3", "/subcode/default_checker.py"]
     elif lang == "java":
         class_name = source_filename.split(".")[0] or "usercode"
-        cmd += ["/usr/bin/java", class_name]
+        cmd += [
+            "/usr/bin/java",
+            "-XX:+UseSerialGC",
+            "-Xss256k",
+            f"-Xmx{ml}m",
+            class_name,
+        ]
     else:
         raise RuntimeError("Unsupported language")
 
