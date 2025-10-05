@@ -26,7 +26,6 @@ def run_code(
         cmd = ["/usr/bin/nsjail"]
 
     cmd += [
-        "--quiet",
         "--time_limit",
         str(tl // 1000),
         "--cgroup_mem_max",
