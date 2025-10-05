@@ -83,6 +83,8 @@ def run_code(
     else:
         raise RuntimeError("Unsupported language")
 
+    logger.error(f"Executing nsjail command: {' '.join(cmd)}")
+
     out_path = subdir / ("checker_output.txt" if checker else "output.txt")
 
     stdin_file = open(input_path, "rb") if input_path else None
