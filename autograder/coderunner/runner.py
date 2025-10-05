@@ -69,6 +69,8 @@ def run_code(
             f"{subdir}/output.txt:/subcode/output.txt",
         ]
 
+    cmd += ["--"]
+
     # command to run inside jail
     if lang == "cpp":
         cmd += ["/subcode/usercode"]
