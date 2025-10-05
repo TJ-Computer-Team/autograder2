@@ -90,8 +90,6 @@ def run_code(
     else:
         raise RuntimeError("Unsupported language")
 
-    logger.error(f"Executing nsjail command: {' '.join(cmd)}")
-
     out_path = subdir / ("checker_output.txt" if checker else "output.txt")
 
     stdin_file = open(input_path, "rb") if input_path else None
@@ -116,8 +114,6 @@ def run_code(
 
     if proc.returncode != 0:
         stderr_text = stderr.decode("utf-8", errors="ignore")
-        logger.error(stderr)
-        logger.error(proc.returncode)
         return "Runtime Error", stderr_text, elapsed
 
     try:
