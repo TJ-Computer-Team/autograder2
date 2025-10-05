@@ -1,5 +1,4 @@
 import subprocess
-import shutil
 import os
 import re
 from pathlib import Path
@@ -167,11 +166,11 @@ def run_code_handler(tl, ml, lang, pid, sid, code):
             verdict_overall = f"Wrong Answer on test {test_name}"
             break
 
-    # cleanup
-    try:
-        shutil.rmtree(subdir)
-    except Exception:
-        pass
+    # # cleanup
+    # try:
+    #     shutil.rmtree(subdir)
+    # except Exception:
+    #     pass
 
     broadcast_status_update(submission.id, verdict_overall, runtime=overall_time)
 
