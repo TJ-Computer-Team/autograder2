@@ -159,6 +159,7 @@ def run_code_handler(tl, ml, lang, pid, sid, code):
                 test_name,
                 pid,
             )
+            insight_overall = check_out
         except Exception as e:
             verdict_overall = f"Checker Error: {e}"
             break

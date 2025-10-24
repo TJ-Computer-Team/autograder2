@@ -121,8 +121,4 @@ def run_code(
     except Exception:
         output_text = ""
 
-    if checker:
-        logger.error('hi im here')
-        logger.error(output_text)
-
     return output_text, "", elapsed
