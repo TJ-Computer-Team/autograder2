@@ -12,6 +12,7 @@ def rerun_submissions(modeladmin, request, queryset):
             problem=old_sub.problem,
             language=old_sub.language,
             contest=old_sub.contest,
+            timestamp=old_sub.timestamp,
         )
         new_sub.save()
         grade_submission_task.delay(new_sub.id)
