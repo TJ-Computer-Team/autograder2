@@ -59,6 +59,7 @@ class GraderUser(AbstractBaseUser, PermissionsMixin):
     )
     inhouse = models.DecimalField(max_digits=10, decimal_places=3, default=0)
     index = models.DecimalField(max_digits=10, decimal_places=3, default=0)
+    use_writer_formula = models.BooleanField(default=False)
 
     particles_enabled = models.BooleanField(default=True)
 
