@@ -15,6 +15,9 @@ def rerun_submissions(modeladmin, request, queryset):
             timestamp=old_sub.timestamp,
         )
         new_sub.save()
+        old_sub.verdict = "Skipped"
+        old_sub.insight = "Your submission was manually skipped by an admin"
+        old_sub.save()
         grade_submission_task.delay(new_sub.id)
 
 
