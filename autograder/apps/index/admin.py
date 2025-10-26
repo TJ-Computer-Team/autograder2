@@ -47,6 +47,7 @@ class GraderUserAdmin(UserAdmin):
                     "inhouse",
                     "index",
                     "inhouses",
+                    "use_writer_formula",
                 )
             },
         ),

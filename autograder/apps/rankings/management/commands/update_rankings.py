@@ -62,10 +62,10 @@ class Command(BaseCommand):
         for r in range(len(rankings)):
             rankings[r]["inhouses"].sort()
 
+            user = get_object_or_404(GraderUser, id=rankings[r]["id"])
             drops = max(
                 0,
-                min(2, contests.count() - 2)
-                + get_object_or_404(GraderUser, id=rankings[r]["id"]).author_drops,
+                min(2, contests.count() - 2) + user.author_drops,
             )
 
             overall = 0
@@ -77,14 +77,23 @@ class Command(BaseCommand):
 
             rankings[r]["inhouse"] = overall
 
-            vals = [rankings[r]["usaco"], rankings[r]["cf"], rankings[r]["inhouse"]]
-            vals.sort()
-
-            rankings[r]["index"] = (
-                Decimal("0.2") * Decimal(str(vals[0]))
-                + Decimal("0.35") * Decimal(str(vals[1]))
-                + Decimal("0.45") * Decimal(str(vals[2]))
-            )
+            # Use writer formula if enabled: 0.4 * min(cf, usaco) + 0.6 * max(cf, usaco)
+            # Otherwise use standard formula: 0.2 * min + 0.35 * mid + 0.45 * max
+            if user.use_writer_formula:
+                cf_rating = Decimal(str(rankings[r]["cf"]))
+                usaco_rating = Decimal(str(rankings[r]["usaco"]))
+                rankings[r]["index"] = (
+                    Decimal("0.4") * min(cf_rating, usaco_rating)
+                    + Decimal("0.6") * max(cf_rating, usaco_rating)
+                )
+            else:
+                vals = [rankings[r]["usaco"], rankings[r]["cf"], rankings[r]["inhouse"]]
+                vals.sort()
+                rankings[r]["index"] = (
+                    Decimal("0.2") * Decimal(str(vals[0]))
+                    + Decimal("0.35") * Decimal(str(vals[1]))
+                    + Decimal("0.45") * Decimal(str(vals[2]))
+                )
 
         rankings.sort(key=lambda x: x["index"], reverse=True)
 

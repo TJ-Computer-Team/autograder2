@@ -66,17 +66,26 @@ def update_user_index(user_id):
 
     new_usaco_rating = usaco_map.get(user.usaco_division, 800)
 
-    vals = sorted(
-        [
-            Decimal(str(new_usaco_rating)),
-            Decimal(str(user.cf_rating)),
-            Decimal(str(user.inhouse)),
-        ]
-    )
-
-    new_index = (
-        Decimal("0.2") * vals[0] + Decimal("0.35") * vals[1] + Decimal("0.45") * vals[2]
-    )
+    # Use writer formula if enabled: 0.4 * min(cf, usaco) + 0.6 * max(cf, usaco)
+    # Otherwise use standard formula: 0.2 * min + 0.35 * mid + 0.45 * max
+    if user.use_writer_formula:
+        cf_rating = Decimal(str(user.cf_rating))
+        usaco_rating = Decimal(str(new_usaco_rating))
+        new_index = (
+            Decimal("0.4") * min(cf_rating, usaco_rating)
+            + Decimal("0.6") * max(cf_rating, usaco_rating)
+        )
+    else:
+        vals = sorted(
+            [
+                Decimal(str(new_usaco_rating)),
+                Decimal(str(user.cf_rating)),
+                Decimal(str(user.inhouse)),
+            ]
+        )
+        new_index = (
+            Decimal("0.2") * vals[0] + Decimal("0.35") * vals[1] + Decimal("0.45") * vals[2]
+        )
 
     if user.index != new_index:
         user.index = new_index
