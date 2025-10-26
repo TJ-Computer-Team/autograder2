@@ -41,6 +41,16 @@ class GraderUserAdmin(UserAdmin):
             },
         ),
         (
+            "Ratings",
+            {
+                "fields": (
+                    "inhouse",
+                    "index",
+                    "inhouses",
+                )
+            },
+        ),
+        (
             "Permissions",
             {
                 "fields": (
