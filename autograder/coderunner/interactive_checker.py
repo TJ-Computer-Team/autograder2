@@ -32,6 +32,7 @@ class InteractiveRunner:
         self.max_queries = 10000
         self.start_time = None
         self.error_occurred = False
+        self.got_answer = False
         
     def run(self) -> Tuple[str, str, int]:
         self.start_time = time.time()
@@ -70,6 +71,9 @@ class InteractiveRunner:
             if user_process.returncode and user_process.returncode != 0:
                 stderr = user_process.stderr.read() if user_process.stderr else ""
                 return "Runtime Error", stderr[:1000], elapsed_ms
+            
+            if not self.got_answer and self.verdict == "Accepted":
+                return "Runtime Error", "Program exited without submitting answer", elapsed_ms
             
             return self.verdict, self.message, elapsed_ms
             
@@ -125,6 +129,7 @@ class InteractiveRunner:
                     verdict, message = self._check_answer(line, test_input_data)
                     self.verdict = verdict
                     self.message = message
+                    self.got_answer = True
                     break
                 
                 else:
