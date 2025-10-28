@@ -122,7 +122,7 @@ def run_code_handler(tl, ml, lang, pid, sid, code):
 
     for entry in entries:
         file_path = entry
-        test_name = file_path.name
+        test_name = file_path.stem
         broadcast_status_update(submission.id, f"Running on test {test_name}")
 
         try:
@@ -165,7 +165,7 @@ def run_code_handler(tl, ml, lang, pid, sid, code):
                 20000,
                 1024,
                 True,
-                test_name,
+                file_path.name,
                 pid,
             )
             insight_overall = check_out
@@ -273,7 +273,7 @@ def run_interactive_handler(tl, ml, lang, pid, sid, code):
         tl *= 3
 
     for entry in entries:
-        test_name = entry.name
+        test_name = entry.stem
         broadcast_status_update(submission.id, f"Running on test {test_name}")
 
         try:
