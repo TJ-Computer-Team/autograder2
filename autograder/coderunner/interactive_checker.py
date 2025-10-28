@@ -136,12 +136,9 @@ class InteractiveRunner:
                 bufsize=1,
             )
             
-            input_data = ""
+            input_data = f"{self.num_test_cases}\n"
             for tc_input in self.test_cases_input:
                 input_data += tc_input
-            
-            if input_data and not input_data.endswith('\n'):
-                input_data += '\n'
             
             self.user_process.stdin.write(input_data)
             self.user_process.stdin.flush()
