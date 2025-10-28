@@ -18,24 +18,33 @@ class InteractiveRunner:
         test_input_path: Optional[str],
         time_limit_ms: int,
         memory_limit_mb: int,
-        max_queries: int = 10000,
+        test_name: str = "unknown",
     ):
         self.user_cmd = user_cmd
         self.interactor_cmd = interactor_cmd
         self.test_input_path = test_input_path
         self.time_limit_ms = time_limit_ms
         self.memory_limit_mb = memory_limit_mb
-        self.max_queries = max_queries
+        self.test_name = test_name
+        self.max_queries = None
         
         self.verdict = "Accepted"
         self.message = ""
         self.query_count = 0
         self.start_time = None
-        self.error_occurred = False
         self.got_answer = False
         
     def run(self) -> Tuple[str, str, int]:
         self.start_time = time.time()
+        
+        test_input_data = ""
+        if self.test_input_path and os.path.exists(self.test_input_path):
+            with open(self.test_input_path, 'r') as f:
+                test_input_data = f.read()
+        
+        self.max_queries = self._get_max_queries(test_input_data)
+        if self.max_queries is None:
+            return "Grader Error", "Failed to get max queries from interactor", 0
         
         try:
             user_process = subprocess.Popen(
@@ -46,11 +55,6 @@ class InteractiveRunner:
                 text=True,
                 bufsize=1,
             )
-            
-            test_input_data = ""
-            if self.test_input_path and os.path.exists(self.test_input_path):
-                with open(self.test_input_path, 'r') as f:
-                    test_input_data = f.read()
             
             interaction_thread = threading.Thread(
                 target=self._interact,
@@ -104,7 +108,7 @@ class InteractiveRunner:
                     self.query_count += 1
                     
                     if self.query_count > self.max_queries:
-                        self.verdict = "Query Limit Exceeded"
+                        self.verdict = f"Idleness Limit Exceeded on test {self.test_name}"
                         self.message = f"Exceeded {self.max_queries} queries"
                         user_process.kill()
                         break
@@ -145,6 +149,39 @@ class InteractiveRunner:
                 user_process.kill()
             except:
                 pass
+    
+    def _get_max_queries(self, test_input: str) -> Optional[int]:
+        try:
+            test_input_clean = test_input.rstrip('\n') + '\n' if test_input else ''
+            interactor_input = test_input_clean + 'MAX_QUERIES\n'
+            
+            result = subprocess.run(
+                self.interactor_cmd,
+                input=interactor_input,
+                capture_output=True,
+                text=True,
+                timeout=1.0,
+            )
+            
+            if result.returncode != 0:
+                stderr = result.stderr if result.stderr else ""
+                logger.error(f"Interactor failed to get max queries: {stderr}")
+                return None
+            
+            response = result.stdout.strip()
+            try:
+                max_queries = int(response)
+                return max_queries
+            except ValueError:
+                logger.error(f"Interactor returned non-integer max queries: {response}")
+                return None
+                
+        except subprocess.TimeoutExpired:
+            logger.error("Interactor timed out getting max queries")
+            return None
+        except Exception as e:
+            logger.error(f"Interactor exception getting max queries: {e}")
+            return None
     
     def _answer_query(self, query: str, test_input: str) -> Optional[str]:
         try:
@@ -211,7 +248,7 @@ def run_interactive_problem(
     test_input_path: str,
     time_limit_ms: int,
     memory_limit_mb: int,
-    max_queries: int = 10000,
+    test_name: str = "unknown",
 ) -> Tuple[str, str, int]:
     problem_path = Path(problem_dir)
     
@@ -247,7 +284,7 @@ def run_interactive_problem(
         test_input_path=test_input_path,
         time_limit_ms=time_limit_ms,
         memory_limit_mb=memory_limit_mb,
-        max_queries=max_queries,
+        test_name=test_name,
     )
     
     return runner.run()
