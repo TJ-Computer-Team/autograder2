@@ -1,5 +1,4 @@
 import subprocess
-import sys
 import time
 import threading
 import os
@@ -220,7 +219,7 @@ def run_interactive_problem(
         user_cmd = ["python3", user_executable]
     elif user_lang == "java":
         class_name = Path(user_executable).stem
-        user_cmd = ["java", "-cp", str(Path(user_executable).parent), class_name]
+        user_cmd = ["/usr/bin/java", "-cp", str(Path(user_executable).parent), class_name]
     else:
         return "Grader Error", f"Unsupported language: {user_lang}", 0
     
@@ -249,28 +248,3 @@ def run_interactive_problem(
     )
     
     return runner.run()
-
-
-if __name__ == "__main__":
-    if len(sys.argv) < 5:
-        print("Usage: interactive_checker.py <user_exe> <user_lang> <problem_dir> <test_input>")
-        sys.exit(1)
-    
-    user_exe = sys.argv[1]
-    user_lang = sys.argv[2]
-    problem_dir = sys.argv[3]
-    test_input = sys.argv[4]
-    
-    verdict, message, time_ms = run_interactive_problem(
-        user_executable=user_exe,
-        user_lang=user_lang,
-        problem_dir=problem_dir,
-        test_input_path=test_input,
-        time_limit_ms=5000,
-        memory_limit_mb=256,
-    )
-    
-    print(f"Verdict: {verdict}")
-    if message:
-        print(f"Message: {message}")
-    print(f"Time: {time_ms}ms")

@@ -204,14 +204,6 @@ def run_interactive_handler(tl, ml, lang, pid, sid, code):
     if not problem_base_path.exists():
         return {"error": "Problem does not exist on coderunner filesystem"}
 
-    has_interactor = (
-        (problem_base_path / "interactor.py").exists() or
-        (problem_base_path / "interactor").exists()
-    )
-    
-    if not has_interactor:
-        return {"error": "Not an interactive problem (missing interactor)"}
-
     test_dir = problem_base_path / "test"
     
     subdir = Path("/home/tjctgrader/submissions") / str(sid)
