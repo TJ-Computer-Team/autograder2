@@ -20,7 +20,6 @@ class Problem(models.Model):
     secret = models.BooleanField(default=False)
 
     testcases_zip = models.FileField(upload_to="problem_testcases/", blank=True)
-    interactor_file = models.FileField(upload_to="problem_interactors/", blank=True, null=True)
 
     def __str__(self):
         return self.name
