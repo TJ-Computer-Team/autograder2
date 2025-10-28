@@ -29,7 +29,7 @@ class ProblemAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {"fields": ("name", "contest", "points", "contest_letter")}),
-        ("Limits", {"fields": ("tl", "ml")}),
+        ("Limits", {"fields": ("tl", "ml", "max_queries")}),
         ("Flags", {"fields": ("interactive", "secret")}),
         (
             "Text Fields",

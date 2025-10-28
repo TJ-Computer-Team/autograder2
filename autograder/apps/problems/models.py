@@ -15,6 +15,7 @@ class Problem(models.Model):
 
     tl = models.IntegerField(null=True, blank=True)
     ml = models.IntegerField(null=True, blank=True)
+    max_queries = models.IntegerField(null=True, blank=True)
 
     interactive = models.BooleanField(default=False)
     secret = models.BooleanField(default=False)
