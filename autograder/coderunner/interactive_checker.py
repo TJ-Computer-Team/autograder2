@@ -18,17 +18,18 @@ class InteractiveRunner:
         test_input_path: Optional[str],
         time_limit_ms: int,
         memory_limit_mb: int,
+        max_queries: int = 10000,
     ):
         self.user_cmd = user_cmd
         self.interactor_cmd = interactor_cmd
         self.test_input_path = test_input_path
         self.time_limit_ms = time_limit_ms
         self.memory_limit_mb = memory_limit_mb
+        self.max_queries = max_queries
         
         self.verdict = "Accepted"
         self.message = ""
         self.query_count = 0
-        self.max_queries = 10000
         self.start_time = None
         self.error_occurred = False
         self.got_answer = False
@@ -210,6 +211,7 @@ def run_interactive_problem(
     test_input_path: str,
     time_limit_ms: int,
     memory_limit_mb: int,
+    max_queries: int = 10000,
 ) -> Tuple[str, str, int]:
     problem_path = Path(problem_dir)
     
@@ -245,6 +247,7 @@ def run_interactive_problem(
         test_input_path=test_input_path,
         time_limit_ms=time_limit_ms,
         memory_limit_mb=memory_limit_mb,
+        max_queries=max_queries,
     )
     
     return runner.run()
