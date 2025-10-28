@@ -7,6 +7,10 @@ class ProblemAdminForm(forms.ModelForm):
     class Meta:
         model = Problem
         fields = "__all__"
+        help_texts = {
+            'interactive': 'Check this for interactive problems (real-time communication)',
+            'testcases_zip': 'For standard problems: zip with test inputs and expected outputs. For interactive: zip with test inputs + interactor file (interactor.py/.cpp/.java)',
+        }
 
 
 @admin.register(Problem)
@@ -35,5 +39,11 @@ class ProblemAdmin(admin.ModelAdmin):
             "Text Fields",
             {"fields": ("statement", "inputtxt", "outputtxt", "samples")},
         ),
-        ("Testcases zip", {"fields": ("testcases_zip",)}),
+        ("Testcases", {
+            "fields": ("testcases_zip",),
+            "description": "Standard: Include test/ and sol/ folders. Interactive: Include interactor.py/.cpp/.java + test input files"
+        }),
     )
+    
+    class Media:
+        js = ('admin/js/interactive_problem.js',)

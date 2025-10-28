@@ -4,6 +4,7 @@ import re
 import shutil
 from pathlib import Path
 from .runner import run_code
+from .interactive_checker import run_interactive_problem
 from ..apps.runtests.models import Submission
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -49,6 +50,14 @@ def run_code_handler(tl, ml, lang, pid, sid, code):
     if not problem_base_path.exists():
         os.listdir(str(problem_base_path))
         return {"error": "Problem does not exist on coderunner filesystem"}
+
+    has_interactor = (
+        (problem_base_path / "interactor.py").exists() or
+        (problem_base_path / "interactor").exists()
+    )
+    
+    if has_interactor:
+        return run_interactive_handler(tl, ml, lang, pid, sid, code)
 
     checker_path = problem_base_path / "default_checker.py"
     test_dir = problem_base_path / "test"
@@ -169,6 +178,125 @@ def run_code_handler(tl, ml, lang, pid, sid, code):
             break
 
     # cleanup
+    try:
+        shutil.rmtree(subdir)
+    except Exception:
+        pass
+
+    broadcast_status_update(submission.id, verdict_overall, runtime=overall_time)
+
+    return {
+        "verdict": verdict_overall,
+        "output": insight_overall,
+        "runtime": overall_time,
+    }
+
+
+def run_interactive_handler(tl, ml, lang, pid, sid, code):
+    submission = Submission.objects.get(pk=sid)
+    if lang not in ["python", "cpp", "java"]:
+        return {"error": "Unacceptable code language"}
+
+    if not pid:
+        return {"error": "You didn't select an actual problem"}
+
+    problem_base_path = Path("/home/tjctgrader/problems") / Path(str(pid))
+    if not problem_base_path.exists():
+        return {"error": "Problem does not exist on coderunner filesystem"}
+
+    has_interactor = (
+        (problem_base_path / "interactor.py").exists() or
+        (problem_base_path / "interactor").exists()
+    )
+    
+    if not has_interactor:
+        return {"error": "Not an interactive problem (missing interactor)"}
+
+    test_dir = problem_base_path / "test"
+    
+    subdir = Path("/home/tjctgrader/submissions") / str(sid)
+    subdir.mkdir(parents=True, exist_ok=True)
+
+    extension = {"python": "py", "java": "java", "cpp": "cpp"}[lang]
+    sol_filename = f"usercode.{extension}"
+    sol_path = subdir / sol_filename
+
+    try:
+        sol_path.write_text(code)
+    except Exception as e:
+        logger.error(f"Failed to write to file: {e}")
+        raise
+
+    if lang in ["cpp", "java"]:
+        broadcast_status_update(submission.id, "Compiling")
+        if lang == "cpp":
+            output = subprocess.run(
+                [
+                    "/usr/bin/g++",
+                    "-std=c++17",
+                    "-O2",
+                    "-o",
+                    str(subdir / "usercode"),
+                    str(sol_path),
+                ],
+                env=env_copy,
+                capture_output=True,
+            )
+            sol_path = subdir / "usercode"
+            sol_filename = "usercode"
+        elif lang == "java":
+            output = subprocess.run(
+                ["/usr/bin/javac", str(sol_path)], env=env_copy, capture_output=True
+            )
+            sol_path = subdir / "usercode"
+            sol_filename = "usercode"
+
+        if output.returncode != 0:
+            return {
+                "verdict": "Compilation Error",
+                "output": output.stderr.decode("utf-8", errors="ignore"),
+                "runtime": 0,
+            }
+
+    verdict_overall = "Accepted"
+    insight_overall = ""
+    overall_time = 0
+
+    try:
+        entries = sorted(test_dir.iterdir(), key=natural_key)
+    except Exception:
+        return {"error": "Test cases not found"}
+
+    if lang == "java":
+        tl *= 2
+    elif lang == "python":
+        tl *= 3
+
+    for entry in entries:
+        test_name = entry.name
+        broadcast_status_update(submission.id, f"Running on test {test_name}")
+
+        try:
+            verdict, message, time_used = run_interactive_problem(
+                user_executable=str(sol_path),
+                user_lang=lang,
+                problem_dir=str(problem_base_path),
+                test_input_path=str(entry),
+                time_limit_ms=tl,
+                memory_limit_mb=ml,
+            )
+        except Exception as e:
+            verdict_overall = "Grader Error"
+            insight_overall = f"Grader Error: {e}"
+            break
+
+        overall_time = max(overall_time, time_used)
+
+        if verdict != "Accepted":
+            verdict_overall = f"{verdict} on test {test_name}"
+            insight_overall = message
+            break
+
     try:
         shutil.rmtree(subdir)
     except Exception:
