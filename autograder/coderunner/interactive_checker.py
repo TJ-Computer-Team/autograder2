@@ -28,8 +28,7 @@ class InteractiveRunner:
         self.time_limit_ms = time_limit_ms
         self.memory_limit_mb = memory_limit_mb
         
-        # Read query limit from file if provided
-        self.max_queries = 10000  # Default
+        self.max_queries = 10000 
         if queries_path and os.path.exists(queries_path):
             try:
                 with open(queries_path, 'r') as f:
@@ -57,19 +56,16 @@ class InteractiveRunner:
                 bufsize=1,
             )
             
-            # Read public input for user
             test_input_data = ""
             if self.test_input_path and os.path.exists(self.test_input_path):
                 with open(self.test_input_path, 'r') as f:
                     test_input_data = f.read()
-            
-            # Read secret answer for interactor
+        
             answer_data = ""
             if self.answer_path and os.path.exists(self.answer_path):
                 with open(self.answer_path, 'r') as f:
                     answer_data = f.read()
             
-            # Send public input to user program first
             if test_input_data:
                 try:
                     user_process.stdin.write(test_input_data)
@@ -175,7 +171,6 @@ class InteractiveRunner:
     
     def _answer_query(self, query: str, test_input: str, answer: str) -> Optional[str]:
         try:
-            # Pass public input, secret answer, and user's query to interactor
             test_input_clean = test_input.rstrip('\n') + '\n' if test_input else ''
             answer_clean = answer.rstrip('\n') + '\n' if answer else ''
             interactor_input = test_input_clean + answer_clean + query + '\n'
@@ -205,7 +200,6 @@ class InteractiveRunner:
     
     def _check_answer(self, answer: str, test_input: str, secret_answer: str) -> Tuple[str, str]:
         try:
-            # Pass public input, secret answer, and user's final answer to interactor
             test_input_clean = test_input.rstrip('\n') + '\n' if test_input else ''
             answer_clean = secret_answer.rstrip('\n') + '\n' if secret_answer else ''
             interactor_input = test_input_clean + answer_clean + answer + '\n'
@@ -271,14 +265,10 @@ def run_interactive_problem(
     if not interactor_cmd:
         return "Grader Error", "Interactor not found", 0
     
-    # Construct answer path from test input path
-    # test_input_path: /problems/123/test/1.txt -> answer_path: /problems/123/answer/1_answer.txt
     test_path = Path(test_input_path)
     answer_filename = test_path.stem + "_answer" + test_path.suffix
     answer_path = problem_path / "answer" / answer_filename
-    
-    # Construct queries path
-    # test_input_path: /problems/123/test/1.txt -> queries_path: /problems/123/queries/1_queries.txt
+
     queries_filename = test_path.stem + "_queries" + test_path.suffix
     queries_path = problem_path / "queries" / queries_filename
     
