@@ -106,6 +106,19 @@ class InteractiveRunner:
     
     def _interact(self, user_process, test_input_data, answer_data):
         try:
+            # Parse T (number of test cases) from the first line
+            T = 1  # Default to single test case
+            if test_input_data:
+                lines = test_input_data.strip().split('\n')
+                try:
+                    T = int(lines[0])
+                except (ValueError, IndexError):
+                    T = 1  # If can't parse, assume 1
+            
+            # Track test case results
+            current_test = 0
+            test_cases_passed = 0
+            
             while True:
                 elapsed = (time.time() - self.start_time) * 1000
                 if elapsed >= self.time_limit_ms:
@@ -132,7 +145,8 @@ class InteractiveRunner:
                         user_process.kill()
                         break
                     
-                    response = self._answer_query(line, test_input_data, answer_data)
+                    # For multi-test: need to pass which test case we're on
+                    response = self._answer_query(line, test_input_data, answer_data, current_test, T)
                     
                     if response is None:
                         self.verdict = "Grader Error"
@@ -149,11 +163,27 @@ class InteractiveRunner:
                         break
                 
                 elif line.startswith("!"):
-                    verdict, message = self._check_answer(line, test_input_data, answer_data)
-                    self.verdict = verdict
-                    self.message = message
-                    self.got_answer = True
-                    break
+                    verdict, message = self._check_answer(line, test_input_data, answer_data, current_test, T)
+                    
+                    if verdict == "Accepted":
+                        test_cases_passed += 1
+                        current_test += 1
+                        
+                        if current_test >= T:
+                            # All test cases passed
+                            self.verdict = "Accepted"
+                            self.message = f"All {T} test case(s) passed" if T > 1 else message
+                            self.got_answer = True
+                            break
+                        else:
+                            # Continue to next test case
+                            continue
+                    else:
+                        # Failed on this test case
+                        self.verdict = f"Wrong Answer on test {current_test + 1}"
+                        self.message = message
+                        self.got_answer = True
+                        break
                 
                 else:
                     self.verdict = "Protocol Violation"
@@ -169,10 +199,29 @@ class InteractiveRunner:
             except:
                 pass
     
-    def _answer_query(self, query: str, test_input: str, answer: str) -> Optional[str]:
+    def _answer_query(self, query: str, test_input: str, answer: str, current_test: int = 0, T: int = 1) -> Optional[str]:
         try:
-            test_input_clean = test_input.rstrip('\n') + '\n' if test_input else ''
-            answer_clean = answer.rstrip('\n') + '\n' if answer else ''
+            # For multi-test: extract the relevant test case from inputs
+            if T > 1 and current_test >= 0:
+                # Parse test input (skip T, then get test cases)
+                test_lines = test_input.strip().split('\n')
+                answer_lines = answer.strip().split('\n')
+                
+                # Get current test case's input and answer
+                if current_test < len(test_lines) - 1:
+                    test_input_clean = test_lines[current_test + 1] + '\n'
+                else:
+                    test_input_clean = ''
+                
+                if current_test < len(answer_lines) - 1:
+                    answer_clean = answer_lines[current_test + 1] + '\n'
+                else:
+                    answer_clean = ''
+            else:
+                # Single test case: use all input as-is
+                test_input_clean = test_input.rstrip('\n') + '\n' if test_input else ''
+                answer_clean = answer.rstrip('\n') + '\n' if answer else ''
+            
             interactor_input = test_input_clean + answer_clean + query + '\n'
             
             result = subprocess.run(
@@ -198,10 +247,29 @@ class InteractiveRunner:
             logger.error(f"Interactor exception: {e}")
             return None
     
-    def _check_answer(self, answer: str, test_input: str, secret_answer: str) -> Tuple[str, str]:
+    def _check_answer(self, answer: str, test_input: str, secret_answer: str, current_test: int = 0, T: int = 1) -> Tuple[str, str]:
         try:
-            test_input_clean = test_input.rstrip('\n') + '\n' if test_input else ''
-            answer_clean = secret_answer.rstrip('\n') + '\n' if secret_answer else ''
+            # For multi-test: extract the relevant test case from inputs
+            if T > 1 and current_test >= 0:
+                # Parse test input (skip T, then get test cases)
+                test_lines = test_input.strip().split('\n')
+                answer_lines = secret_answer.strip().split('\n')
+                
+                # Get current test case's input and answer
+                if current_test < len(test_lines) - 1:
+                    test_input_clean = test_lines[current_test + 1] + '\n'
+                else:
+                    test_input_clean = ''
+                
+                if current_test < len(answer_lines) - 1:
+                    answer_clean = answer_lines[current_test + 1] + '\n'
+                else:
+                    answer_clean = ''
+            else:
+                # Single test case: use all input as-is
+                test_input_clean = test_input.rstrip('\n') + '\n' if test_input else ''
+                answer_clean = secret_answer.rstrip('\n') + '\n' if secret_answer else ''
+            
             interactor_input = test_input_clean + answer_clean + answer + '\n'
             
             result = subprocess.run(
