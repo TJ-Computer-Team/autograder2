@@ -1,4 +1,4 @@
-gitdefault_stages: [pre-commit, pre-push]
+default_stages: [pre-commit, pre-push]
 fail_fast: false
 exclude: ^(autograder/apps/.*/migrations|\.github)
 
