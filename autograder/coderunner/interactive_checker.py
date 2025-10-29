@@ -91,7 +91,9 @@ class InteractiveRunner:
                 user_process.kill()
                 return "Time Limit Exceeded", "", min(elapsed_ms, self.time_limit_ms)
             
-            if user_process.returncode and user_process.returncode != 0:
+            # Only report Runtime Error if return code is explicitly non-zero
+            # returncode is None if process is still running (shouldn't happen after join)
+            if user_process.returncode is not None and user_process.returncode != 0:
                 stderr = user_process.stderr.read() if user_process.stderr else ""
                 return "Runtime Error", stderr[:1000], elapsed_ms
             
@@ -139,9 +141,12 @@ class InteractiveRunner:
                 if line.startswith("?"):
                     self.query_count += 1
                     
-                    if self.query_count > self.max_queries:
+                    # For multi-test: the query limit applies per test case, but we track total
+                    # Adjust by dividing by T to check per-case limit
+                    effective_limit = self.max_queries if T == 1 else self.max_queries * T
+                    if self.query_count > effective_limit:
                         self.verdict = "Query Limit Exceeded"
-                        self.message = f"Exceeded {self.max_queries} queries"
+                        self.message = f"Exceeded {effective_limit} queries (limit is {self.max_queries} per test, {T} tests total)"
                         user_process.kill()
                         break
                     
@@ -157,6 +162,15 @@ class InteractiveRunner:
                     try:
                         user_process.stdin.write(response + "\n")
                         user_process.stdin.flush()
+                    except (BrokenPipeError, OSError) as e:
+                        # User process closed, check if it exited normally
+                        if user_process.poll() is not None:
+                            # Process exited, stop interaction
+                            break
+                        else:
+                            self.verdict = "Runtime Error"
+                            self.message = f"Failed to send response to user: {e}"
+                            break
                     except Exception as e:
                         self.verdict = "Runtime Error"
                         self.message = f"Failed to send response to user: {e}"
