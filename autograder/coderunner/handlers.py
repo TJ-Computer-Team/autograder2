@@ -193,6 +193,8 @@ def run_code_handler(tl, ml, lang, pid, sid, code):
 
 
 def run_interactive_handler(tl, ml, lang, pid, sid, code):
+    from ..apps.problems.models import Problem
+    
     submission = Submission.objects.get(pk=sid)
     if lang not in ["python", "cpp", "java"]:
         return {"error": "Unacceptable code language"}
@@ -203,6 +205,12 @@ def run_interactive_handler(tl, ml, lang, pid, sid, code):
     problem_base_path = Path("/home/tjctgrader/problems") / Path(str(pid))
     if not problem_base_path.exists():
         return {"error": "Problem does not exist on coderunner filesystem"}
+
+    try:
+        problem = Problem.objects.get(pk=pid)
+        max_queries = problem.max_queries if problem.max_queries else 10000
+    except Problem.DoesNotExist:
+        max_queries = 10000
 
     test_dir = problem_base_path / "test"
     
@@ -276,7 +284,7 @@ def run_interactive_handler(tl, ml, lang, pid, sid, code):
                 test_input_path=str(entry),
                 time_limit_ms=tl,
                 memory_limit_mb=ml,
-                test_name=test_name,
+                max_queries=max_queries,
             )
         except Exception as e:
             verdict_overall = "Grader Error"
@@ -286,10 +294,7 @@ def run_interactive_handler(tl, ml, lang, pid, sid, code):
         overall_time = max(overall_time, time_used)
 
         if verdict != "Accepted":
-            if "on test" not in verdict:
-                verdict_overall = f"{verdict} on test {test_name}"
-            else:
-                verdict_overall = verdict
+            verdict_overall = f"{verdict} on test {test_name}"
             insight_overall = message
             break
 
