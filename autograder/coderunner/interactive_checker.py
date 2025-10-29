@@ -16,19 +16,29 @@ class InteractiveRunner:
         user_cmd: list,
         interactor_cmd: list,
         test_input_path: Optional[str],
+        answer_path: Optional[str],
+        queries_path: Optional[str],
         time_limit_ms: int,
         memory_limit_mb: int,
     ):
         self.user_cmd = user_cmd
         self.interactor_cmd = interactor_cmd
         self.test_input_path = test_input_path
+        self.answer_path = answer_path
         self.time_limit_ms = time_limit_ms
         self.memory_limit_mb = memory_limit_mb
+        
+        self.max_queries = 10000 
+        if queries_path and os.path.exists(queries_path):
+            try:
+                with open(queries_path, 'r') as f:
+                    self.max_queries = int(f.read().strip())
+            except Exception as e:
+                logger.warning(f"Failed to read query limit from {queries_path}: {e}, using default")
         
         self.verdict = "Accepted"
         self.message = ""
         self.query_count = 0
-        self.max_queries = 10000
         self.start_time = None
         self.error_occurred = False
         self.got_answer = False
@@ -50,10 +60,24 @@ class InteractiveRunner:
             if self.test_input_path and os.path.exists(self.test_input_path):
                 with open(self.test_input_path, 'r') as f:
                     test_input_data = f.read()
+        
+            answer_data = ""
+            if self.answer_path and os.path.exists(self.answer_path):
+                with open(self.answer_path, 'r') as f:
+                    answer_data = f.read()
+            
+            if test_input_data:
+                try:
+                    user_process.stdin.write(test_input_data)
+                    if not test_input_data.endswith('\n'):
+                        user_process.stdin.write('\n')
+                    user_process.stdin.flush()
+                except Exception as e:
+                    return "Grader Error", f"Failed to send initial input to user: {e}", 0
             
             interaction_thread = threading.Thread(
                 target=self._interact,
-                args=(user_process, test_input_data),
+                args=(user_process, test_input_data, answer_data),
                 daemon=True
             )
             interaction_thread.start()
@@ -80,7 +104,7 @@ class InteractiveRunner:
             elapsed_ms = int((time.time() - self.start_time) * 1000)
             return "Grader Error", f"Exception: {str(e)}", elapsed_ms
     
-    def _interact(self, user_process, test_input_data):
+    def _interact(self, user_process, test_input_data, answer_data):
         try:
             while True:
                 elapsed = (time.time() - self.start_time) * 1000
@@ -108,7 +132,7 @@ class InteractiveRunner:
                         user_process.kill()
                         break
                     
-                    response = self._answer_query(line, test_input_data)
+                    response = self._answer_query(line, test_input_data, answer_data)
                     
                     if response is None:
                         self.verdict = "Grader Error"
@@ -125,7 +149,7 @@ class InteractiveRunner:
                         break
                 
                 elif line.startswith("!"):
-                    verdict, message = self._check_answer(line, test_input_data)
+                    verdict, message = self._check_answer(line, test_input_data, answer_data)
                     self.verdict = verdict
                     self.message = message
                     self.got_answer = True
@@ -145,10 +169,11 @@ class InteractiveRunner:
             except:
                 pass
     
-    def _answer_query(self, query: str, test_input: str) -> Optional[str]:
+    def _answer_query(self, query: str, test_input: str, answer: str) -> Optional[str]:
         try:
             test_input_clean = test_input.rstrip('\n') + '\n' if test_input else ''
-            interactor_input = test_input_clean + query + '\n'
+            answer_clean = answer.rstrip('\n') + '\n' if answer else ''
+            interactor_input = test_input_clean + answer_clean + query + '\n'
             
             result = subprocess.run(
                 self.interactor_cmd,
@@ -173,10 +198,11 @@ class InteractiveRunner:
             logger.error(f"Interactor exception: {e}")
             return None
     
-    def _check_answer(self, answer: str, test_input: str) -> Tuple[str, str]:
+    def _check_answer(self, answer: str, test_input: str, secret_answer: str) -> Tuple[str, str]:
         try:
             test_input_clean = test_input.rstrip('\n') + '\n' if test_input else ''
-            interactor_input = test_input_clean + answer + '\n'
+            answer_clean = secret_answer.rstrip('\n') + '\n' if secret_answer else ''
+            interactor_input = test_input_clean + answer_clean + answer + '\n'
             
             result = subprocess.run(
                 self.interactor_cmd,
@@ -239,10 +265,19 @@ def run_interactive_problem(
     if not interactor_cmd:
         return "Grader Error", "Interactor not found", 0
     
+    test_path = Path(test_input_path)
+    answer_filename = test_path.stem + "_answer" + test_path.suffix
+    answer_path = problem_path / "answer" / answer_filename
+
+    queries_filename = test_path.stem + "_queries" + test_path.suffix
+    queries_path = problem_path / "queries" / queries_filename
+    
     runner = InteractiveRunner(
         user_cmd=user_cmd,
         interactor_cmd=interactor_cmd,
         test_input_path=test_input_path,
+        answer_path=str(answer_path) if answer_path.exists() else None,
+        queries_path=str(queries_path) if queries_path.exists() else None,
         time_limit_ms=time_limit_ms,
         memory_limit_mb=memory_limit_mb,
     )

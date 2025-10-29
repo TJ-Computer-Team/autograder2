@@ -38,7 +38,11 @@ class Problem(models.Model):
         problem_dir = Path(f"/home/tjctgrader/problems/{self.id}")
         problem_dir.mkdir(parents=True, exist_ok=True)
         test_dir = problem_dir / "test"
+        answer_dir = problem_dir / "answer"
+        queries_dir = problem_dir / "queries"
         test_dir.mkdir(parents=True, exist_ok=True)
+        answer_dir.mkdir(parents=True, exist_ok=True)
+        queries_dir.mkdir(parents=True, exist_ok=True)
         
         with zipfile.ZipFile(self.testcases_zip.path, 'r') as zip_ref:
             for file_info in zip_ref.filelist:
@@ -84,6 +88,17 @@ class Problem(models.Model):
                         else:
                             raise Exception(f"Java compilation failed: {result.stderr.decode()}")
                 
+                elif filename.endswith('_answer.txt'):
+                    # Secret answer files for interactor
+                    test_content = zip_ref.read(file_info.filename)
+                    (answer_dir / filename).write_bytes(test_content)
+                
+                elif filename.endswith('_queries.txt'):
+                    # Query limit files (optional)
+                    test_content = zip_ref.read(file_info.filename)
+                    (queries_dir / filename).write_bytes(test_content)
+                
                 elif filename.endswith('.txt'):
+                    # Public input files for user
                     test_content = zip_ref.read(file_info.filename)
                     (test_dir / filename).write_bytes(test_content)
