@@ -8,6 +8,8 @@ class Problem(models.Model):
     points = models.IntegerField()
     contest_letter = models.CharField(max_length=1, default="A")
 
+    pid = models.IntegerField(null=True, blank=True, unique=True)
+
     statement = models.TextField()
     inputtxt = models.TextField()
     outputtxt = models.TextField()

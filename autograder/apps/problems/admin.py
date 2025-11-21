@@ -15,6 +15,7 @@ class ProblemAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
+        "pid",
         "name",
         "contest",
         "contest_letter",
@@ -28,7 +29,7 @@ class ProblemAdmin(admin.ModelAdmin):
     readonly_fields = ("id",)
 
     fieldsets = (
-        (None, {"fields": ("name", "contest", "points", "contest_letter")}),
+        (None, {"fields": ("name", "contest", "points", "contest_letter", "pid")}),
         ("Limits", {"fields": ("tl", "ml")}),
         ("Flags", {"fields": ("interactive", "secret")}),
         (
