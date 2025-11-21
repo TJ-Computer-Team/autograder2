@@ -25,10 +25,9 @@ class ProblemAdmin(admin.ModelAdmin):
     list_filter = ("interactive", "secret", "contest")
     search_fields = ("name",)
     ordering = ("-id",)
-    readonly_fields = ("id",)
 
     fieldsets = (
-        (None, {"fields": ("name", "contest", "points", "contest_letter")}),
+        (None, {"fields": ("id", "name", "contest", "points", "contest_letter")}),
         ("Limits", {"fields": ("tl", "ml")}),
         ("Flags", {"fields": ("interactive", "secret")}),
         (

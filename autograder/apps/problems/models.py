@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Problem(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=255)
     contest = models.ForeignKey("contests.Contest", on_delete=models.CASCADE)
     points = models.IntegerField()
@@ -25,6 +25,11 @@ class Problem(models.Model):
         return self.name
     
     def save(self, *args, **kwargs):
+        # Auto-increment id if this is a new object and id wasn't provided
+        if not self.pk and self.id is None:
+            from django.db.models import Max
+            max_id = Problem.objects.aggregate(Max('id'))['id__max']
+            self.id = (max_id or 0) + 1
         super().save(*args, **kwargs)
         if self.interactive and self.testcases_zip:
             self._process_interactive_problem()
