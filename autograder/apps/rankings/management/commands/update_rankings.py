@@ -96,6 +96,7 @@ class Command(BaseCommand):
                     Decimal("0.4") * min(cf_rating, usaco_rating)
                     + Decimal("0.6") * max(cf_rating, usaco_rating)
                 )
+                self.stdout.write(self.style.NOTICE(f"Using writer format for {user}"))
             else:
                 vals = [rankings[r]["usaco"], rankings[r]["cf"], rankings[r]["inhouse"]]
                 vals.sort()
