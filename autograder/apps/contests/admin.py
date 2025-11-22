@@ -9,6 +9,8 @@ class ContestAdmin(admin.ModelAdmin):
     search_fields = ("name",)
     ordering = ("-start",)
 
+    filter_horizontal = ('writers',)
+
     fieldsets = (
         (None, {
             'fields': ('name', 'editorial', 'writers'),
@@ -20,3 +22,5 @@ class ContestAdmin(admin.ModelAdmin):
             'fields': ('start', 'end'),
         }),
     )
+
+    
