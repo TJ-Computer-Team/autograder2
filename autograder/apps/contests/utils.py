@@ -39,7 +39,7 @@ def get_standings(cid):
         if user_data is None or prob_idx is None:
             continue
 
-        if user_data["problems"][prob_idx] <= 0 and s.verdict != "Skipped":
+        if user_data["problems"][prob_idx] <= 0 and s.verdict not in ["Skipped", "Rerun"]:
             user_data["problems"][prob_idx] -= 1
 
         if s.verdict in ("Accepted", "AC"):
