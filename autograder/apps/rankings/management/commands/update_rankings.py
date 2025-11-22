@@ -39,6 +39,11 @@ class Command(BaseCommand):
         for contest in contests:
             contest_standings = get_standings(contest.id)
             for i in range(len(rankings)):
+                user = get_object_or_404(GraderUser, id=rankings[i]["id"])
+
+                if user in contest.writers.all():
+                    continue
+                
                 took = False
                 for j in range(len(contest_standings["load"])):
                     if rankings[i]["id"] == contest_standings["load"][j]["id"]:
