@@ -8,3 +8,15 @@ class ContestAdmin(admin.ModelAdmin):
     list_filter = ("rated", "tjioi", "season")
     search_fields = ("name",)
     ordering = ("-start",)
+
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'editorial', 'writers'),
+        }),
+        ('Competition settings', {
+            'fields': ('rated', 'tjioi', 'season'),
+        }),
+        ('Schedule', {
+            'fields': ('start', 'end'),
+        }),
+    )
