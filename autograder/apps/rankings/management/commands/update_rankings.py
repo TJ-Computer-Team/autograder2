@@ -42,6 +42,7 @@ class Command(BaseCommand):
                 user = get_object_or_404(GraderUser, id=rankings[i]["id"])
 
                 if user in contest.writers.all():
+                    rankings[i]["inhouses"].append(None)
                     continue
                 
                 took = False
@@ -65,7 +66,9 @@ class Command(BaseCommand):
                     rankings[i]["inhouses"].append(0)
 
         for r in range(len(rankings)):
+            rankings[r]["inhouses"] = [x for x in rankings[r]["inhouses"] if x is not None]
             rankings[r]["inhouses"].sort()
+
 
             user = get_object_or_404(GraderUser, id=rankings[r]["id"])
             drops = max(
@@ -74,11 +77,13 @@ class Command(BaseCommand):
             )
 
             overall = 0
-            for j in range(drops, contests.count()):
-                overall += rankings[r]["inhouses"][j]
+            valid_scores = rankings[r]["inhouses"]
 
-            if contests.count() > 0 and contests.count() - drops > 0:
-                overall /= contests.count() - drops
+            for j in range(drops, len(valid_scores)):
+                overall += valid_scores[j]
+
+            if len(valid_scores) - drops > 0:
+                overall /= (len(valid_scores) - drops)
 
             rankings[r]["inhouse"] = overall
 
