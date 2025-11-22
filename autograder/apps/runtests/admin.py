@@ -6,6 +6,8 @@ from .tasks import grade_submission_task
 @admin.action(description="Rerun submissions")
 def rerun_submissions(modeladmin, request, queryset):
     for old_sub in queryset:
+        if old_sub.verdict == "Rerun" or old_sub.verdict == "Skipped":
+            continue
         new_sub = Submission.objects.create(
             usr=old_sub.usr,
             code=old_sub.code,
@@ -15,8 +17,8 @@ def rerun_submissions(modeladmin, request, queryset):
             timestamp=old_sub.timestamp,
         )
         new_sub.save()
-        old_sub.verdict = "Skipped"
-        old_sub.insight = "Your submission was manually skipped by an admin"
+        old_sub.verdict = "Rerun"
+        old_sub.insight = "Your submission was manually rerun by an admin"
         old_sub.save()
         grade_submission_task.delay(new_sub.id)
 
