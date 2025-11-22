@@ -89,14 +89,15 @@ class Command(BaseCommand):
 
             # Use writer formula if enabled: 0.4 * min(cf, usaco) + 0.6 * max(cf, usaco)
             # Otherwise use standard formula: 0.2 * min + 0.35 * mid + 0.45 * max
-            if user.use_writer_formula:
-                cf_rating = Decimal(str(rankings[r]["cf"]))
-                usaco_rating = Decimal(str(rankings[r]["usaco"]))
+            cf_rating = Decimal(str(rankings[r]["cf"]))
+            usaco_rating = Decimal(str(rankings[r]["usaco"]))
+
+            # NEW: auto-apply writer formula if no inhouses were played
+            if user.use_writer_formula or len(rankings[r]["inhouses"]) == 0:
                 rankings[r]["index"] = (
                     Decimal("0.4") * min(cf_rating, usaco_rating)
                     + Decimal("0.6") * max(cf_rating, usaco_rating)
                 )
-                self.stdout.write(self.style.NOTICE(f"Using writer format for {user}"))
             else:
                 vals = [rankings[r]["usaco"], rankings[r]["cf"], rankings[r]["inhouse"]]
                 vals.sort()
@@ -105,6 +106,7 @@ class Command(BaseCommand):
                     + Decimal("0.35") * Decimal(str(vals[1]))
                     + Decimal("0.45") * Decimal(str(vals[2]))
                 )
+
 
         rankings.sort(key=lambda x: x["index"], reverse=True)
 
