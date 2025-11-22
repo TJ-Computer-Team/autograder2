@@ -56,8 +56,8 @@ class Command(BaseCommand):
                         took = True
                         break
 
-                # if not took:
-                #     rankings[i]["inhouses"].append(0)
+                if not took:
+                    rankings[i]["inhouses"].append(0)
 
         for r in range(len(rankings)):
             rankings[r]["inhouses"].sort()
