@@ -74,8 +74,13 @@ class GraderUser(AbstractBaseUser, PermissionsMixin):
 
 class ProblemOfTheWeek(models.Model):
     BEGINNER = "beginner"
+    INTERMEDIATE = "intermediate"
     ADVANCED = "advanced"
-    LEVEL_CHOICES = ((BEGINNER, "Beginner"), (ADVANCED, "Advanced"))
+    LEVEL_CHOICES = (
+        (BEGINNER, "Beginner"),
+        (INTERMEDIATE, "Intermediate"),
+        (ADVANCED, "Advanced"),
+    )
 
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES, unique=True)
     title = models.CharField(max_length=100, default="")

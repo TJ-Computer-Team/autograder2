@@ -9,13 +9,15 @@ from ..rankings.models import RatingChange
 
 @login_required
 def potw_view(request):
-    """Render the Problem of the Week page with beginner and advanced entries."""
+    """Render the Problem of the Week page with beginner, intermediate and advanced entries."""
     beginner = ProblemOfTheWeek.objects.filter(level=ProblemOfTheWeek.BEGINNER).first()
+    intermediate = ProblemOfTheWeek.objects.filter(level=ProblemOfTheWeek.INTERMEDIATE).first()
     advanced = ProblemOfTheWeek.objects.filter(level=ProblemOfTheWeek.ADVANCED).first()
 
     context = {
         "active": "potw",
         "beginner": beginner,
+        "intermediate": intermediate,
         "advanced": advanced,
     }
     return render(request, "index/potw.html", context)

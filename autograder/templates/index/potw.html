@@ -18,7 +18,7 @@
 <div class="main-block">
     <div class="info">
         <div style="display:flex; gap:20px; flex-wrap:wrap;">
-            <div style="flex:1; min-width:260px; border:1px solid #ddd; padding:16px; border-radius:6px;">
+            <div style="flex:1; min-width:240px; border:1px solid #ddd; padding:16px; border-radius:6px;">
                 <h3>Problem of the Week: Beginner</h3>
                 <p>{{ beginner.title|default:'Problem of the Week: Beginner' }}</p>
                 {% if beginner and beginner.link %}
@@ -28,7 +28,17 @@
                 {% endif %}
             </div>
 
-            <div style="flex:1; min-width:260px; border:1px solid #ddd; padding:16px; border-radius:6px;">
+            <div style="flex:1; min-width:240px; border:1px solid #ddd; padding:16px; border-radius:6px;">
+                <h3>Problem of the Week: Intermediate</h3>
+                <p>{{ intermediate.title|default:'Problem of the Week: Intermediate' }}</p>
+                {% if intermediate and intermediate.link %}
+                <a class="btn" target="_blank" href="{{ intermediate.link }}">Click to see</a>
+                {% else %}
+                <button class="btn" disabled>Link not set</button>
+                {% endif %}
+            </div>
+
+            <div style="flex:1; min-width:240px; border:1px solid #ddd; padding:16px; border-radius:6px;">
                 <h3>Problem of the Week: Advanced</h3>
                 <p>{{ advanced.title|default:'Problem of the Week: Advanced' }}</p>
                 {% if advanced and advanced.link %}
