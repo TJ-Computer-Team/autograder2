@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import GraderUser
+from .models import GraderUser, ProblemOfTheWeek
 
 
 class GraderUserAdmin(UserAdmin):
@@ -92,3 +92,9 @@ class GraderUserAdmin(UserAdmin):
 
 
 admin.site.register(GraderUser, GraderUserAdmin)
+
+
+@admin.register(ProblemOfTheWeek)
+class ProblemOfTheWeekAdmin(admin.ModelAdmin):
+    list_display = ("level", "title", "link")
+    list_editable = ("title", "link")

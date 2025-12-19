@@ -3,8 +3,22 @@ from django.views.decorators.http import require_POST
 from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 from django_user_agents.utils import get_user_agent
-from .models import GraderUser
+from .models import GraderUser, ProblemOfTheWeek
 from ..rankings.models import RatingChange
+
+
+@login_required
+def potw_view(request):
+    """Render the Problem of the Week page with beginner and advanced entries."""
+    beginner = ProblemOfTheWeek.objects.filter(level=ProblemOfTheWeek.BEGINNER).first()
+    advanced = ProblemOfTheWeek.objects.filter(level=ProblemOfTheWeek.ADVANCED).first()
+
+    context = {
+        "active": "potw",
+        "beginner": beginner,
+        "advanced": advanced,
+    }
+    return render(request, "index/potw.html", context)
 
 import logging
 

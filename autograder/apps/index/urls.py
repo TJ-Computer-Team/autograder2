@@ -12,6 +12,7 @@ urlpatterns = [
     path("profile/<int:id>/", views.user_profile_view, name="user_profile"),
     path("update_stats/", views.update_stats, name="update_stats"),
     path("info/", views.info_view, name="info"),
+    path("potw/", views.potw_view, name="potw"),
     path("mobile/", views.mobile_home, name="mobile"),
     path("toggle_particles/", views.toggle_particles, name="toggle_particles"),
 ]

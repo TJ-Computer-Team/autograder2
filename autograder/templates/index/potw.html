@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block stylesheet %}
+<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
+{% endblock stylesheet %}
+
+{% block title %}POTW{% endblock title %}
+
+{% block content %}
+{% include "partials/header.html" %}
+{% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
+
+<div class="main-block">
+    <div class="title"><strong>Problem of the Week</strong></div>
+</div>
+
+<div class="main-block">
+    <div class="info">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:260px; border:1px solid #ddd; padding:16px; border-radius:6px;">
+                <h3>Problem of the Week: Beginner</h3>
+                <p>{{ beginner.title|default:'Problem of the Week: Beginner' }}</p>
+                {% if beginner and beginner.link %}
+                <a class="btn" target="_blank" href="{{ beginner.link }}">Click to see</a>
+                {% else %}
+                <button class="btn" disabled>Link not set</button>
+                {% endif %}
+            </div>
+
+            <div style="flex:1; min-width:260px; border:1px solid #ddd; padding:16px; border-radius:6px;">
+                <h3>Problem of the Week: Advanced</h3>
+                <p>{{ advanced.title|default:'Problem of the Week: Advanced' }}</p>
+                {% if advanced and advanced.link %}
+                <a class="btn" target="_blank" href="{{ advanced.link }}">Click to see</a>
+                {% else %}
+                <button class="btn" disabled>Link not set</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

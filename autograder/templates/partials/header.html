@@ -7,6 +7,7 @@
         <li class="nb"><a {% if active == "status" %} class="cactive" {% endif %} href="{% url "runtests:status" page=1 mine=False %}">Submissions</a></li>
         <li class="nb"><a {% if active == "contests" %} class="cactive" {% endif %} href="{% url "contests:contests" %}">Contests</a></li>
         <li class="nb"><a {% if active == "problems" %} class="cactive" {% endif %} href="{% url "problems:problemset" %}">Problemset</a></li>
+        <li class="nb"><a {% if active == "potw" %} class="cactive" {% endif %} href="{% url 'index:potw' %}">POTW</a></li>
         <li class="nb"><a {% if active == "submit" %} class="cactive" {% endif %} href="{% url "runtests:submit" %}">Submit</a></li>
         <li class="nb"><a {% if active == "info" %} class="cactive" {% endif %} href="{% url 'index:info' %}">Rules and Info</a></li>
         <li class="nb"><a {% if active == "rankings" %} class="cactive" {% endif %} href="{% url "rankings:rankings" %}">Rankings</a></li>

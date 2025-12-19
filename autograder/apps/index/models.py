@@ -70,3 +70,16 @@ class GraderUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+
+class ProblemOfTheWeek(models.Model):
+    BEGINNER = "beginner"
+    ADVANCED = "advanced"
+    LEVEL_CHOICES = ((BEGINNER, "Beginner"), (ADVANCED, "Advanced"))
+
+    level = models.CharField(max_length=20, choices=LEVEL_CHOICES, unique=True)
+    title = models.CharField(max_length=100, default="")
+    link = models.URLField(blank=True, null=True)
+
+    def __str__(self):
+        return f"PoTW ({self.get_level_display()})"
