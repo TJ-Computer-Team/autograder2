@@ -71,7 +71,7 @@ class Command(BaseCommand):
         # Compute inhouse averages and final index for each user
         for r in range(len(rankings)):
             # Remove None values from writer contests
-            valid_scores = [x for x in rankings[r]["inhouses"] if x is not None]
+            valid_scores = [float(x) for x in rankings[r]["inhouses"] if x is not None]
             valid_scores.sort()
 
             user = get_object_or_404(GraderUser, id=rankings[r]["id"])
