@@ -50,7 +50,9 @@ class Command(BaseCommand):
 
                 # Writer contests: mark as None, no penalty
                 if user in contest.writers.all():
-                    rankings[i]["inhouses"].append(1600)
+                    cf_rating = Decimal(str(rankings[i]["cf"]))
+                    usaco_rating = Decimal(str(rankings[i]["usaco"]))
+                    rankings[i]["inhouses"].append(Decimal("0.4") * min(cf_rating, usaco_rating) + Decimal("0.6") * max(cf_rating, usaco_rating))
                     continue
 
                 # Check if user participated
