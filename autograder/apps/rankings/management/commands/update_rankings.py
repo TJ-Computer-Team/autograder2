@@ -50,7 +50,7 @@ class Command(BaseCommand):
 
                 # Writer contests: mark as None, no penalty
                 if user in contest.writers.all():
-                    rankings[i]["inhouses"].append(None)
+                    rankings[i]["inhouses"].append(1600)
                     continue
 
                 # Check if user participated
