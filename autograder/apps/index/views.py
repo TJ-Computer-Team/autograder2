@@ -137,12 +137,13 @@ def update_stats(request):
             if not cf_info:
                 return JsonResponse({"status": "error", "message": f"Could not retrieve Codeforces info for handle '{cf}'."})
 
-            first_name = cf_info.get("firstName", "")
-            last_name = cf_info.get("lastName", "")
-            cf_name = f"{first_name} {last_name}".strip()
+            first_name = cf_info.get("firstName")
+            last_name = cf_info.get("lastName")
 
-            if not cf_name:
-                return JsonResponse({"status": "error", "message": "The Codeforces handle has no name set. Please set a name on Codeforces."})
+            if not first_name or not last_name:
+                return JsonResponse({"status": "error", "message": "The Codeforces account must have both a first and last name set."})
+
+            cf_name = f"{first_name} {last_name}".strip()
 
             if cf_name.lower() != user.display_name.lower():
                 return JsonResponse({"status": "error", "message": f"Codeforces name '{cf_name}' does not match your name '{user.display_name}'."})
