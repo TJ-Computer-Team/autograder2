@@ -1,0 +1,26 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>{{ title }}</h1>
+<form method="post">
+    {% csrf_token %}
+    <fieldset class="module aligned">
+        <div class="form-row">
+            <div>
+                <label for="id_enforce_cf_handle_name_match">Enforce CF handle name match:</label>
+                <input type="checkbox" name="enforce_cf_handle_name_match" id="id_enforce_cf_handle_name_match" {% if settings.enforce_cf_handle_name_match %}checked{% endif %}>
+                <p class="help">Globally enforce that a user's Codeforces name must match their grader display name.</p>
+            </div>
+        </div>
+        <div class="form-row">
+            <div>
+                <label for="id_enforce_cf_handle_for_samuel_zhang">Enforce for "Samuel Zhang":</label>
+                <input type="checkbox" name="enforce_cf_handle_for_samuel_zhang" id="id_enforce_cf_handle_for_samuel_zhang" {% if settings.enforce_cf_handle_for_samuel_zhang %}checked{% endif %}>
+                <p class="help">Special rule to only enforce the check for users named "Samuel Zhang".</p>
+            </div>
+        </div>
+    </fieldset>
+    <div class="submit-row">
+        <input type="submit" value="Save" class="default">
+    </div>
+</form>
+{% endblock %}

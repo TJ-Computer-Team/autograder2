@@ -22,7 +22,7 @@
                     {% endif %}
                     <div class="userinfo">Name: {{ user.display_name }}</div>
                     <div class="userinfo">Username: {{ user.username }}</div>
-                        <form action="{% url 'index:update_stats' %}" method="POST">
+                        <form id="profileForm" action="{% url 'index:update_stats' %}" method="POST">
                             {% csrf_token %}
                             <div class="statsInfo">
                                 <label for="usaco_div">USACO Division: </label>
@@ -39,6 +39,7 @@
                                 <input name="cf_handle" value="{{ cf_handle }}">
                                 <br>(leave blank if you don't have one)
                             </div>
+                            <div id="message-container" style="margin-top: 10px;"></div>
                             <div class="statsInfo">
                                 <input type="submit" value="Save">
                             </div>
@@ -48,4 +49,39 @@
                 </div>
             </div>
         </div>
+
+<script>
+document.getElementById('profileForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const form = event.target;
+    const formData = new FormData(form);
+    const messageContainer = document.getElementById('message-container');
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        messageContainer.textContent = data.message;
+        if (data.status === 'success') {
+            messageContainer.style.color = 'green';
+            setTimeout(() => {
+                window.location.href = "{% url 'index:profile' %}";
+            }, 1000);
+        } else {
+            messageContainer.style.color = 'red';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        messageContainer.textContent = 'An unexpected error occurred.';
+        messageContainer.style.color = 'red';
+    });
+});
+</script>
 {% endblock content %}
