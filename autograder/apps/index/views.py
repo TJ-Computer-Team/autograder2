@@ -5,6 +5,30 @@ from django.conf import settings
 from django_user_agents.utils import get_user_agent
 from .models import GraderUser, ProblemOfTheWeek
 from ..rankings.models import RatingChange
+from django.http import JsonResponse
+import requests
+import json
+import os
+from django.contrib.admin.views.decorators import staff_member_required
+
+# --- Start Settings Helpers ---
+SETTINGS_FILE = os.path.join(settings.BASE_DIR, 'autograder', 'validation_settings.json')
+
+def get_validation_settings():
+    try:
+        with open(SETTINGS_FILE, 'r') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {
+            "enforce_cf_handle_name_match": False,
+            "enforce_cf_handle_for_samuel_zhang": False
+        }
+
+def save_validation_settings(settings_data):
+    with open(SETTINGS_FILE, 'w') as f:
+        json.dump(settings_data, f, indent=4)
+
+# --- End Settings Helpers ---
 
 
 @login_required
@@ -72,28 +96,62 @@ def profile_view(request):
     context = {"cf_handle": cfh if cfh and len(cfh) > 0 else ""}
     return render(request, "index/profile.html", context=context)
 
+# --- CF API Helper ---
+def get_codeforces_info(handle):
+    url = f"https://codeforces.com/api/user.info?handles={handle}"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        if data.get("status") == "OK":
+            return data["result"][0]
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to connect to Codeforces API: {e}")
+    return None
+
 
 @login_required
 @require_POST
 def update_stats(request):
     usaco = request.POST.get("usaco_div", "").strip()
     cf = request.POST.get("cf_handle", "").strip()
+    user = request.user
 
     if usaco and usaco != "none":
-        request.user.usaco_division = {
+        user.usaco_division = {
             "bronze": "Bronze",
             "silver": "Silver",
             "gold": "Gold",
             "plat": "Platinum",
         }.get(usaco, "Not Participated")
     else:
-        request.user.usaco_division = "Not Participated"
+        user.usaco_division = "Not Participated"
 
-    if cf is not None:
-        request.user.cf_handle = cf
+    if cf is not None and cf != user.cf_handle:
+        validation_settings = get_validation_settings()
+        needs_validation = validation_settings.get('enforce_cf_handle_name_match', False) or \
+                           (validation_settings.get('enforce_cf_handle_for_samuel_zhang', False) and user.display_name == "Samuel Zhang")
 
-    request.user.save()
-    return redirect("index:profile")
+        if needs_validation:
+            cf_info = get_codeforces_info(cf)
+            if not cf_info:
+                return JsonResponse({"status": "error", "message": f"Could not retrieve Codeforces info for handle '{cf}'."})
+
+            first_name = cf_info.get("firstName")
+            last_name = cf_info.get("lastName")
+
+            if not first_name or not last_name:
+                return JsonResponse({"status": "error", "message": "The Codeforces account must have both a first and last name set."})
+
+            cf_name = f"{first_name} {last_name}".strip()
+
+            if cf_name.lower() != user.display_name.lower():
+                return JsonResponse({"status": "error", "message": f"Codeforces name '{cf_name}' does not match your name '{user.display_name}'."})
+        
+        user.cf_handle = cf
+
+    user.save()
+    return JsonResponse({"status": "success", "message": "Profile updated successfully!"})
 
 
 @login_required
@@ -138,3 +196,20 @@ def toggle_particles(request):
     user.save()
     next_url = request.GET.get("next", "/")
     return redirect(next_url)
+
+@staff_member_required
+def validation_settings_view(request):
+    if request.method == 'POST':
+        settings_data = {
+            'enforce_cf_handle_name_match': request.POST.get('enforce_cf_handle_name_match') == 'on',
+            'enforce_cf_handle_for_samuel_zhang': request.POST.get('enforce_cf_handle_for_samuel_zhang') == 'on',
+        }
+        save_validation_settings(settings_data)
+        return redirect('index:validation_settings')
+
+    context = {
+        'title': 'Validation Settings',
+        'settings': get_validation_settings(),
+        'has_permission': True, # For admin template
+    }
+    return render(request, 'admin/index/validation_settings.html', context)
