@@ -10,6 +10,7 @@ import requests
 import json
 import os
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib import messages
 
 # --- Start Settings Helpers ---
 SETTINGS_FILE = os.path.join(settings.BASE_DIR, 'autograder', 'validation_settings.json')
@@ -199,12 +200,18 @@ def toggle_particles(request):
 
 @staff_member_required
 def validation_settings_view(request):
+    old_settings = get_validation_settings()
     if request.method == 'POST':
-        settings_data = {
+        new_settings_data = {
             'enforce_cf_handle_name_match': request.POST.get('enforce_cf_handle_name_match') == 'on',
             'enforce_cf_handle_for_samuel_zhang': request.POST.get('enforce_cf_handle_for_samuel_zhang') == 'on',
         }
-        save_validation_settings(settings_data)
+        save_validation_settings(new_settings_data)
+
+        if new_settings_data.get('enforce_cf_handle_name_match') and not old_settings.get('enforce_cf_handle_name_match'):
+            GraderUser.objects.all().update(cf_handle=None)
+            messages.success(request, "Global handle validation enabled. All existing Codeforces handles have been wiped.")
+
         return redirect('index:validation_settings')
 
     context = {
