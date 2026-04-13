@@ -7,7 +7,7 @@ requires-python = ">=3.10"
 dependencies = [
     "bs4>=0.0.2",
     "celery>=5.5.3",
-    "channels>=4.3.1",
+    "channels>=4.3.2",
     "channels-redis>=4.3.0",
     "daphne>=4.2.1",
     "datetime>=5.5",
