@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def contests_view(request):
-    contests = Contest.objects.filter(tjioi=settings.TJIOI_MODE).order_by("-start")
+    contests = Contest.objects.all().order_by("-start")
     if not request.user.is_staff:
         contests = contests.filter(start__lte=timezone.now())
     context = {"contests": contests}

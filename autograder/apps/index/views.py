@@ -65,8 +65,7 @@ def index_view(request):
     if request.user.is_authenticated:
         return redirect("index:profile")
 
-    context = {"tjioi": settings.TJIOI_MODE}
-    return render(request, "index/index.html", context)
+    return render(request, "index/index.html")
 
 
 @login_required
@@ -157,16 +156,13 @@ def update_stats(request):
 
 @login_required
 def info_view(request):
-    context = {"active": "info", "tjioi": settings.TJIOI_MODE}
+    context = {"active": "info"}
     return render(request, "index/info.html", context=context)
 
 
 @login_required
 def user_profile_view(request, id):
     user = get_object_or_404(GraderUser, pk=id)
-
-    if settings.TJIOI_MODE and not request.user.is_staff:
-        return redirect("index:profile")
 
     rating_changes = (
         RatingChange.objects.filter(user=user)

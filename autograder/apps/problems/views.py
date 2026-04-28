@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 # Create your views here.
 @login_required
 def problemset_view(request):
-    problems = Problem.objects.filter(contest__tjioi=settings.TJIOI_MODE)
+    problems = Problem.objects.all()
     if not request.user.is_staff:
         problems = problems.filter(secret=False, contest__start__lte=timezone.now())
 
