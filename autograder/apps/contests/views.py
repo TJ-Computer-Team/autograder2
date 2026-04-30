@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
 from django.conf import settings
@@ -18,7 +19,10 @@ logger = logging.getLogger(__name__)
 def contests_view(request):
     contests = Contest.objects.all().order_by("-start")
     if not request.user.is_staff:
-        contests = contests.filter(start__lte=timezone.now())
+        if request.user.is_tjioi:
+            contests = contests.filter(Q(start__lte=timezone.now()) | Q(tjioi=True))
+        else:
+            contests = contests.filter(start__lte=timezone.now())
     context = {"contests": contests}
     return render(request, "contest/contests.html", context)
 
