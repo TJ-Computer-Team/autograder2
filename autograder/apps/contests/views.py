@@ -20,7 +20,7 @@ def contests_view(request):
     contests = Contest.objects.all().order_by("-start")
     if not request.user.is_staff:
         if request.user.is_tjioi:
-            contests = contests.filter(Q(start__lte=timezone.now()) | Q(tjioi=True))
+            contests = contests.filter(tjioi=True)
         else:
             contests = contests.filter(start__lte=timezone.now())
     context = {"contests": contests}
