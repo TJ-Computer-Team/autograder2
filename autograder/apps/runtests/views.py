@@ -56,6 +56,9 @@ def submit_view(request, cid=None, pid=None):
         if not request.user.is_staff:
             problems = problems.filter(secret=False, contest__start__lte=timezone.now())
 
+        if request.user.is_tjioi:
+            problems = problems.filter(contest__tjioi=True)
+
         problems = problems.order_by("id")
         context["problems"] = problems
 
