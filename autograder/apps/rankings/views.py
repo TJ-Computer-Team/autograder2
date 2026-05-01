@@ -11,9 +11,6 @@ logger = logging.getLogger(__name__)
 # Create your views here.
 @login_required
 def rankings_view(request, season):
-    if settings.TJIOI_MODE:
-        return redirect("contests:contests")
-
     if season != settings.CURRENT_SEASON:
         return redirect("rankings:rankings", season=settings.CURRENT_SEASON)
 
