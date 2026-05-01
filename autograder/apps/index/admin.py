@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import GraderUser, ProblemOfTheWeek
+from django.urls import reverse
+from django.utils.html import format_html
 
 
 class GraderUserAdmin(UserAdmin):
@@ -10,13 +12,7 @@ class GraderUserAdmin(UserAdmin):
         "display_name",
         "username",
         "is_staff",
-        "is_tjioi",
-        "grade",
-        "cf_handle",
-        "usaco_division",
-        "cf_rating",
-        "inhouse",
-        "index",
+        "validation_settings_link", # Added link
     )
     list_filter = ("is_staff", "is_superuser", "is_active", "is_tjioi")
     search_fields = ("id", "username", "display_name")
@@ -89,6 +85,11 @@ class GraderUserAdmin(UserAdmin):
             },
         ),
     )
+    
+    def validation_settings_link(self, obj):
+        url = reverse("index:validation_settings")
+        return format_html('<a href="{}">Validation Settings</a>', url)
+    validation_settings_link.short_description = "Validation Settings"
 
 
 admin.site.register(GraderUser, GraderUserAdmin)

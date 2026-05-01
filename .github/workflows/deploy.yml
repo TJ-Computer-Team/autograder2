@@ -33,12 +33,4 @@ jobs:
         run: |
           gcloud compute ssh tjctgrader@autograder2 \
             --zone us-east4-b \
-            --command "
-              cd /home/tjctgrader/autograder && \
-              git reset --hard && \
-              git clean -fd && \
-              git pull origin main && \
-              /home/tjctgrader/.local/bin/uv sync && \
-              /home/tjctgrader/.local/bin/uv run manage.py migrate && \
-              sudo systemctl restart tjctgrader-autograder
-            "
+            --command "cd /home/tjctgrader/autograder && git fetch origin && git reset --hard origin/main && /home/tjctgrader/.local/bin/uv sync && /home/tjctgrader/.local/bin/uv run manage.py migrate && sudo systemctl restart celery-coderunner celery daphne nginx"
