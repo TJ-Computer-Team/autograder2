@@ -76,6 +76,8 @@ def status_view(request, page, cid=None, mine=False):
 
     if mine:
         submissions = submissions.filter(usr=request.user)
+    elif request.user.is_tjioi:
+        submissions = submissions.filter(usr__is_tjioi=True)
 
     submissions = submissions.order_by("-timestamp")
     paginator = Paginator(submissions, 25)  # 25 per page
