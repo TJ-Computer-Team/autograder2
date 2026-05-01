@@ -10,11 +10,6 @@ cd "$PROJECT_ROOT"
 uv sync
 uv run manage.py collectstatic --noinput
 
-until (PGPASSWORD=postgres psql -h "postgres" -U "postgres" -c '\q') 2> /dev/null; do
-  >&2 echo "waiting for postgres"
-  sleep 1
-done
-
 uv run manage.py makemigrations --noinput
 uv run manage.py migrate
 

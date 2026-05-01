@@ -13,6 +13,12 @@ services:
       - "5432:5432"
     networks:
       - main_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d mydatabase"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
   redis:
         container_name: redis
         image: redis:latest
@@ -43,7 +49,8 @@ services:
           - /home/tjctgrader/autograder/nsjail
           - problems_data:/home/tjctgrader/problems
       depends_on:
-        - postgres
+        postgres:
+          condition: service_healthy
   celery:
         container_name: celery
         image: autograder

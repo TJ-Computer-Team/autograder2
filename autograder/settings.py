@@ -177,21 +177,18 @@ STATICFILES_FINDERS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-TJIOI_MODE = False
+TJIOI_MODE = True
 
 CURRENT_SEASON = 2026
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
-
-if TJIOI_MODE:
-    AUTHENTICATION_BACKENDS.insert(
-        0, "autograder.apps.tjioi.backend.TJIOIAuthenticationBackend"
-    )
-else:
-    AUTHENTICATION_BACKENDS.insert(0, "autograder.apps.oauth.backend.IonOauth2")
+AUTHENTICATION_BACKENDS = [
+    "autograder.apps.tjioi.backend.TJIOIAuthenticationBackend",
+    "autograder.apps.oauth.backend.IonOauth2",
+    "django.contrib.auth.backends.ModelBackend",
+]
 
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"

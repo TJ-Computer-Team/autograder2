@@ -32,7 +32,7 @@ def submit_view(request, cid=None, pid=None):
         if (
             not request.user.is_staff
             and (problem.secret or problem.contest.start > timezone.now())
-        ) or not (settings.TJIOI_MODE == problem.contest.tjioi):
+        ) or (problem.secret or problem.contest.start > timezone.now()):
             return redirect("runtests:submit")
 
         context["problem"] = problem
@@ -40,7 +40,7 @@ def submit_view(request, cid=None, pid=None):
     elif cid is not None:
         contest = get_object_or_404(Contest, id=cid)
         problems = Problem.objects.filter(
-            contest__id=cid, contest__tjioi=settings.TJIOI_MODE
+            contest__id=cid
         )
         if not request.user.is_staff:
             problems = problems.filter(secret=False)
@@ -52,9 +52,12 @@ def submit_view(request, cid=None, pid=None):
         context["problems"] = problems
 
     else:
-        problems = Problem.objects.filter(contest__tjioi=settings.TJIOI_MODE)
+        problems = Problem.objects.all()
         if not request.user.is_staff:
             problems = problems.filter(secret=False, contest__start__lte=timezone.now())
+
+        if request.user.is_tjioi:
+            problems = problems.filter(contest__tjioi=True)
 
         problems = problems.order_by("id")
         context["problems"] = problems
@@ -64,7 +67,7 @@ def submit_view(request, cid=None, pid=None):
 
 @login_required
 def status_view(request, page, cid=None, mine=False):
-    submissions = Submission.objects.filter(contest__tjioi=settings.TJIOI_MODE)
+    submissions = Submission.objects.all()
     if not request.user.is_staff:
         submissions = submissions.filter(usr__is_staff=False)
 
@@ -73,6 +76,8 @@ def status_view(request, page, cid=None, mine=False):
 
     if mine:
         submissions = submissions.filter(usr=request.user)
+    elif request.user.is_tjioi:
+        submissions = submissions.filter(usr__is_tjioi=True)
 
     submissions = submissions.order_by("-timestamp")
     paginator = Paginator(submissions, 25)  # 25 per page
