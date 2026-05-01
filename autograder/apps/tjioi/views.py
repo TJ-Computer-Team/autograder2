@@ -23,7 +23,7 @@ def tjioi_login_view(request):
 
         if user is not None and user.is_tjioi and settings.TJIOI_MODE:
             login(request, user)
-            return redirect("index:profile")
+            return redirect("index:index")
         else:
             if user is None:
                 logger.info(f"Invalid TJIOI login under user {username}")

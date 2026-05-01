@@ -19,7 +19,7 @@
     {% endif %}
     <div class="subbox">
         <div class="subtext">
-            <form action="{% url "tjioi:login" %}" method="POST">
+            <form action="{% url 'tjioi:login' %}" method="POST">
                 {% csrf_token %}
 
                 ID: <br>

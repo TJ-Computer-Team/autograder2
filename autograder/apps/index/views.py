@@ -65,7 +65,10 @@ def index_view(request):
     if request.user.is_authenticated:
         return redirect("index:profile")
 
-    return render(request, "index/index.html")
+    context = {
+        "tjioi": settings.TJIOI_MODE,
+    }
+    return render(request, "index/index.html", context)
 
 
 @login_required
