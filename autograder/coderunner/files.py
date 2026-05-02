@@ -2,6 +2,7 @@ import os
 import logging
 import zipfile
 import tempfile
+import shutil
 from django.conf import settings
 from pathlib import Path
 from ..apps.problems.models import Problem
@@ -42,6 +43,10 @@ def add_tests_to_coderunner(pid: int):
         test_dir = base_path / "test"
 
         try:
+            if sol_dir.exists():
+                shutil.rmtree(sol_dir)
+            if test_dir.exists():
+                shutil.rmtree(test_dir)
             sol_dir.mkdir(parents=True, exist_ok=True)
             test_dir.mkdir(parents=True, exist_ok=True)
         except Exception as e:

@@ -1,5 +1,9 @@
 from django.db import models
-
+import zipfile
+import os
+import subprocess
+import shutil
+from pathlib import Path
 
 class Problem(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -20,6 +24,7 @@ class Problem(models.Model):
     secret = models.BooleanField(default=False)
 
     testcases_zip = models.FileField(upload_to="problem_testcases/", blank=True)
+    codeforces_zip = models.FileField(upload_to="problem_testcases/", blank=True)
 
     def __str__(self):
         return self.name
@@ -33,11 +38,14 @@ class Problem(models.Model):
         super().save(*args, **kwargs)
         if self.interactive and self.testcases_zip:
             self._process_interactive_problem()
+        if self.codeforces_zip:
+            self._process_codeforces_package()
     
     def _process_interactive_problem(self):
         import zipfile
         import os
         import subprocess
+        import shutil
         from pathlib import Path
         
         problem_dir = Path(f"/home/tjctgrader/problems/{self.id}")
@@ -107,3 +115,46 @@ class Problem(models.Model):
                     # Public input files for user
                     test_content = zip_ref.read(file_info.filename)
                     (test_dir / filename).write_bytes(test_content)
+    
+    def _process_codeforces_package(self):
+        problem_dir = Path(f"/home/tjctgrader/problems/{self.id}")
+        problem_dir.mkdir(parents=True, exist_ok=True)
+        test_dir = problem_dir / "test"
+        answer_dir = problem_dir / "answer"
+        test_dir.mkdir(parents=True, exist_ok=True)
+        answer_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Unzip to problem_dir
+        with zipfile.ZipFile(self.codeforces_zip.path, 'r') as zip_ref:
+            zip_ref.extractall(problem_dir)
+        
+        # Find the tests directory (may be nested one level deep)
+        tests_dir = None
+        if (problem_dir / "tests").exists():
+            tests_dir = problem_dir / "tests"
+        else:
+            for subdir in problem_dir.iterdir():
+                if subdir.is_dir() and (subdir / "tests").exists():
+                    tests_dir = subdir / "tests"
+                    break
+        
+        if tests_dir is None:
+            raise Exception("tests folder not found")
+        
+        
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+        if answer_dir.exists():
+            shutil.rmtree(answer_dir)
+        test_dir.mkdir(parents=True, exist_ok=True)
+        answer_dir.mkdir(parents=True, exist_ok=True)
+        
+        for file_path in tests_dir.iterdir():
+            if file_path.is_file():
+                filename = file_path.name
+                if filename.endswith('.a'):
+                    shutil.move(str(file_path), str(answer_dir / filename))
+                else:
+                    shutil.move(str(file_path), str(test_dir / filename))
+        else:
+            raise Exception("tests folder not found")
