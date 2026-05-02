@@ -23,7 +23,7 @@ def contests_view(request):
             contests = contests.filter(tjioi=True)
         else:
             contests = contests.filter(start__lte=timezone.now())
-    context = {"contests": contests}
+    context = {"contests": contests, "tjioi": settings.TJIOI_MODE}
     return render(request, "contest/contests.html", context)
 
 
