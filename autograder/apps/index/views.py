@@ -91,7 +91,7 @@ def update_first_time(request):
 
 @login_required
 def profile_view(request):
-    if request.user.first_time:
+    if request.user.first_time and not request.user.is_tjioi:
         return redirect("index:first_time")
 
     cfh = request.user.cf_handle
