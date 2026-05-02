@@ -31,6 +31,10 @@ def contests_view(request):
 def contest_view(request, cid):
     contest = get_object_or_404(Contest, pk=cid)
 
+    # Prevent non-TJIOI users from viewing TJIOI contests
+    if contest.tjioi and not request.user.is_staff and not request.user.is_tjioi:
+        return HttpResponse("You do not have permission to view this contest", status=403)
+
     problems = list(Problem.objects.filter(contest=contest).order_by("contest_letter"))
     if problems is None:
         problems = []
@@ -94,9 +98,14 @@ def contest_view(request, cid):
 
 @login_required
 def contest_standings_view(request, cid):
+    contest = get_object_or_404(Contest, id=cid)
+
+    # Prevent non-TJIOI users from viewing TJIOI contest standings
+    if contest.tjioi and not request.user.is_staff and not request.user.is_tjioi:
+        return HttpResponse("You do not have permission to view this contest", status=403)
+
     standings = get_standings(cid)
     problems = Problem.objects.filter(contest_id=cid).order_by("contest_letter")
-    contest = get_object_or_404(Contest, id=cid)
 
     if not request.user.is_staff and timezone.now() < contest.start:
         return HttpResponse("Contest has not started yet", status=403)
@@ -116,6 +125,11 @@ def contest_standings_view(request, cid):
 @login_required
 def contest_status_view(request, cid, mine_only, page):
     contest = get_object_or_404(Contest, id=cid)
+
+    # Prevent non-TJIOI users from viewing TJIOI contest status
+    if contest.tjioi and not request.user.is_staff and not request.user.is_tjioi:
+        return HttpResponse("You do not have permission to view this contest", status=403)
+
     if not request.user.is_staff and timezone.now() < contest.start:
         return HttpResponse("Contest has not started yet", status=403)
     subs = Submission.objects.filter(contest=contest)

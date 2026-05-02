@@ -15,6 +15,9 @@ def problemset_view(request):
     problems = Problem.objects.all()
     if not request.user.is_staff:
         problems = problems.filter(secret=False, contest__start__lte=timezone.now())
+        # Prevent non-TJIOI users from seeing TJIOI problems
+        if not request.user.is_tjioi:
+            problems = problems.exclude(contest__tjioi=True)
 
     problems = problems.order_by("-id")
 
@@ -27,6 +30,16 @@ def problemset_view(request):
 def problem_view(request, pid):
     problem = get_object_or_404(Problem, id=pid)
     contest = problem.contest
+
+    # Prevent non-TJIOI users from viewing problems in TJIOI contests
+    if contest.tjioi and not request.user.is_staff and not request.user.is_tjioi:
+        logger.info(
+            f"User {request.user} tried to access TJIOI problem {problem.name}"
+        )
+        messages.error(
+            request, "You do not have permission to access this problem."
+        )
+        return redirect("contests:contest", cid=contest.id)
 
     if not request.user.is_staff and (timezone.now() < contest.start or problem.secret):
         logger.info(

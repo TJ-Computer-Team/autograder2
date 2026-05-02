@@ -29,6 +29,10 @@ def submit_view(request, cid=None, pid=None):
     if pid is not None:
         problem = get_object_or_404(Problem, id=pid)
 
+        # Prevent non-TJIOI users from submitting to TJIOI problems
+        if problem.contest.tjioi and not request.user.is_staff and not request.user.is_tjioi:
+            return redirect("runtests:submit")
+
         if (
             not request.user.is_staff
             and (problem.secret or problem.contest.start > timezone.now())
@@ -39,6 +43,11 @@ def submit_view(request, cid=None, pid=None):
 
     elif cid is not None:
         contest = get_object_or_404(Contest, id=cid)
+
+        # Prevent non-TJIOI users from submitting to TJIOI contests
+        if contest.tjioi and not request.user.is_staff and not request.user.is_tjioi:
+            return redirect("runtests:submit")
+
         problems = Problem.objects.filter(
             contest__id=cid
         )
@@ -72,6 +81,12 @@ def status_view(request, page, cid=None, mine=False):
         submissions = submissions.filter(usr__is_staff=False)
 
     if cid is not None:
+        contest = get_object_or_404(Contest, id=cid)
+        
+        # Prevent non-TJIOI users from viewing submissions of TJIOI contests
+        if contest.tjioi and not request.user.is_staff and not request.user.is_tjioi:
+            return HttpResponse("You do not have permission to view submissions for this contest", status=403)
+        
         submissions = submissions.filter(contest=cid)
 
     if mine:
@@ -127,6 +142,13 @@ def submit_post(request):
         return HttpResponse(status=500)
 
     problem = Problem.objects.select_related("contest").get(id=pid)
+
+    # Prevent non-TJIOI users from submitting to TJIOI problems
+    if problem.contest.tjioi and not request.user.is_staff and not request.user.is_tjioi:
+        logger.info(
+            f"User {request.user} attempted to submit to TJIOI problem {problem.name}"
+        )
+        return HttpResponse("You do not have permission to submit to this problem", status=403)
 
     if len(code) > 60000:
         return HttpResponse(status=413)
