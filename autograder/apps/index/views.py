@@ -73,7 +73,7 @@ def index_view(request):
 
 @login_required
 def first_time_view(request):
-    if not request.user.first_time:
+    if not request.user.first_time or request.user.is_tjioi:
         return redirect("index:profile")
 
     return render(request, "index/start.html")
