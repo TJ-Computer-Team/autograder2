@@ -177,7 +177,7 @@ STATICFILES_FINDERS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-TJIOI_MODE = True
+TJIOI_MODE = False
 
 CURRENT_SEASON = 2026
 
