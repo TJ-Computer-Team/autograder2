@@ -4,84 +4,305 @@
 
 {% block stylesheet %}
     <link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
+    <style>
+        .hidden-element {
+            display: none !important;
+        }
+    </style>
+{% endblock %}
 
-{% block title %}Profile{% endblock title %}
-
-
+{% block title %}Profile{% endblock %}
 
 {% block content %}
 {% include "partials/header.html" %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
- <div id="mainContent">
-            <div id="subContent">
-                <div class="info-block">
-                    <div class="title"><p>Profile</p></div>
-                    {% if user.is_staff %}
-                        <a href="{% url 'admin:index' %}">Django admin</a>
-                    {% endif %}
-                    <div class="userinfo">Name: {{ user.display_name }}</div>
-                    <div class="userinfo">Username: {{ user.username }}</div>
-                        <form id="profileForm" action="{% url 'index:update_stats' %}" method="POST">
-                            {% csrf_token %}
-                            <div class="statsInfo">
-                                <label for="usaco_div">USACO Division: </label>
-                                <select name="usaco_div">
-                                    <option value="" {% if user.usaco_division == "Not Participated" %} selected {% endif %}>Not Participated</option>
-                                    <option value="bronze" {% if user.usaco_division == "Bronze" %} selected {% endif %}>Bronze</option>
-                                    <option value="silver" {% if user.usaco_division == "Silver" %} selected {% endif %}>Silver</option>
-                                    <option value="gold" {% if user.usaco_division == "Gold" %} selected {% endif %}>Gold</option>
-                                    <option value="plat" {% if user.usaco_division == "Platinum" %} selected {% endif %}>Platinum</option>
-                                </select>
-                            </div>
-                            <div class="statsInfo">
-                                <label for="cf_handle">Codeforces Handle: </label>
-                                <input name="cf_handle" value="{{ cf_handle }}">
-                                <br>(leave blank if you don't have one)
-                            </div>
-                            <div id="message-container" style="margin-top: 10px;"></div>
-                            <div class="statsInfo">
-                                <input type="submit" value="Save">
-                            </div>
-                            Note: If the entered information is suspicious, it will be verified in-person.
-                        </form>
-                    </div>
+<div id="mainContent">
+    <div id="subContent">
+        <div class="info-block">
+            <div class="title"><p>Profile</p></div>
+            {% if user.is_staff %}
+                <a href="{% url 'admin:index' %}">Django admin</a>
+            {% endif %}
+            <div class="userinfo">Name: {{ user.display_name }}</div>
+            <div class="userinfo">Username: {{ user.username }}</div>
+            <form id="profileForm" action="{% url 'index:update_stats' %}" method="POST">
+                {% csrf_token %}
+                <div class="statsInfo">
+                    <label for="usaco_div">USACO Division: </label>
+                    <select name="usaco_div">
+                        <option value="" {% if user.usaco_division == "Not Participated" %} selected {% endif %}>Not Participated</option>
+                        <option value="bronze" {% if user.usaco_division == "Bronze" %} selected {% endif %}>Bronze</option>
+                        <option value="silver" {% if user.usaco_division == "Silver" %} selected {% endif %}>Silver</option>
+                        <option value="gold" {% if user.usaco_division == "Gold" %} selected {% endif %}>Gold</option>
+                        <option value="plat" {% if user.usaco_division == "Platinum" %} selected {% endif %}>Platinum</option>
+                    </select>
                 </div>
-            </div>
+                <div class="statsInfo">
+                    <label for="cf_handle">Codeforces Handle: </label>
+                    <input name="cf_handle" id="cf_handle" value="{{ cf_handle }}">
+                    
+                      <span id="verifiedBadge"
+                          class="hidden-element"
+                          style="color: green; font-weight: bold; margin-left: 5px;">✓ Verified</span>
+                    <br>(leave blank if you don't have one)
+                </div>
+
+                <div id="verificationSection" 
+                     class="{% if not pending_verification %}hidden-element{% endif %}"
+                     data-pending="{% if pending_verification %}true{% else %}false{% endif %}"
+                     data-expires="{{ pending_verification.expires_at|date:'c' }}"
+                     style="margin-top: 15px; border: 1px solid #ccc; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 8px;">
+                    <h3 style="margin-top: 0;">Codeforces Verification Challenge</h3>
+                    <p>To verify your handle, submit a compilation error to:</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 8px;"><strong>Problem:</strong> <a id="verifyLink" href="https://codeforces.com/contest/{{ pending_verification.contest_id }}/problem/{{ pending_verification.problem_index }}" target="_blank" style="color: #4da3ff; font-weight: bold;">{{ pending_verification.contest_id }}{{ pending_verification.problem_index }}</a></li>
+                    </ul>
+                    <p>Status: <span id="verifyStatus" style="font-weight: bold; color: #ffcc00;">{% if pending_verification %}Polling for submission...{% endif %}</span></p>
+                    <p style="font-size: 0.9em; color: #aaa;">Codeforces can take a minute to update.</p>
+                    <p style="font-size: 0.9em; margin-bottom: 0;">Expires in: <span id="verifyTimer" style="font-weight: bold;"></span></p>
+                </div>
+
+                <div id="message-container" style="margin-top: 10px;"></div>
+                <div class="statsInfo">
+                    <input type="submit" value="Save">
+                </div>
+                Note: If the entered information is suspicious, it will be verified in-person.
+            </form>
         </div>
+    </div>
+</div>
 
 <script>
-document.getElementById('profileForm').addEventListener('submit', function(event) {
-    event.preventDefault();
+    (function() {
+        var pollInterval = null;
+        var expirationDate = null;
+        var timerInterval = null;
 
-    const form = event.target;
-    const formData = new FormData(form);
-    const messageContainer = document.getElementById('message-container');
+        var originalHandle = "{{ cf_handle }}";
+        var handleDirty = false;
+        var cfVerified = "{{ cf_verified|yesno:'true,false' }}" === "true";
+        var handleEl = document.getElementById('cf_handle');
+        var verifiedBadge = document.getElementById('verifiedBadge');
 
-    fetch(form.action, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        if (handleEl && verifiedBadge) {
+            handleEl.addEventListener('input', function() {
+                handleDirty = true;
+                var currentHandle = handleEl.value.trim();
+                if (cfVerified && currentHandle === originalHandle) {
+                    verifiedBadge.classList.remove('hidden-element');
+                } else {
+                    verifiedBadge.classList.add('hidden-element');
+                }
+            });
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        messageContainer.textContent = data.message;
-        if (data.status === 'success') {
-            messageContainer.style.color = 'green';
-            setTimeout(() => {
-                window.location.href = "{% url 'index:profile' %}";
-            }, 1000);
-        } else {
-            messageContainer.style.color = 'red';
+
+        function updateTimer() {
+            if (!expirationDate) return;
+
+            var now = new Date();
+            var diff = expirationDate - now;
+
+            if (isNaN(diff) || diff <= 0) {
+                var timerEl = document.getElementById('verifyTimer');
+                var statusEl = document.getElementById('verifyStatus');
+                if (timerEl) timerEl.textContent = 'Expired';
+                if (statusEl) {
+                    statusEl.textContent = 'Verification expired. Please try again.';
+                    statusEl.style.color = 'red';
+                }
+                stopPolling();
+                return;
+            }
+
+            var minutes = Math.floor(diff / 1000 / 60);
+            var seconds = Math.floor((diff / 1000) % 60);
+            var timerEl = document.getElementById('verifyTimer');
+            if (timerEl) timerEl.textContent = minutes + 'm ' + seconds + 's';
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        messageContainer.textContent = 'An unexpected error occurred.';
-        messageContainer.style.color = 'red';
-    });
-});
+
+        function stopPolling() {
+            if (pollInterval) clearInterval(pollInterval);
+            if (timerInterval) clearInterval(timerInterval);
+            pollInterval = null;
+            timerInterval = null;
+        }
+
+        function startPolling(onSuccess) {
+            stopPolling();
+            pollInterval = setInterval(function() {
+                pollVerification(onSuccess);
+            }, 5000);
+            timerInterval = setInterval(updateTimer, 1000);
+            updateTimer();
+        }
+
+        function showVerifiedState() {
+            var sectionEl = document.getElementById('verificationSection');
+            if (sectionEl) {
+                sectionEl.classList.add('hidden-element');
+            }
+            if (verifiedBadge) {
+                verifiedBadge.classList.remove('hidden-element');
+            }
+            cfVerified = true;
+            if (handleEl) {
+                originalHandle = handleEl.value.trim();
+            }
+            handleDirty = false;
+        }
+
+        function pollVerification(onSuccess) {
+            fetch("{% url 'index:check_cf_verification' %}")
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    var statusEl = document.getElementById('verifyStatus');
+                    if (data.status === 'verified') {
+                        if (statusEl) {
+                            statusEl.textContent = 'Verified!';
+                            statusEl.style.color = 'green';
+                        }
+                        showVerifiedState();
+                        stopPolling();
+                        if (onSuccess) {
+                            onSuccess();
+                        } else {
+                            setTimeout(function() {
+                                window.location.reload();
+                            }, 2000);
+                        }
+                    } else if (data.status === 'expired') {
+                        if (statusEl) {
+                            statusEl.textContent = 'Expired';
+                            statusEl.style.color = 'red';
+                        }
+                        stopPolling();
+                    } else if (data.status === 'none') {
+                        stopPolling();
+                        var sectionEl = document.getElementById('verificationSection');
+                        if (sectionEl) {
+                            sectionEl.classList.add('hidden-element');
+                        }
+                    }
+                })
+                .catch(function(error) { console.error('Error polling verification:', error); });
+        }
+
+        function submitProfileForm(form, formData, messageContainer) {
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (messageContainer) {
+                    messageContainer.textContent = data.message;
+                    if (data.status === 'success') {
+                        messageContainer.style.color = 'green';
+                        setTimeout(function() {
+                            window.location.href = "{% url 'index:profile' %}";
+                        }, 1000);
+                    } else {
+                        messageContainer.style.color = 'red';
+                    }
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                if (messageContainer) {
+                    messageContainer.textContent = 'An unexpected error occurred.';
+                    messageContainer.style.color = 'red';
+                }
+            });
+        }
+
+        var profileForm = document.getElementById('profileForm');
+        if (profileForm) {
+            profileForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                var form = event.target;
+                var formData = new FormData(form);
+                var messageContainer = document.getElementById('message-container');
+                var currentHandle = handleEl ? handleEl.value.trim() : '';
+
+                var shouldVerify = currentHandle !== '' && (handleDirty || currentHandle !== originalHandle || !cfVerified);
+
+                if (shouldVerify) {
+                    if (messageContainer) {
+                        messageContainer.textContent = 'Initiating verification for your Codeforces handle...';
+                        messageContainer.style.color = '#ffcc00';
+                    }
+
+                    var verifyData = new FormData();
+                    verifyData.append('cf_handle', currentHandle);
+                    verifyData.append('csrfmiddlewaretoken', formData.get('csrfmiddlewaretoken'));
+
+                    fetch("{% url 'index:verify_cf_handle' %}", {
+                        method: 'POST',
+                        body: verifyData,
+                        headers: {
+                            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                        }
+                    })
+                    .then(function(response) { return response.json(); })
+                    .then(function(data) {
+                        if (data.status === 'success') {
+                            if (messageContainer) {
+                                messageContainer.textContent = 'A verification challenge has been generated. Please complete it below.';
+                                messageContainer.style.color = '#ffcc00';
+                            }
+                            var sectionEl = document.getElementById('verificationSection');
+                            var linkEl = document.getElementById('verifyLink');
+                            var statusEl = document.getElementById('verifyStatus');
+
+                            if (sectionEl) {
+                                sectionEl.classList.remove('hidden-element');
+                            }
+                            if (linkEl) {
+                                linkEl.href = 'https://codeforces.com/contest/' + data.contest_id + '/problem/' + data.problem_index;
+                                linkEl.textContent = data.contest_id + data.problem_index;
+                            }
+                            if (statusEl) {
+                                statusEl.textContent = 'Polling for submission...';
+                                statusEl.style.color = '#ffcc00';
+                            }
+
+                            expirationDate = new Date(data.expires_at);
+                            startPolling(function() {
+                                submitProfileForm(form, formData, messageContainer);
+                            });
+                        } else {
+                            if (messageContainer) {
+                                messageContainer.textContent = data.message;
+                                messageContainer.style.color = 'red';
+                            }
+                        }
+                    })
+                    .catch(function(error) {
+                        console.error('Error starting verification:', error);
+                        if (messageContainer) {
+                            messageContainer.textContent = 'Could not start verification process.';
+                            messageContainer.style.color = 'red';
+                        }
+                    });
+                } else {
+                    submitProfileForm(form, formData, messageContainer);
+                }
+            });
+        }
+
+        var sectionEl = document.getElementById('verificationSection');
+        if (sectionEl) {
+            var isPending = sectionEl.getAttribute('data-pending') === 'true';
+            var expiresAt = sectionEl.getAttribute('data-expires');
+            if (isPending && expiresAt) {
+                expirationDate = new Date(expiresAt);
+                startPolling();
+            }
+        }
+    })();
 </script>
-{% endblock content %}
+{% endblock %}
