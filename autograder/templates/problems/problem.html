@@ -2,73 +2,51 @@
 
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
-
-{% block title %}{{problem.name}}{% endblock title %}
+{% block title %}{{ problem.name }}{% endblock title %}
 
 {% block head %}
 <script>
     MathJax = {
         tex: {
-            inlineMath: [['$', '$'], ['\\(', '\\)']]
+            inlineMath: [['$', '$'], ['\(', '\)']]
         },
         svg: {
             fontCache: 'global'
         }
     };
-    </script>
-    <script type="text/javascript" id="MathJax-script" async
-        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
-    </script>
+</script>
+<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 {% endblock head %}
 
 {% block content %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/header.html" %}
 
-
- <div class="main-block">
-    <div class="title"><strong>{{problem.contest_letter}}: {{problem.name}}</strong></div>
-    <div class="subtitle">
-        <br>
-        C++ Time Limit: {{tl_cpp}} seconds
-        <br>
-        Java Time Limit: {{tl_java}} seconds
-        <br>
-        Python Time Limit: {{tl_python}} seconds
-        <br>
-        Memory Limit: {{ problem.ml }} megabytes
+<div class="mx-auto max-w-6xl space-y-6 px-4 py-6">
+  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
+    <div class="title text-2xl font-semibold text-slate-900 dark:text-slate-100"><strong>{{ problem.contest_letter }}: {{ problem.name }}</strong></div>
+    <div class="subtitle mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+      C++ Time Limit: {{ tl_cpp }} seconds<br>
+      Java Time Limit: {{ tl_java }} seconds<br>
+      Python Time Limit: {{ tl_python }} seconds<br>
+      Memory Limit: {{ problem.ml }} megabytes
     </div>
+  </div>
+  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
+    <div class="info prose prose-slate max-w-none dark:prose-invert">{{ statement|safe }}</div>
+  </div>
+  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
+    <div class="info prose prose-slate max-w-none dark:prose-invert"><strong>Input Format</strong><br>{{ inputtxt|safe }}</div>
+  </div>
+  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
+    <div class="info prose prose-slate max-w-none dark:prose-invert"><strong>Output Format</strong><br>{{ outputtxt|safe }}</div>
+  </div>
+  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
+    <div class="info prose prose-slate max-w-none dark:prose-invert"><strong>Samples</strong><br>{{ samples|safe }}</div>
+  </div>
+  <div class="option-buttons flex flex-wrap gap-3">
+    <a href="{% url "runtests:submitproblem" pid=problem.id %}" class="inline-flex rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-700">Submit</a>
+    <a href="{% url "contests:contest" cid=problem.contest.id %}" class="inline-flex rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">Back</a>
+  </div>
 </div>
-<div class="main-block">
-    <div class="info">
-        {{ statement|safe }}
-    </div>
-</div>
-<div class="main-block">
-    <div class="info"><strong>Input Format</strong><br>
-        {{ inputtxt|safe }}
-    </div>
-</div>
-<div class="main-block">
-    <div class="info"><strong>Output Format</strong><br>
-        {{ outputtxt|safe }}
-    </div>
-</div>
-<div class="main-block">
-    <div class="info"><strong>Samples</strong><br>
-        {{ samples|safe }}
-    </div>
-</div>
-<div class="option-buttons">
-    <a href="{% url "runtests:submitproblem" pid=problem.id %}">
-        <div class="button">Submit</div>
-    </a>
-    <a href="{% url "contests:contest" cid=problem.contest.id %}">
-        <div class="button">Back</div>
-    </a>
-</div>
-
 {% endblock content %}

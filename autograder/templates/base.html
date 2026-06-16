@@ -1,28 +1,37 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="en" data-theme="abyss">
+<html lang="en">
   <head>
     <title>{% block title %}TJ Computer Team Grader{% endblock %}</title>
-    <link
-      rel="shortcut icon"
-      type="image/png"
-      href="{% static 'images/Logo.ico' %}"
-    />
-    {% block stylesheet %}
-    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" />
-    {% endblock %}
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/Logo.ico' %}" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script>
+      (function () {
+        const themeKey = 'tjct-dark-mode';
+        const html = document.documentElement;
+        const storedTheme = localStorage.getItem(themeKey);
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
+          html.classList.add('dark');
+        } else {
+          html.classList.remove('dark');
+        }
+        window.toggleTheme = function () {
+          const enabled = html.classList.toggle('dark');
+          localStorage.setItem(themeKey, enabled ? 'dark' : 'light');
+        };
+      })();
+    </script>
 
-    {% block head %}
-
-    {% endblock head %}
+    {% block head %}{% endblock head %}
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
-  <body {% block bodyattr %}{% endblock bodyattr %} >
-    {% block content %}
-
-    {% endblock %}
+  <body class="min-h-screen bg-slate-100 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
+    <main class="min-h-screen">
+      {% block content %}{% endblock %}
+    </main>
   </body>
 </html>

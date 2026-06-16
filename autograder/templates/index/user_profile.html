@@ -2,40 +2,32 @@
 
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
-
 {% block title %}Profile{% endblock title %}
 
 {% block content %}
 {% include "partials/header.html" %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
-
-<div id="mainContent">
-  <div id="subContent">
-    <div class="info-block">
-      <div class="title">
-        <p>Profile</p>
-      </div>
-      <div class="userinfo">Name: {{ name }}</div>
-      <div class="userinfo">Username: {{ username }}</div>
-
+<div class="mx-auto max-w-4xl px-4 py-6">
+  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
+    <div class="title text-2xl font-semibold text-slate-900 dark:text-slate-100">Profile</div>
+    <div class="mt-4 space-y-3 text-slate-700 dark:text-slate-200">
+      <div>Name: <span class="font-medium text-slate-900 dark:text-slate-100">{{ name }}</span></div>
+      <div>Username: <span class="font-medium text-slate-900 dark:text-slate-100">{{ username }}</span></div>
       {% if admin %}
-      <div class="statsInfo">USACO Division: {{ usaco }}</div>
-      <div class="statsInfo">Codeforces Handle: {{ cf }}</div>
-      {% endif %}
-
-      <br>
-      <div class="subtitle">
-        <p>Rating History</p>
-      </div>
-      {% if no_rating_history == "true" %}
-      <div class="statsInfo">No rating history yet!</div>
-      {% else %}
-      <canvas id="ratingChart" width="600" height="300"></canvas>
+      <div>USACO Division: <span class="font-medium text-slate-900 dark:text-slate-100">{{ usaco }}</span></div>
+      <div>Codeforces Handle: <span class="font-medium text-slate-900 dark:text-slate-100">{{ cf }}</span></div>
       {% endif %}
     </div>
+  </div>
+  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
+    <div class="subtitle text-lg font-semibold text-slate-900 dark:text-slate-100">Rating History</div>
+    {% if no_rating_history == "true" %}
+      <div class="mt-4 text-slate-700 dark:text-slate-200">No rating history yet!</div>
+    {% else %}
+      <div class="mt-4 overflow-x-auto rounded-xl bg-slate-50 p-4 dark:bg-slate-950">
+        <canvas id="ratingChart" width="600" height="300"></canvas>
+      </div>
+    {% endif %}
   </div>
 </div>
 
@@ -49,20 +41,14 @@
   const rawData = JSON.parse(document.getElementById('rating-data').textContent);
 
   if (rawData.length > 0) {
-    const labels = rawData.map(pt => pt.time);
     const data = rawData.map(pt => pt.rating);
-
     const ctx = document.getElementById('ratingChart').getContext('2d');
     new Chart(ctx, {
       type: 'line',
       data: {
-        labels,
         datasets: [{
           label: 'Rating',
-          data: rawData.map(pt => ({
-            x: pt.time,
-            y: pt.rating
-          })),
+          data: rawData.map(pt => ({ x: pt.time, y: pt.rating })),
           fill: false,
           borderWidth: 2,
           tension: 0.1
@@ -75,38 +61,16 @@
             time: {
               unit: 'month',
               tooltipFormat: 'MMM yyyy',
-              displayFormats: {
-                month: 'MMM yyyy'
-              }
+              displayFormats: { month: 'MMM yyyy' }
             },
-            title: {
-              display: true,
-              text: 'Date'
-            }
+            title: { display: true, text: 'Date' }
           },
           y: {
-            title: {
-              display: true,
-              text: 'Rating'
-            },
+            title: { display: true, text: 'Rating' },
             suggestedMin: Math.min(...data) - 50,
             suggestedMax: Math.max(...data) + 50
           }
         },
         plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            mode: 'index',
-            intersect: false
-          }
-        },
-        responsive: true,
-        maintainAspectRatio: true
-      }
-    });
-  }
-</script>
-
-{% endblock content %}
+          legend: { display: false },
+          tooltip: { mode: 'index', intersect: false }

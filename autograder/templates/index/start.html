@@ -2,45 +2,27 @@
 
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" />
-{% endblock stylesheet %}
-
 {% block title %}First Time{% endblock title %}
 
 {% block content %}
-<section class="main">
-    <div class="bgbox">
-        <div class="title"><strong>Welcome!</strong></div>
-
-        <div class="subbox">
-            <div class="subtext">
-                <form action="{% url 'index:update_first_time' %}" method="POST">
-                    {% csrf_token %}
-                    It looks like it's your first time here<br><br>
-
-                    First, make sure the following information is correct:<br>
-                    Name: <strong>
-                        {{user.display_name}}
-                    </strong><br>
-                    Username: <strong>
-                        {{user.username}}
-                    </strong><br>
-                    <br>
-                    Next, please input your personal email: <br>
-                    <input type="email" name="email" id="email" maxlength="100" required></input>
-                    <br><br>
-                    <br>
-                    After all information is correct, click confirm to proceed.
-                    <br><br>
-                    <div class="cnt_buttons">
-                        <button class="button" type="submit">Confirm</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        <form class="submit" action="{% url 'oauth:logout' %}" method="POST">
-        </form>
-    </div>
-</section>
+<div class="mx-auto max-w-3xl px-4 py-10">
+  <div class="rounded-3xl border border-slate-200/80 bg-white/85 p-8 shadow-xl dark:border-slate-700/80 dark:bg-slate-900/80">
+    <div class="title text-3xl font-semibold text-slate-900 dark:text-slate-100">Welcome!</div>
+    <form action="{% url 'index:update_first_time' %}" method="POST" class="mt-6 space-y-6">
+      {% csrf_token %}
+      <p class="text-slate-700 dark:text-slate-200">It looks like it's your first time here.</p>
+      <div class="space-y-2 text-slate-700 dark:text-slate-200">
+        <div>First, make sure the following information is correct:</div>
+        <div>Name: <strong>{{ user.display_name }}</strong></div>
+        <div>Username: <strong>{{ user.username }}</strong></div>
+      </div>
+      <div class="space-y-2 text-slate-700 dark:text-slate-200">
+        <label class="block text-sm font-medium text-slate-700 dark:text-slate-200" for="email">Personal Email</label>
+        <input class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-300 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" type="email" name="email" id="email" maxlength="100" required>
+      </div>
+      <p class="text-slate-700 dark:text-slate-200">After all information is correct, click confirm to proceed.</p>
+      <button class="button inline-flex rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700" type="submit">Confirm</button>
+    </form>
+  </div>
+</div>
 {% endblock content %}

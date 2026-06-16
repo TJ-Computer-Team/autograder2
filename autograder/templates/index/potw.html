@@ -1,54 +1,45 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
-
 {% block title %}POTW{% endblock title %}
 
 {% block content %}
 {% include "partials/header.html" %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 
-<div class="main-block">
-    <div class="title"><strong>Problem of the Week</strong></div>
-</div>
-
-<div class="main-block">
-    <div class="info">
-        <div style="display:flex; gap:20px; flex-wrap:wrap;">
-            <div style="flex:1; min-width:240px; border:1px solid #ddd; padding:16px; border-radius:6px;">
-                <h3>Problem of the Week: Beginner</h3>
-                <p>{{ beginner.title|default:'Problem of the Week: Beginner' }}</p>
-                {% if beginner and beginner.link %}
-                <a class="btn" target="_blank" href="{{ beginner.link }}">Click to see</a>
-                {% else %}
-                <button class="btn" disabled>Link not set</button>
-                {% endif %}
-            </div>
-
-            <div style="flex:1; min-width:240px; border:1px solid #ddd; padding:16px; border-radius:6px;">
-                <h3>Problem of the Week: Intermediate</h3>
-                <p>{{ intermediate.title|default:'Problem of the Week: Intermediate' }}</p>
-                {% if intermediate and intermediate.link %}
-                <a class="btn" target="_blank" href="{{ intermediate.link }}">Click to see</a>
-                {% else %}
-                <button class="btn" disabled>Link not set</button>
-                {% endif %}
-            </div>
-
-            <div style="flex:1; min-width:240px; border:1px solid #ddd; padding:16px; border-radius:6px;">
-                <h3>Problem of the Week: Advanced</h3>
-                <p>{{ advanced.title|default:'Problem of the Week: Advanced' }}</p>
-                {% if advanced and advanced.link %}
-                <a class="btn" target="_blank" href="{{ advanced.link }}">Click to see</a>
-                {% else %}
-                <button class="btn" disabled>Link not set</button>
-                {% endif %}
-            </div>
-        </div>
+<div class="mx-auto max-w-6xl space-y-6 px-4 py-6">
+  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
+    <div class="title text-2xl font-semibold text-slate-900 dark:text-slate-100">Problem of the Week</div>
+  </div>
+  <div class="main-block grid gap-6 md:grid-cols-3 rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
+    <div class="rounded-2xl border border-slate-200/70 bg-slate-50 p-5 dark:border-slate-700/70 dark:bg-slate-950">
+      <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Problem of the Week: Beginner</h3>
+      <p class="mt-2 text-slate-700 dark:text-slate-200">{{ beginner.title|default:'Problem of the Week: Beginner' }}</p>
+      {% if beginner and beginner.link %}
+        <a class="mt-4 inline-flex rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700" target="_blank" href="{{ beginner.link }}">Click to see</a>
+      {% else %}
+        <button class="mt-4 inline-flex cursor-not-allowed rounded-xl bg-slate-300 px-4 py-2 text-sm font-semibold text-slate-500" disabled>Link not set</button>
+      {% endif %}
     </div>
+    <div class="rounded-2xl border border-slate-200/70 bg-slate-50 p-5 dark:border-slate-700/70 dark:bg-slate-950">
+      <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Problem of the Week: Intermediate</h3>
+      <p class="mt-2 text-slate-700 dark:text-slate-200">{{ intermediate.title|default:'Problem of the Week: Intermediate' }}</p>
+      {% if intermediate and intermediate.link %}
+        <a class="mt-4 inline-flex rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700" target="_blank" href="{{ intermediate.link }}">Click to see</a>
+      {% else %}
+        <button class="mt-4 inline-flex cursor-not-allowed rounded-xl bg-slate-300 px-4 py-2 text-sm font-semibold text-slate-500" disabled>Link not set</button>
+      {% endif %}
+    </div>
+    <div class="rounded-2xl border border-slate-200/70 bg-slate-50 p-5 dark:border-slate-700/70 dark:bg-slate-950">
+      <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Problem of the Week: Advanced</h3>
+      <p class="mt-2 text-slate-700 dark:text-slate-200">{{ advanced.title|default:'Problem of the Week: Advanced' }}</p>
+      {% if advanced and advanced.link %}
+        <a class="mt-4 inline-flex rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700" target="_blank" href="{{ advanced.link }}">Click to see</a>
+      {% else %}
+        <button class="mt-4 inline-flex cursor-not-allowed rounded-xl bg-slate-300 px-4 py-2 text-sm font-semibold text-slate-500" disabled>Link not set</button>
+      {% endif %}
+    </div>
+  </div>
 </div>
 
 {% endblock content %}

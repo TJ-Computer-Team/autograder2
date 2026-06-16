@@ -1,31 +1,31 @@
 {% load static %}
 
-<div class="navbar">
-    <ul class="nb">
-        <li id="logoHolder" class="nb"><img class="logo" src="{% static 'images/logo.png' %}"></li>
-        {% if request.user.is_tjioi %}
-            <li class="nb"><a {% if active == "status" %} class="cactive" {% endif %} href="{% url "runtests:status" page=1 mine=False %}">Submissions</a></li>
-            <li class="nb"><a {% if active == "contests" %} class="cactive" {% endif %} href="{% url "contests:contests" %}">Contests</a></li>
-            <li class="nb"><a {% if active == "submit" %} class="cactive" {% endif %} href="{% url "runtests:submit" %}">Submit</a></li>
-        {% else %}
-            <li class="nb"><a {% if active == "profile" %} class="cactive" {% endif %} href="{% url "index:profile" %}">Home</a></li>
-            <li class="nb"><a {% if active == "status" %} class="cactive" {% endif %} href="{% url "runtests:status" page=1 mine=True %}">Submissions</a></li>
-            <li class="nb"><a {% if active == "contests" %} class="cactive" {% endif %} href="{% url "contests:contests" %}">Contests</a></li>
-            <li class="nb"><a {% if active == "problems" %} class="cactive" {% endif %} href="{% url "problems:problemset" %}">Problemset</a></li>
-            <li class="nb"><a {% if active == "potw" %} class="cactive" {% endif %} href="{% url 'index:potw' %}">POTW</a></li>
-            <li class="nb"><a {% if active == "submit" %} class="cactive" {% endif %} href="{% url "runtests:submit" %}">Submit</a></li>
-            <li class="nb"><a {% if active == "info" %} class="cactive" {% endif %} href="{% url 'index:info' %}">Rules and Info</a></li>
-            <li class="nb"><a {% if active == "rankings" %} class="cactive" {% endif %} href="{% url "rankings:rankings" %}">Rankings</a></li>
-        {% endif %}
-        <li class="nb topnav-right">
-            <a href="{% url 'oauth:logout' %}">
-                <button class="logoutbtn" type="button">Log Out</button>
-            </a>
-        </li>
-        <li class="nb topnav-right">
-            <a href="{% url 'index:toggle_particles' %}?next={{ request.get_full_path|urlencode }}">
-                Toggle Particles
-            </a>
-        </li>
-    </ul>
-</div>
+<header class="sticky top-0 z-40 bg-white/90 shadow-sm backdrop-blur dark:bg-slate-900/95">
+  <div class="container mx-auto flex flex-wrap items-center gap-3 px-4 py-3">
+    <a id="logoHolder" class="nb flex items-center gap-3 rounded-md px-3 py-2 text-slate-900 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800" href="{% url 'index:profile' %}">
+      <img class="logo h-10 w-10 rounded-full object-cover" src="{% static 'images/logo.png' %}" alt="Logo" />
+      <span class="font-semibold">TJCT Grader</span>
+    </a>
+    <nav class="flex flex-wrap items-center gap-2 sm:gap-3">
+      {% if request.user.is_tjioi %}
+        <a class="nb rounded-md px-3 py-2 text-sm font-medium {% if active == 'status' %}cactive bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-white{% else %}text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800{% endif %}" href="{% url 'runtests:status' page=1 mine=False %}">Submissions</a>
+        <a class="nb rounded-md px-3 py-2 text-sm font-medium {% if active == 'contests' %}cactive bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-white{% else %}text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800{% endif %}" href="{% url 'contests:contests' %}">Contests</a>
+        <a class="nb rounded-md px-3 py-2 text-sm font-medium {% if active == 'submit' %}cactive bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-white{% else %}text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800{% endif %}" href="{% url 'runtests:submit' %}">Submit</a>
+      {% else %}
+        <a class="nb rounded-md px-3 py-2 text-sm font-medium {% if active == 'profile' %}cactive bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-white{% else %}text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800{% endif %}" href="{% url 'index:profile' %}">Home</a>
+        <a class="nb rounded-md px-3 py-2 text-sm font-medium {% if active == 'status' %}cactive bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-white{% else %}text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800{% endif %}" href="{% url 'runtests:status' page=1 mine=True %}">Submissions</a>
+        <a class="nb rounded-md px-3 py-2 text-sm font-medium {% if active == 'contests' %}cactive bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-white{% else %}text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800{% endif %}" href="{% url 'contests:contests' %}">Contests</a>
+        <a class="nb rounded-md px-3 py-2 text-sm font-medium {% if active == 'problems' %}cactive bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-white{% else %}text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800{% endif %}" href="{% url 'problems:problemset' %}">Problemset</a>
+        <a class="nb rounded-md px-3 py-2 text-sm font-medium {% if active == 'potw' %}cactive bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-white{% else %}text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800{% endif %}" href="{% url 'index:potw' %}">POTW</a>
+        <a class="nb rounded-md px-3 py-2 text-sm font-medium {% if active == 'submit' %}cactive bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-white{% else %}text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800{% endif %}" href="{% url 'runtests:submit' %}">Submit</a>
+        <a class="nb rounded-md px-3 py-2 text-sm font-medium {% if active == 'info' %}cactive bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-white{% else %}text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800{% endif %}" href="{% url 'index:info' %}">Rules and Info</a>
+        <a class="nb rounded-md px-3 py-2 text-sm font-medium {% if active == 'rankings' %}cactive bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-white{% else %}text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800{% endif %}" href="{% url 'rankings:rankings' %}">Rankings</a>
+      {% endif %}
+    </nav>
+    <div class="ml-auto flex flex-wrap items-center gap-2">
+      <button type="button" onclick="toggleTheme()" class="rounded-md border border-slate-300/80 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-100 dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">Theme</button>
+      <a href="{% url 'index:toggle_particles' %}?next={{ request.get_full_path|urlencode }}" class="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">Toggle Particles</a>
+      <a href="{% url 'oauth:logout' %}" class="rounded-md bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">Log Out</a>
+    </div>
+  </div>
+</header>

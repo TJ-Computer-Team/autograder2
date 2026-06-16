@@ -1,22 +1,22 @@
-<div class="main-block">
-    <div class="title">{{ title }}</div>
+<div class="main-block rounded-xl border border-slate-200/80 bg-white/80 p-4 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
+    <div class="title text-xl font-semibold text-slate-900 dark:text-slate-100">{{ title }}</div>
 </div>
 <div class="cnav">
-  <ul class="cnb">
+  <ul class="cnb flex flex-wrap gap-2 px-2 py-3">
     <li class="cnb">
-      <a {% if active == "problems" %} class="cactive" {% endif %} href="{% url "contests:contest" cid %}">Problems</a>
+      <a class="rounded-md px-3 py-2 text-sm font-medium {% if active == 'problems' %}cactive bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-white{% else %}text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800{% endif %}" href="{% url 'contests:contest' cid %}">Problems</a>
     </li>
     <li class="cnb">
-      <a href="{% url "runtests:submitcontest" cid=cid %}">Submit Code</a>
+      <a class="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800" href="{% url 'runtests:submitcontest' cid=cid %}">Submit Code</a>
     </li>
     <li class="cnb">
-      <a {% if active == "submissions" %} class="cactive" {% endif %} href="{% url "contests:status" cid=cid mine_only="mine" page=1 %}">My Submissions</a>
+      <a class="rounded-md px-3 py-2 text-sm font-medium {% if active == 'submissions' %}cactive bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-white{% else %}text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800{% endif %}" href="{% url 'contests:status' cid=cid mine_only='mine' page=1 %}">My Submissions</a>
     </li>
      <li class="cnb">
-      <a {% if active == "status" %} class="cactive" {% endif %} href="{% url "contests:status" cid=cid mine_only="all" page=1 %}">All Submissions</a>
+      <a class="rounded-md px-3 py-2 text-sm font-medium {% if active == 'status' %}cactive bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-white{% else %}text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800{% endif %}" href="{% url 'contests:status' cid=cid mine_only='all' page=1 %}">All Submissions</a>
     </li>
     <li class="cnb">
-      <a {% if active == "standings" %} class="cactive" {% endif %} href="{% url "contests:standings" cid %}">Standings</a>
+      <a class="rounded-md px-3 py-2 text-sm font-medium {% if active == 'standings' %}cactive bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-white{% else %}text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800{% endif %}" href="{% url 'contests:standings' cid %}">Standings</a>
     </li>
   </ul>
 </div>

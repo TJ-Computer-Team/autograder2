@@ -2,42 +2,29 @@
 
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" />
-{% endblock stylesheet %}
-
 {% block title %}TJIOI Login{% endblock title %}
 
 {% block content %}
 
-<div class="bgbox">
-    <div class="title"><strong>TJIOI Login</strong></div>
+<div class="mx-auto max-w-md px-4 py-10">
+  <div class="rounded-3xl border border-slate-200/80 bg-white/85 p-8 shadow-xl dark:border-slate-700/80 dark:bg-slate-900/80">
+    <div class="title text-2xl font-semibold text-slate-900 dark:text-slate-100">TJIOI Login</div>
     {% if error %}
-    <div class="alert">
-        {{error}}
-    </div>
+      <div class="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-700/80 dark:bg-red-950/80 dark:text-red-200">{{ error }}</div>
     {% endif %}
-    <div class="subbox">
-        <div class="subtext">
-            <form action="{% url 'tjioi:login' %}" method="POST">
-                {% csrf_token %}
-
-                ID: <br>
-                <input type="text" name="id" id="id" maxlength="100" required></input>
-                <br><br>
-
-                Password: <br>
-                <input type="password" name="password" id="password" maxlength="100" required></input>
-                <br><br>
-                <br>
-
-                <div class="cnt_buttons">
-                    <button class="button" type="submit">Submit</button>
-                </div>
-            </form>
-
-        </div>
-    </div>
+    <form action="{% url 'tjioi:login' %}" method="POST" class="mt-6 space-y-5 text-slate-900 dark:text-slate-100">
+      {% csrf_token %}
+      <div>
+        <label class="block text-sm font-medium" for="id">ID</label>
+        <input class="mt-2 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-300 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" type="text" name="id" id="id" maxlength="100" required />
+      </div>
+      <div>
+        <label class="block text-sm font-medium" for="password">Password</label>
+        <input class="mt-2 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-300 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" type="password" name="password" id="password" maxlength="100" required />
+      </div>
+      <button class="button inline-flex rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700" type="submit">Submit</button>
+    </form>
+  </div>
 </div>
 
 {% endblock content %}

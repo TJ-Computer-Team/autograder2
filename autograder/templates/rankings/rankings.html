@@ -2,9 +2,6 @@
 
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
 
 {% block title %}Rankings{% endblock title %}
 
@@ -17,15 +14,14 @@
 {% include "partials/header.html" %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 
-<div class="main-block">
-    <div class="title">Rankings</div>
-    <div class="subtitle">
-        <br>
-        <a href="https://docs.google.com/document/d/14CBtom9g0AKZkmncUQQJwV-dIwG54Arr26FnWfUcdvI/edit?usp=sharing" target="_blank">Learn about how rankings are formulated</a>
+<div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
+    <div class="title text-2xl font-semibold text-slate-900 dark:text-slate-100">Rankings</div>
+    <div class="subtitle mt-2 text-sm text-slate-600 dark:text-slate-300">
+        <a class="underline hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100" href="https://docs.google.com/document/d/14CBtom9g0AKZkmncUQQJwV-dIwG54Arr26FnWfUcdvI/edit?usp=sharing" target="_blank">Learn about how rankings are formulated</a>
     </div>
 </div>
-    <div class="main-block">
-    <table id="rankings">
+  <div class="main-block overflow-x-auto rounded-xl border border-slate-200/80 bg-white/85 p-4 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
+    <table id="rankings" class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
         <tr data-sort-method="none">
             <th>#</th>
             <th>Name</th>

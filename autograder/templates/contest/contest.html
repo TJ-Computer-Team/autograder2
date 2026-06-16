@@ -4,10 +4,6 @@
 
 {% load charat %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
-
 {% block title %}Contest{% endblock title %}
 
 {% block content %}
@@ -15,64 +11,62 @@
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/contestNavbar.html" %}
 
-
 {% if messages %}
-{% for message in messages  %}
-<div class="main-block small-padding">
-    <div class="info">
-        {{message}}
+  {% for message in messages %}
+    <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-4 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
+      <div class="info text-slate-800 dark:text-slate-200">{{ message }}</div>
     </div>
-</div>
-{% endfor %}
+  {% endfor %}
 {% endif %}
-<div class="main-block">
+
+<div class="mx-auto max-w-6xl space-y-6 px-4 py-6">
+  <div class="main-block overflow-x-auto rounded-xl border border-slate-200/80 bg-white/85 p-4 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
     {% if not_empty == "yes" %}
-    <table>
-    <tr>
-        <th>#</th>
-        <th>Name</th>
-        <th>Points</th>
-        <th>Solved</th>
-    </tr>
-    {% for problem in problems %}
-    <tr>
-        <td class="centertext">{{problem.letter}}</td>
-        <td class="centertext">
-            <a href="{% url "problems:problem" pid=problem.id %}">
-            {{ problem.name }}
-            </a>
-        </td>
-        <td class="centertext">{{ problem.points }}</td>
-        <td class="centertext">{{ problem.solves }}</td>
-    </tr>
-    {% endfor %}
-    </table>
+      <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+        <thead class="bg-slate-50 dark:bg-slate-800">
+          <tr>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">#</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Name</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Points</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Solved</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-slate-950">
+          {% for problem in problems %}
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800">
+              <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200">{{ problem.letter }}</td>
+              <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200"><a class="underline hover:text-slate-900 dark:hover:text-white" href="{% url "problems:problem" pid=problem.id %}">{{ problem.name }}</a></td>
+              <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200">{{ problem.points }}</td>
+              <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200">{{ problem.solves }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     {% else %}
-    <div class="info">
-        No problems yet!
-    </div>
+      <div class="info text-slate-700 dark:text-slate-200">No problems yet!</div>
     {% endif %}
-</div>
-<div class="main-block small-padding">
-    <div class="info">
-        <p id="countdown">Contest Has Ended</p>
+  </div>
+
+  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-4 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
+    <div class="info text-slate-700 dark:text-slate-200">
+      <p id="countdown">Contest Has Ended</p>
     </div>
-</div>
-{% if editorial is not None %}
-<div class="main-block small-padding">
-    <div class="info">
-    <a href="{{ editorial }}" target="_blank">Editorial</a>
+  </div>
+
+  {% if editorial is not None %}
+  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-4 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
+    <div class="info text-slate-700 dark:text-slate-200">
+      <a class="underline hover:text-slate-900 dark:hover:text-white" href="{{ editorial }}" target="_blank">Editorial</a>
     </div>
+  </div>
+  {% endif %}
+
+  <div class="option-buttons flex flex-wrap gap-3">
+    <a href="{% url "runtests:submitcontest" cid=cid %}" class="inline-flex rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-700">Submit</a>
+    <a href="{% url "contests:contests" %}" class="inline-flex rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">Back</a>
+  </div>
 </div>
-{% endif %}
-<div class="option-buttons">
-    <a href="{% url "runtests:submitcontest" cid=cid %}">
-    <div class="button">Submit</div>
-    </a>
-    <a href="{% url "contests:contests" %}">
-    <div class="button">Back</div>
-    </a>
-</div>
+
 <script>
     const contestTimestamp = {{ timeStatus|date:"U" }};
     let myVar = setInterval(myTimer, 1000);

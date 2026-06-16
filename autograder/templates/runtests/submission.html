@@ -2,10 +2,6 @@
 
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
-
 {% block title %}Viewing Submission{% endblock title %}
 
 {% block head %}
@@ -31,37 +27,24 @@ onload="auto_grow()"
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/header.html" %}
 
-<div class="main-block">
+<div class="mx-auto max-w-5xl px-4 py-6 space-y-6">
+  <div class="rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
     {% if submission %}
-
-    <div class="title">
-        Problem: {{submission.name}}, Language:
-        {{submission.language}}, Runtime:
-        {{submission.runtime}}ms, Verdict:
-        {{submission.verdict}}, Time: {{submission.timestamp}}
-        {% if admin %} - Viewing as Admin {% endif %}
-    </div>
-    <br/>
-    <textarea id="usercode" style="width: 100%; font-size: 1.5em" rows="4", cols="50" readonly>{{submission.code}}</textarea>
-    <br/>
-    <textarea id="feedback" style="width: 100%; font-size: 1.5em" rows="4", cols="50" readonly>{{insight}}</textarea>
+      <div class="title text-2xl font-semibold text-slate-900 dark:text-slate-100">Problem: {{ submission.name }}, Language: {{ submission.language }}, Runtime: {{ submission.runtime }}ms, Verdict: {{ submission.verdict }}, Time: {{ submission.timestamp }}{% if admin %} - Viewing as Admin{% endif %}</div>
+      <div class="mt-5 space-y-4">
+        <textarea id="usercode" class="w-full min-h-[16rem] rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-lg font-mono leading-relaxed text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" readonly>{{ submission.code }}</textarea>
+        <textarea id="feedback" class="w-full min-h-[12rem] rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-lg font-mono leading-relaxed text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" readonly>{{ insight }}</textarea>
+      </div>
     {% else %}
-    <div class="title">
-        {{insight}}
-    </div>
+      <div class="title text-2xl font-semibold text-slate-900 dark:text-slate-100">{{ insight }}</div>
     {% endif %}
-</div>
-<div class="option-buttons">
+  </div>
+  <div class="flex flex-wrap gap-3">
     {% if submission %}
-    <a href="{% url "problems:problem" submission.problem.id %}">
-        <div class="button">Problem</div>
-    </a>
+      <a href="{% url "problems:problem" submission.problem.id %}" class="inline-flex rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-700">Problem</a>
     {% endif %}
-    <a href="{% url "runtests:status" page=1 %}">
-        <div class="button">Back</div>
-    </a>
-
-
+    <a href="{% url "runtests:status" page=1 %}" class="inline-flex rounded-xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">Back</a>
+  </div>
 </div>
 
 {% endblock content %}

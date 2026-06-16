@@ -2,9 +2,6 @@
 
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
 
 {% block title %}Problemset{% endblock title %}
 
@@ -12,16 +9,14 @@
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/header.html" %}
 
-<div class="main-block">
-    <div class="title">Problemset</div>
+<div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
+    <div class="title text-2xl font-semibold text-slate-900 dark:text-slate-100">Problemset</div>
 </div>
-<div class="main-block" id="problems">
-    <ul class="sl">
-        {% for problem in problems  %}
-            <li class="sl">
-                <a href="{% url "problems:problem" pid=problem.id %}">
-                    <div class="problem-text">{{problem.id}} - {{ problem.name }}</div>
-                </a>
+<div class="main-block space-y-3 rounded-xl border border-slate-200/80 bg-white/85 p-4 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80" id="problems">
+    <ul class="space-y-3">
+        {% for problem in problems %}
+            <li class="rounded-2xl border border-slate-200/70 bg-slate-50 p-4 transition hover:border-slate-300 hover:bg-slate-100 dark:border-slate-700/70 dark:bg-slate-950 dark:hover:border-slate-600 dark:hover:bg-slate-900">
+                <a href="{% url "problems:problem" pid=problem.id %}" class="block text-base font-medium text-slate-900 dark:text-slate-100">{{ problem.id }} - {{ problem.name }}</a>
             </li>
         {% endfor %}
     </ul>

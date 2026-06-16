@@ -2,84 +2,57 @@
 
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
-
 {% block title %}Submissions{% endblock title %}
 
 {% block content %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/header.html" %}
-<div class="main-block">
-    <div class="title">
-        Submissions {% if admin %} - Viewing as Admin{% endif %}
+<div class="mx-auto max-w-6xl px-4 py-6">
+  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
+    <div class="title text-2xl font-semibold text-slate-900 dark:text-slate-100">Submissions {% if admin %}- Viewing as Admin{% endif %}</div>
+  </div>
+  <div id="submissions" class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-4 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
+    <div class="option-buttons mb-4 flex flex-wrap gap-3">
+      {% if mine %}
+        <a href="{% url "runtests:status" mine=False cid=cid page=1 %}" class="inline-flex rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">View All</a>
+      {% else %}
+        <a href="{% url "runtests:status" mine=True cid=cid page=1 %}" class="inline-flex rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">View Mine Only</a>
+      {% endif %}
     </div>
-</div>
-
-<div class="main-block" id="submissions">
-    <div class="option-buttons">
-    {% if mine %}
-    <a href="{% url "runtests:status" mine=False cid=cid page=1 %}">
-        <div class="button">View All</div>
-    </a>
-    {% else %}
-    <a href="{% url "runtests:status" mine=True cid=cid page=1 %}">
-        <div class="button">View Mine Only</div>
-    </a>
-    {% endif %}
-    </div>
-    <table>
+    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+      <thead class="bg-slate-50 dark:bg-slate-800">
         <tr>
-            <th>Submission</th>
-            <th>User</th>
-            <th>Problem</th>
-            <th>Langauge</th>
-            <th>Runtime</th>
-            <th>Verdict</th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Submission</th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">User</th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Problem</th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Language</th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Runtime</th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Verdict</th>
         </tr>
-        {% for submission in submissions  %}
-        <tr class="submission-item" data-submission-id="{{ submission.id }}">
-            <td>
-                <a href="{% url "runtests:submission" submission.id %}">
-                    View #{{submission.id}}
-                </a>
-            </td>
-                <td>
-                    <a href="{% url "index:user_profile" submission.usr.id %}">
-                        {{submission.usr.display_name}}
-                    </a>
-                </td>
-            <td>
-                <a href="{% url "problems:problem" submission.problem.id %}">
-                    {{submission.problem.name}}
-                </a>
-            </td>
-            <td>
-                {{submission.language}}
-            </td>
-            <td class="submission-runtime">
-                {{submission.runtime}}ms
-            </td>
-            <td class="submission-status">
-                {{submission.verdict}}
-            </td>
-        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-slate-950">
+        {% for submission in submissions %}
+          <tr class="submission-item hover:bg-slate-50 dark:hover:bg-slate-800" data-submission-id="{{ submission.id }}">
+            <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200"><a class="underline hover:text-slate-900 dark:hover:text-white" href="{% url "runtests:submission" submission.id %}">View #{{ submission.id }}</a></td>
+            <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200"><a class="underline hover:text-slate-900 dark:hover:text-white" href="{% url "index:user_profile" submission.usr.id %}">{{ submission.usr.display_name }}</a></td>
+            <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200"><a class="underline hover:text-slate-900 dark:hover:text-white" href="{% url "problems:problem" submission.problem.id %}">{{ submission.problem.name }}</a></td>
+            <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200">{{ submission.language }}</td>
+            <td class="submission-runtime px-4 py-3 text-sm text-slate-700 dark:text-slate-200">{{ submission.runtime }}ms</td>
+            <td class="submission-status px-4 py-3 text-sm text-slate-700 dark:text-slate-200">{{ submission.verdict }}</td>
+          </tr>
         {% endfor %}
+      </tbody>
     </table>
-    <div class="option-buttons">
-    {% if page_obj.has_previous %}
-    <a href="{% url "runtests:status" mine=mine cid=cid page=page_obj.previous_page_number %}">
-        <div class="button">Previous</div>
-    </a>
-    {% endif %}
-     <div class="button">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
-    {% if page_obj.has_next %}
-    <a href="{% url "runtests:status" mine=mine cid=cid page=page_obj.next_page_number %}">
-         <div class="button">Next</div>
-    </a>
-    {% endif %}
-</div>
+    <div class="option-buttons mt-4 flex flex-wrap gap-3 text-sm">
+      {% if page_obj.has_previous %}
+        <a href="{% url "runtests:status" mine=mine cid=cid page=page_obj.previous_page_number %}" class="inline-flex rounded-xl bg-slate-900 px-4 py-2 text-white hover:bg-slate-700">Previous</a>
+      {% endif %}
+      <div class="rounded-xl border border-slate-200/80 bg-slate-50 px-4 py-2 text-slate-700 dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-200">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
+      {% if page_obj.has_next %}
+        <a href="{% url "runtests:status" mine=mine cid=cid page=page_obj.next_page_number %}" class="inline-flex rounded-xl bg-slate-900 px-4 py-2 text-white hover:bg-slate-700">Next</a>
+      {% endif %}
+    </div>
+  </div>
 </div>
 
 <script>
