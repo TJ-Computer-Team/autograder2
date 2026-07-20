@@ -8,6 +8,10 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
 
 uv sync
+if [ ! -d "$PROJECT_ROOT/node_modules/@tailwindcss/cli" ]; then
+    npm ci --no-audit --no-fund
+fi
+npm run build:css
 uv run manage.py collectstatic --noinput
 
 uv run manage.py makemigrations --noinput

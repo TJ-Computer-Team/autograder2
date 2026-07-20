@@ -6,7 +6,9 @@ logger = logging.getLogger(__name__)
 def active_nav_item(request):
     path = request.path
 
-    if path.startswith("/contests/"):
+    if path == "/":
+        active = "home"
+    elif path.startswith("/contests/"):
         active = "contests"
     elif path.startswith("/problems/"):
         active = "problems"

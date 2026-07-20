@@ -2,7 +2,6 @@ from ..oauth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
-from django_user_agents.utils import get_user_agent
 from .models import GraderUser, ProblemOfTheWeek
 from ..rankings.models import RatingChange
 from django.http import JsonResponse
@@ -53,22 +52,8 @@ logger = logging.getLogger(__name__)
 # Create your views here.
 
 
-def mobile_home(request):
-    user_agent = get_user_agent(request)
-
-    if not user_agent.is_mobile:
-        return redirect("/")
-    return render(request, "index/mobile.html")
-
-
 def index_view(request):
-    if request.user.is_authenticated:
-        return redirect("index:profile")
-
-    context = {
-        "tjioi": settings.TJIOI_MODE,
-    }
-    return render(request, "index/index.html", context)
+    return render(request, "index/home.html", {"active": "home"})
 
 
 @login_required

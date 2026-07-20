@@ -13,7 +13,6 @@ urlpatterns = [
     path("update_stats/", views.update_stats, name="update_stats"),
     path("info/", views.info_view, name="info"),
     path("potw/", views.potw_view, name="potw"),
-    path("mobile/", views.mobile_home, name="mobile"),
     path("toggle_particles/", views.toggle_particles, name="toggle_particles"),
     path("validation_settings/", views.validation_settings_view, name="validation_settings"),
 ]

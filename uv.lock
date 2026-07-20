@@ -110,7 +110,6 @@ dependencies = [
     { name = "daphne" },
     { name = "datetime" },
     { name = "django" },
-    { name = "django-user-agents" },
     { name = "logging" },
     { name = "psycopg" },
     { name = "python-decouple" },
@@ -119,8 +118,6 @@ dependencies = [
     { name = "requests" },
     { name = "ruff" },
     { name = "social-auth-app-django" },
-    { name = "ua-parser" },
-    { name = "user-agents" },
 ]
 
 [package.metadata]
@@ -132,7 +129,6 @@ requires-dist = [
     { name = "daphne", specifier = ">=4.2.1" },
     { name = "datetime", specifier = ">=6.0" },
     { name = "django", specifier = ">=5.2.13" },
-    { name = "django-user-agents", specifier = ">=0.4.0" },
     { name = "logging", specifier = ">=0.4.9.6" },
     { name = "psycopg", specifier = ">=3.2.9" },
     { name = "python-decouple", specifier = ">=3.8" },
@@ -141,8 +137,6 @@ requires-dist = [
     { name = "requests", specifier = ">=2.32.3" },
     { name = "ruff", specifier = ">=0.11.2" },
     { name = "social-auth-app-django", specifier = ">=5.4.3" },
-    { name = "ua-parser", specifier = ">=1.0.2" },
-    { name = "user-agents", specifier = ">=2.2.0" },
 ]
 
 [[package]]
@@ -593,19 +587,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/1f/c5/c69e338eb2959f641045802e5ea87ca4bf5ac90c5fd08953ca10742fad51/django-5.2.13.tar.gz", hash = "sha256:a31589db5188d074c63f0945c3888fad104627dfcc236fb2b97f71f89da33bc4", size = 10890368, upload-time = "2026-04-07T14:02:15.072Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/59/b1/51ab36b2eefcf8cdb9338c7188668a157e29e30306bfc98a379704c9e10d/django-5.2.13-py3-none-any.whl", hash = "sha256:5788fce61da23788a8ce6f02583765ab060d396720924789f97fa42119d37f7a", size = 8310982, upload-time = "2026-04-07T14:02:08.883Z" },
-]
-
-[[package]]
-name = "django-user-agents"
-version = "0.4.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-    { name = "user-agents" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/37/f2/dd96cc880d7549cc9f67c8b1ad8e6695f9731658fdf8aa476f0bcb9c89c7/django-user_agents-0.4.0.tar.gz", hash = "sha256:cda8ae2146cee30e6867a07943f56ecc570b4391d725ab5309901a8b3e4a3514", size = 8501, upload-time = "2019-06-22T13:33:50.372Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/6c/a3/31b2728702f13328cc65d6c8ed652ad8125a9a71489e445c11f188b39f79/django_user_agents-0.4.0-py3-none-any.whl", hash = "sha256:cd9d9f7158b23c5237b2dacb0bc4fffdf77fefe1d2633b5814d3874288ebdb5d", size = 8616, upload-time = "2019-06-22T13:33:48.259Z" },
 ]
 
 [[package]]
@@ -1203,44 +1184,12 @@ wheels = [
 ]
 
 [[package]]
-name = "ua-parser"
-version = "1.0.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "ua-parser-builtins" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/90/98/5e4b52d772a048af122a6fc5ce365c311efb9f5e79c55fd4fdd7c9f59e83/ua_parser-1.0.2.tar.gz", hash = "sha256:bab404ad42fb37f943107da2f6003ffc79724d11cc95076a7a539513371779da", size = 33239, upload-time = "2026-04-05T20:14:28.229Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/a9/7c/6367995ff57aaa2d9e1055adbaec2519cf5a979780a83a93fdf8c6ec37be/ua_parser-1.0.2-py3-none-any.whl", hash = "sha256:0f8e6d0484af2a9ff804bba5a4fe696e87c028eaba98ad9a7dfae873fef7788a", size = 31219, upload-time = "2026-04-05T20:14:26.913Z" },
-]
-
-[[package]]
-name = "ua-parser-builtins"
-version = "0.18.0.post1"
-source = { registry = "https://pypi.org/simple" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/6f/d3/13adff37f15489c784cc7669c35a6c3bf94b87540229eedf52ef2a1d0175/ua_parser_builtins-0.18.0.post1-py3-none-any.whl", hash = "sha256:eb4f93504040c3a990a6b0742a2afd540d87d7f9f05fd66e94c101db1564674d", size = 86077, upload-time = "2024-12-05T18:44:36.732Z" },
-]
-
-[[package]]
 name = "urllib3"
 version = "2.6.3"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/c7/24/5f1b3bdffd70275f6661c76461e25f024d5a38a46f04aaca912426a2b1d3/urllib3-2.6.3.tar.gz", hash = "sha256:1b62b6884944a57dbe321509ab94fd4d3b307075e0c2eae991ac71ee15ad38ed", size = 435556, upload-time = "2026-01-07T16:24:43.925Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/39/08/aaaad47bc4e9dc8c725e68f9d04865dbcb2052843ff09c97b08904852d84/urllib3-2.6.3-py3-none-any.whl", hash = "sha256:bf272323e553dfb2e87d9bfd225ca7b0f467b919d7bbd355436d3fd37cb0acd4", size = 131584, upload-time = "2026-01-07T16:24:42.685Z" },
-]
-
-[[package]]
-name = "user-agents"
-version = "2.2.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "ua-parser" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/e3/e1/63c5bfb485a945010c8cbc7a52f85573561737648d36b30394248730a7bc/user-agents-2.2.0.tar.gz", hash = "sha256:d36d25178db65308d1458c5fa4ab39c9b2619377010130329f3955e7626ead26", size = 9525, upload-time = "2020-08-23T06:01:56.382Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/8f/1c/20bb3d7b2bad56d881e3704131ddedbb16eb787101306887dff349064662/user_agents-2.2.0-py3-none-any.whl", hash = "sha256:a98c4dc72ecbc64812c4534108806fb0a0b3a11ec3fd1eafe807cee5b0a942e7", size = 9614, upload-time = "2020-08-23T06:01:54.047Z" },
 ]
 
 [[package]]

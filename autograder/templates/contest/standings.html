@@ -11,31 +11,32 @@
 {% block content %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/header.html" %}
-{% include "partials/contestNavbar.html" %}
 <div class="mx-auto max-w-7xl px-4 py-6">
-  <div class="main-block overflow-x-auto rounded-xl border border-slate-200/80 bg-white/85 p-4 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
-    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-      <thead class="bg-slate-50 dark:bg-slate-800">
+  <div class="main-block overflow-x-auto">
+    <table class="min-w-full border-collapse text-sm">
+      <thead class="border-b border-neutral-300 text-xs uppercase tracking-wide text-neutral-600 dark:border-neutral-700 dark:text-neutral-300">
         <tr>
-          <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">#</th>
-          <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Name</th>
-          <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Points</th>
-          <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Penalty</th>
+          <th class="px-4 py-3 text-left font-semibold">Place</th>
+          <th class="px-4 py-3 text-left font-semibold">Name</th>
+          <th class="px-4 py-3 text-left font-semibold">Score</th>
           {% for problem in problems %}
-            <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">{{ "ABCDEFGHIJKLMNOPQRSTUVWXYZ"|char_at:forloop.counter0 }}</th>
+            <th class="px-4 py-3 text-left font-semibold">{{ "ABCDEFGHIJKLMNOPQRSTUVWXYZ"|char_at:forloop.counter0 }}</th>
           {% endfor %}
         </tr>
       </thead>
-      <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-slate-950">
+      <tbody class="divide-y divide-neutral-200 bg-white dark:divide-neutral-800">
             {% for participant in load %}
-              <tr class="hover:bg-slate-50 dark:hover:bg-slate-800">
-                <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200">{{ participant.rank }}</td>
-                <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200"><a class="underline hover:text-slate-900 dark:hover:text-white" href="{% url "index:user_profile" participant.id %}">{{ participant.name }}</a></td>
-                <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200">{{ participant.solved }}</td>
-                <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200">{{ participant.penalty }}</td>
-                {% for problem_score in participant.problems %}
-                  <td class="px-4 py-3 text-sm {% if problem_score > 0 %}text-emerald-600{% elif problem_score < 0 %}text-rose-500{% else %}text-slate-700 dark:text-slate-200{% endif %}">{{ problem_score }}</td>
+              <tr class="{% if participant.rank == 1 %}bg-sky-100 dark:bg-sky-950/60{% elif participant.rank == 2 %}{% elif participant.rank == 3 %}bg-blue-50 dark:bg-blue-950/40{% endif %}">
+                <td class="px-4 py-3 font-semibold text-neutral-900 dark:text-neutral-100">{{ participant.rank }}</td>
+                <td class="px-4 py-3 text-neutral-700 dark:text-neutral-200"><a class="font-medium text-neutral-900 hover:text-sky-700 hover:underline dark:text-neutral-100 dark:hover:text-sky-300" href="{% url "index:user_profile" participant.id %}">{{ participant.name }}</a></td>
+                <td class="px-4 py-3 font-semibold text-neutral-900 dark:text-neutral-100">{{ participant.score|floatformat:2 }}</td>
+                {% for problem_result in participant.problems %}
+                  <td class="px-4 py-3 {% if problem_result.accepted %}font-medium text-emerald-700 dark:text-emerald-300{% elif problem_result.wrong > 0 %}text-red-600 dark:text-red-300{% else %}text-neutral-500 dark:text-neutral-400{% endif %}">{{ problem_result.display }}</td>
                 {% endfor %}
+              </tr>
+            {% empty %}
+              <tr>
+                <td class="px-4 py-6 text-neutral-500 dark:text-neutral-400" colspan="{{ pnum|add:3 }}">No standings yet.</td>
               </tr>
             {% endfor %}
         </tbody>

@@ -12,7 +12,6 @@ dependencies = [
     "daphne>=4.2.1",
     "django>=5.2.13",
     "datetime>=6.0",
-    "django-user-agents>=0.4.0",
     "logging>=0.4.9.6",
     "psycopg>=3.2.9",
     "python-decouple>=3.8",
@@ -21,8 +20,6 @@ dependencies = [
     "requests>=2.32.3",
     "ruff>=0.11.2",
     "social-auth-app-django>=5.4.3",
-    "ua-parser>=1.0.2",
-    "user-agents>=2.2.0",
 ]
 
 [tool.ruff]

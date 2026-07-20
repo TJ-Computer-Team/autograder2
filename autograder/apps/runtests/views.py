@@ -58,6 +58,8 @@ def submit_view(request, cid=None, pid=None):
 
         problems = problems.order_by("contest_letter")
         context["contest"] = contest
+        context["contest_nav"] = True
+        context["cid"] = cid
         context["problems"] = problems
 
     else:

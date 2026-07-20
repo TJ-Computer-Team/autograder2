@@ -8,35 +8,35 @@
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 
 <div class="mx-auto max-w-6xl space-y-6 px-4 py-6">
-  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
-    <div class="title text-2xl font-semibold text-slate-900 dark:text-slate-100">Problem of the Week</div>
+  <div class="main-block">
+    <div class="title text-2xl font-semibold text-neutral-900 dark:text-neutral-100">Problem of the Week</div>
   </div>
-  <div class="main-block grid gap-6 md:grid-cols-3 rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
-    <div class="rounded-2xl border border-slate-200/70 bg-slate-50 p-5 dark:border-slate-700/70 dark:bg-slate-950">
-      <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Problem of the Week: Beginner</h3>
-      <p class="mt-2 text-slate-700 dark:text-slate-200">{{ beginner.title|default:'Problem of the Week: Beginner' }}</p>
+  <div class="main-block grid gap-6 md:grid-cols-3 md:divide-x md:divide-neutral-200 md:dark:divide-neutral-700">
+    <div class="p-5">
+      <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Problem of the Week: Beginner</h3>
+      <p class="mt-2 text-neutral-700 dark:text-neutral-200">{{ beginner.title|default:'Problem of the Week: Beginner' }}</p>
       {% if beginner and beginner.link %}
-        <a class="mt-4 inline-flex rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700" target="_blank" href="{{ beginner.link }}">Click to see</a>
+        <a class="mt-4 inline-flex rounded-xl px-4 py-2 text-sm font-semibold text-sky-700 hover:bg-sky-50 hover:underline dark:text-sky-300 dark:hover:bg-sky-950/40" target="_blank" href="{{ beginner.link }}">Click to see</a>
       {% else %}
-        <button class="mt-4 inline-flex cursor-not-allowed rounded-xl bg-slate-300 px-4 py-2 text-sm font-semibold text-slate-500" disabled>Link not set</button>
+        <button class="mt-4 inline-flex cursor-not-allowed rounded-xl bg-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-500" disabled>Link not set</button>
       {% endif %}
     </div>
-    <div class="rounded-2xl border border-slate-200/70 bg-slate-50 p-5 dark:border-slate-700/70 dark:bg-slate-950">
-      <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Problem of the Week: Intermediate</h3>
-      <p class="mt-2 text-slate-700 dark:text-slate-200">{{ intermediate.title|default:'Problem of the Week: Intermediate' }}</p>
+    <div class="p-5">
+      <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Problem of the Week: Intermediate</h3>
+      <p class="mt-2 text-neutral-700 dark:text-neutral-200">{{ intermediate.title|default:'Problem of the Week: Intermediate' }}</p>
       {% if intermediate and intermediate.link %}
-        <a class="mt-4 inline-flex rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700" target="_blank" href="{{ intermediate.link }}">Click to see</a>
+        <a class="mt-4 inline-flex rounded-xl px-4 py-2 text-sm font-semibold text-sky-700 hover:bg-sky-50 hover:underline dark:text-sky-300 dark:hover:bg-sky-950/40" target="_blank" href="{{ intermediate.link }}">Click to see</a>
       {% else %}
-        <button class="mt-4 inline-flex cursor-not-allowed rounded-xl bg-slate-300 px-4 py-2 text-sm font-semibold text-slate-500" disabled>Link not set</button>
+        <button class="mt-4 inline-flex cursor-not-allowed rounded-xl bg-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-500" disabled>Link not set</button>
       {% endif %}
     </div>
-    <div class="rounded-2xl border border-slate-200/70 bg-slate-50 p-5 dark:border-slate-700/70 dark:bg-slate-950">
-      <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Problem of the Week: Advanced</h3>
-      <p class="mt-2 text-slate-700 dark:text-slate-200">{{ advanced.title|default:'Problem of the Week: Advanced' }}</p>
+    <div class="p-5">
+      <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Problem of the Week: Advanced</h3>
+      <p class="mt-2 text-neutral-700 dark:text-neutral-200">{{ advanced.title|default:'Problem of the Week: Advanced' }}</p>
       {% if advanced and advanced.link %}
-        <a class="mt-4 inline-flex rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700" target="_blank" href="{{ advanced.link }}">Click to see</a>
+        <a class="mt-4 inline-flex rounded-xl px-4 py-2 text-sm font-semibold text-sky-700 hover:bg-sky-50 hover:underline dark:text-sky-300 dark:hover:bg-sky-950/40" target="_blank" href="{{ advanced.link }}">Click to see</a>
       {% else %}
-        <button class="mt-4 inline-flex cursor-not-allowed rounded-xl bg-slate-300 px-4 py-2 text-sm font-semibold text-slate-500" disabled>Link not set</button>
+        <button class="mt-4 inline-flex cursor-not-allowed rounded-xl bg-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-500" disabled>Link not set</button>
       {% endif %}
     </div>
   </div>

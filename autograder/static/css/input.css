@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+@source "../../templates/**/*.html";
+@source "../../apps/**/*.py";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+}
+
+@layer components {
+  .main-block {
+    @apply mx-auto mb-4 max-w-5xl rounded-none border-b border-x-0 border-t-0 border-neutral-300 bg-transparent p-5 shadow-none dark:border-neutral-700;
+  }
+
+  .main-block:has(> .title:only-child) {
+    display: none;
+  }
+
+  .title {
+    @apply text-2xl font-normal tracking-normal text-neutral-900 dark:text-neutral-100;
+  }
+
+  .subtitle {
+    @apply text-neutral-600 dark:text-neutral-300;
+  }
+
+  .info {
+    @apply leading-7 text-neutral-800 dark:text-neutral-200;
+  }
+
+  .button,
+  .option-buttons a,
+  button[type="submit"] {
+    @apply rounded-none border border-transparent bg-transparent px-4 py-2 text-sm font-medium text-sky-700 shadow-none hover:bg-sky-50 dark:text-sky-300 dark:hover:bg-sky-950/40;
+  }
+
+  input,
+  select,
+  textarea {
+    @apply rounded-none;
+  }
+}
+
+.rounded-md,
+.rounded-lg,
+.rounded-xl,
+.rounded-2xl,
+.rounded-3xl {
+  border-radius: 2px !important;
+}
+
+.shadow,
+.shadow-sm,
+.shadow-xl {
+  box-shadow: none !important;
+}
+
+main .border:not(input):not(select):not(textarea):not(button):not(a) {
+  border-left-width: 0 !important;
+  border-right-width: 0 !important;
+  background-color: transparent !important;
+}
+
+main aside .border:not(input):not(select):not(textarea):not(button):not(a) {
+  border-top-width: 0 !important;
+  border-bottom-width: 0 !important;
+  border-left-width: 1px !important;
+  border-right-width: 0 !important;
+}

@@ -5,24 +5,25 @@
 {% block title %}TJIOI Login{% endblock title %}
 
 {% block content %}
+{% include "partials/header.html" %}
 
 <div class="mx-auto max-w-md px-4 py-10">
-  <div class="rounded-3xl border border-slate-200/80 bg-white/85 p-8 shadow-xl dark:border-slate-700/80 dark:bg-slate-900/80">
-    <div class="title text-2xl font-semibold text-slate-900 dark:text-slate-100">TJIOI Login</div>
+  <div>
+    <div class="title text-2xl font-semibold text-neutral-900 dark:text-neutral-100">TJIOI Login</div>
     {% if error %}
       <div class="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-700/80 dark:bg-red-950/80 dark:text-red-200">{{ error }}</div>
     {% endif %}
-    <form action="{% url 'tjioi:login' %}" method="POST" class="mt-6 space-y-5 text-slate-900 dark:text-slate-100">
+    <form action="{% url 'tjioi:login' %}" method="POST" class="mt-6 space-y-5 text-neutral-900 dark:text-neutral-100">
       {% csrf_token %}
       <div>
         <label class="block text-sm font-medium" for="id">ID</label>
-        <input class="mt-2 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-300 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" type="text" name="id" id="id" maxlength="100" required />
+        <input class="mt-2 w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-300 dark:border-neutral-700 dark:text-neutral-100" type="text" name="id" id="id" maxlength="100" required />
       </div>
       <div>
         <label class="block text-sm font-medium" for="password">Password</label>
-        <input class="mt-2 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-300 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" type="password" name="password" id="password" maxlength="100" required />
+        <input class="mt-2 w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-300 dark:border-neutral-700 dark:text-neutral-100" type="password" name="password" id="password" maxlength="100" required />
       </div>
-      <button class="button inline-flex rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700" type="submit">Submit</button>
+      <button class="button inline-flex rounded-xl px-6 py-3 text-sm font-semibold" type="submit">Submit</button>
     </form>
   </div>
 </div>

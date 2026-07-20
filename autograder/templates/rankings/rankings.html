@@ -14,32 +14,39 @@
 {% include "partials/header.html" %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 
-<div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
-    <div class="title text-2xl font-semibold text-slate-900 dark:text-slate-100">Rankings</div>
-    <div class="subtitle mt-2 text-sm text-slate-600 dark:text-slate-300">
-        <a class="underline hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100" href="https://docs.google.com/document/d/14CBtom9g0AKZkmncUQQJwV-dIwG54Arr26FnWfUcdvI/edit?usp=sharing" target="_blank">Learn about how rankings are formulated</a>
+<div class="main-block">
+    <div class="title text-2xl font-semibold text-neutral-900 dark:text-neutral-100">Rankings</div>
+    <div class="subtitle mt-2 text-sm text-neutral-600 dark:text-neutral-300">
+        <a class="underline hover:text-sky-700 dark:text-neutral-300 dark:hover:text-neutral-100" href="https://docs.google.com/document/d/14CBtom9g0AKZkmncUQQJwV-dIwG54Arr26FnWfUcdvI/edit?usp=sharing" target="_blank">Learn about how rankings are formulated</a>
     </div>
 </div>
-  <div class="main-block overflow-x-auto rounded-xl border border-slate-200/80 bg-white/85 p-4 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
-    <table id="rankings" class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+  <div class="main-block overflow-x-auto">
+    <table id="rankings" class="min-w-full border-collapse text-sm">
+        <thead class="border-b border-neutral-300 text-left text-xs uppercase tracking-wide text-neutral-600 dark:border-neutral-700 dark:text-neutral-300">
         <tr data-sort-method="none">
-            <th>#</th>
-            <th>Name</th>
-            <th>USACO</th>
-            <th>Codeforces</th>
-            <th>In-Houses</th>
-            <th>Index</th>
+            <th class="px-4 py-3">#</th>
+            <th class="px-4 py-3">Name</th>
+            <th class="px-4 py-3">USACO</th>
+            <th class="px-4 py-3">Codeforces</th>
+            <th class="px-4 py-3">In-Houses</th>
+            <th class="px-4 py-3">Index</th>
         </tr>
+        </thead>
+        <tbody class="divide-y divide-neutral-200 dark:divide-neutral-800">
         {% for ranking in rankings %}
-            <tr class="{% if ranking.id == id %}row-highlight{% endif %}">
-            <td class="centertext">{{ ranking.rank }}</td>
-            <td class="centertext"><a href="{% url "index:user_profile" ranking.id %}">{{ ranking.name }}</a></td>
-            <td class="centertext">{{ ranking.usaco }}</td>
-            <td class="centertext">{{ ranking.cf }}</td>
-            <td class="centertext">{{ ranking.inhouse|floatformat:3 }}</td>
-            <td class="centertext">{{ ranking.index|floatformat:3 }}</td>
+            <tr class="{% if ranking.top_five %}bg-sky-50 dark:bg-sky-950/40{% elif ranking.id == id %}{% endif %}">
+            <td class="px-4 py-3 font-medium text-neutral-900 dark:text-neutral-100">{{ ranking.rank }}</td>
+            <td class="px-4 py-3">
+              <a class="font-medium text-neutral-900 hover:text-sky-700 hover:underline dark:text-neutral-100 dark:hover:text-sky-300" href="{% url "index:user_profile" ranking.id %}">{{ ranking.name }}</a>
+              {% if ranking.top_five %}<span class="ml-2 text-xs font-medium text-sky-700 dark:text-sky-300">Top 5</span>{% endif %}
+            </td>
+            <td class="px-4 py-3 text-neutral-700 dark:text-neutral-200">{{ ranking.usaco_label }}</td>
+            <td class="px-4 py-3 text-neutral-700 dark:text-neutral-200">{{ ranking.cf }}</td>
+            <td class="px-4 py-3 text-neutral-700 dark:text-neutral-200">{{ ranking.inhouse|floatformat:3 }}</td>
+            <td class="px-4 py-3 font-medium text-neutral-900 dark:text-neutral-100">{{ ranking.index|floatformat:3 }}</td>
             </tr>
         {% endfor %}
+        </tbody>
     </table>
     </div>
 </div>

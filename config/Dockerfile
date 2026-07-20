@@ -11,6 +11,8 @@ RUN apt update && \
     apt install -y \
         bash \
         git \
+        nodejs \
+        npm \
         postgresql-server-dev-all \
         gcc \
         python3-dev \

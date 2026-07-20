@@ -14,12 +14,20 @@ def rankings_view(request, season):
     if season != settings.CURRENT_SEASON:
         return redirect("rankings:rankings", season=settings.CURRENT_SEASON)
 
+    usaco_divisions = {
+        800: "Bronze",
+        1200: "Silver",
+        1600: "Gold",
+        1900: "Platinum",
+    }
+
     rankings = [
         {
             "id": user.id,
             "name": user.display_name,
             "index": user.index,
             "usaco": user.usaco_rating,
+            "usaco_label": usaco_divisions.get(user.usaco_rating, "Unrated"),
             "cf": user.cf_rating,
             "inhouse": user.inhouse,
         }
@@ -33,7 +41,8 @@ def rankings_view(request, season):
     rankings.sort(key=lambda x: x["index"], reverse=True)
     for i in range(len(rankings)):
         rankings[i]["rank"] = i + 1
+        rankings[i]["top_five"] = i < 5
 
-    context = {"rankings": rankings}
+    context = {"rankings": rankings, "id": request.user.id}
 
     return render(request, "rankings/rankings.html", context)

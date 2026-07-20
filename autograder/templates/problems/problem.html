@@ -22,31 +22,69 @@
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/header.html" %}
 
-<div class="mx-auto max-w-6xl space-y-6 px-4 py-6">
-  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
-    <div class="title text-2xl font-semibold text-slate-900 dark:text-slate-100"><strong>{{ problem.contest_letter }}: {{ problem.name }}</strong></div>
-    <div class="subtitle mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
-      C++ Time Limit: {{ tl_cpp }} seconds<br>
-      Java Time Limit: {{ tl_java }} seconds<br>
-      Python Time Limit: {{ tl_python }} seconds<br>
-      Memory Limit: {{ problem.ml }} megabytes
-    </div>
+<div class="mx-auto grid max-w-7xl gap-5 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+  <div class="min-w-0 space-y-5">
+    <section class="border border-neutral-300 bg-white p-5 dark:border-neutral-700">
+      <div class="title"><strong>{{ problem.contest_letter }}: {{ problem.name }}</strong></div>
+      <div class="subtitle mt-3 text-sm leading-7">
+        C++ Time Limit: {{ tl_cpp }} seconds<br>
+        Java Time Limit: {{ tl_java }} seconds<br>
+        Python Time Limit: {{ tl_python }} seconds<br>
+        Memory Limit: {{ problem.ml }} megabytes
+      </div>
+    </section>
+    <section class="border border-neutral-300 bg-white p-5 dark:border-neutral-700">
+      <div class="info prose prose-neutral max-w-none dark:prose-invert">{{ statement|safe }}</div>
+    </section>
+    <section class="border border-neutral-300 bg-white p-5 dark:border-neutral-700">
+      <div class="info prose prose-neutral max-w-none dark:prose-invert"><strong>Input Format</strong><br>{{ inputtxt|safe }}</div>
+    </section>
+    <section class="border border-neutral-300 bg-white p-5 dark:border-neutral-700">
+      <div class="info prose prose-neutral max-w-none dark:prose-invert"><strong>Output Format</strong><br>{{ outputtxt|safe }}</div>
+    </section>
+    <section class="border border-neutral-300 bg-white p-5 dark:border-neutral-700">
+      <div class="info prose prose-neutral max-w-none dark:prose-invert"><strong>Samples</strong><br>{{ samples|safe }}</div>
+    </section>
   </div>
-  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
-    <div class="info prose prose-slate max-w-none dark:prose-invert">{{ statement|safe }}</div>
-  </div>
-  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
-    <div class="info prose prose-slate max-w-none dark:prose-invert"><strong>Input Format</strong><br>{{ inputtxt|safe }}</div>
-  </div>
-  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
-    <div class="info prose prose-slate max-w-none dark:prose-invert"><strong>Output Format</strong><br>{{ outputtxt|safe }}</div>
-  </div>
-  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
-    <div class="info prose prose-slate max-w-none dark:prose-invert"><strong>Samples</strong><br>{{ samples|safe }}</div>
-  </div>
-  <div class="option-buttons flex flex-wrap gap-3">
-    <a href="{% url "runtests:submitproblem" pid=problem.id %}" class="inline-flex rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-700">Submit</a>
-    <a href="{% url "contests:contest" cid=problem.contest.id %}" class="inline-flex rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">Back</a>
-  </div>
+
+  <aside class="space-y-5">
+    <section class="border border-neutral-300 bg-white p-4 dark:border-neutral-700">
+      <h2 class="text-sm font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-300">Contest Problems</h2>
+      <div class="mt-3 divide-y divide-neutral-200 dark:divide-neutral-800">
+        {% for item in sidebar_problems %}
+          <a class="flex items-center gap-3 py-3 text-sm {% if item.current %}font-semibold text-sky-700 dark:text-sky-300{% else %}text-neutral-700 hover:text-sky-700 dark:text-neutral-200 dark:hover:text-sky-300{% endif %}" href="{% url 'problems:problem' item.problem.id %}">
+            <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center {{ item.status.class }}">
+              <i data-lucide="{{ item.status.icon }}" class="h-4 w-4"></i>
+            </span>
+            <span class="min-w-0 truncate">{{ item.problem.contest_letter }}. {{ item.problem.name }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="border border-neutral-300 bg-white p-4 dark:border-neutral-700">
+      <h2 class="text-sm font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-300">Your Submissions</h2>
+      <div class="mt-3 divide-y divide-neutral-200 dark:divide-neutral-800">
+        {% for item in problem_submissions %}
+          <a class="flex items-start gap-3 py-3 text-sm text-neutral-700 hover:text-sky-700 dark:text-neutral-200 dark:hover:text-sky-300" href="{% url 'runtests:submission' item.submission.id %}">
+            <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center {{ item.status.class }}">
+              <i data-lucide="{{ item.status.icon }}" class="h-4 w-4"></i>
+            </span>
+            <span>
+              <span class="block font-medium">{{ item.status.label }}</span>
+              <span class="block text-xs text-neutral-500 dark:text-neutral-400">{{ item.submission.timestamp }}</span>
+            </span>
+          </a>
+        {% empty %}
+          <div class="flex items-center gap-3 py-3 text-sm text-neutral-500 dark:text-neutral-400">
+            <span class="inline-flex h-6 w-6 items-center justify-center text-neutral-500 dark:text-neutral-400">
+              <i data-lucide="circle" class="h-4 w-4"></i>
+            </span>
+            No submissions yet
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  </aside>
 </div>
 {% endblock content %}

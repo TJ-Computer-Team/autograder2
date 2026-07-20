@@ -9,14 +9,15 @@
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/header.html" %}
 
-<div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
-    <div class="title text-2xl font-semibold text-slate-900 dark:text-slate-100">Problemset</div>
+<div class="main-block">
+    <div class="title text-2xl font-semibold text-neutral-900 dark:text-neutral-100">Problemset</div>
 </div>
-<div class="main-block space-y-3 rounded-xl border border-slate-200/80 bg-white/85 p-4 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80" id="problems">
-    <ul class="space-y-3">
+<div class="main-block" id="problems">
+    <ul class="divide-y divide-neutral-200 dark:divide-neutral-700">
         {% for problem in problems %}
-            <li class="rounded-2xl border border-slate-200/70 bg-slate-50 p-4 transition hover:border-slate-300 hover:bg-slate-100 dark:border-slate-700/70 dark:bg-slate-950 dark:hover:border-slate-600 dark:hover:bg-slate-900">
-                <a href="{% url "problems:problem" pid=problem.id %}" class="block text-base font-medium text-slate-900 dark:text-slate-100">{{ problem.id }} - {{ problem.name }}</a>
+            <li class="p-4">
+                <div class="text-base font-medium text-neutral-900 dark:text-neutral-100">{{ problem.id }} - {{ problem.name }}</div>
+                <a href="{% url "problems:problem" pid=problem.id %}" class="mt-2 inline-flex text-sm font-medium text-sky-700 hover:underline dark:text-sky-300">Open problem</a>
             </li>
         {% endfor %}
     </ul>

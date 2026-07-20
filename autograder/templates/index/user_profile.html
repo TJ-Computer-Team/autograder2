@@ -8,23 +8,23 @@
 {% include "partials/header.html" %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 <div class="mx-auto max-w-4xl px-4 py-6">
-  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
-    <div class="title text-2xl font-semibold text-slate-900 dark:text-slate-100">Profile</div>
-    <div class="mt-4 space-y-3 text-slate-700 dark:text-slate-200">
-      <div>Name: <span class="font-medium text-slate-900 dark:text-slate-100">{{ name }}</span></div>
-      <div>Username: <span class="font-medium text-slate-900 dark:text-slate-100">{{ username }}</span></div>
+  <div class="main-block">
+    <div class="title text-2xl font-semibold text-neutral-900 dark:text-neutral-100">Profile</div>
+    <div class="mt-4 space-y-3 text-neutral-700 dark:text-neutral-200">
+      <div>Name: <span class="font-medium text-neutral-900 dark:text-neutral-100">{{ name }}</span></div>
+      <div>Username: <span class="font-medium text-neutral-900 dark:text-neutral-100">{{ username }}</span></div>
       {% if admin %}
-      <div>USACO Division: <span class="font-medium text-slate-900 dark:text-slate-100">{{ usaco }}</span></div>
-      <div>Codeforces Handle: <span class="font-medium text-slate-900 dark:text-slate-100">{{ cf }}</span></div>
+      <div>USACO Division: <span class="font-medium text-neutral-900 dark:text-neutral-100">{{ usaco }}</span></div>
+      <div>Codeforces Handle: <span class="font-medium text-neutral-900 dark:text-neutral-100">{{ cf }}</span></div>
       {% endif %}
     </div>
   </div>
-  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
-    <div class="subtitle text-lg font-semibold text-slate-900 dark:text-slate-100">Rating History</div>
+  <div class="main-block">
+    <div class="subtitle text-lg font-semibold text-neutral-900 dark:text-neutral-100">Rating History</div>
     {% if no_rating_history == "true" %}
-      <div class="mt-4 text-slate-700 dark:text-slate-200">No rating history yet!</div>
+      <div class="mt-4 text-neutral-700 dark:text-neutral-200">No rating history yet!</div>
     {% else %}
-      <div class="mt-4 overflow-x-auto rounded-xl bg-slate-50 p-4 dark:bg-slate-950">
+      <div class="mt-4 overflow-x-auto rounded-xl p-4">
         <canvas id="ratingChart" width="600" height="300"></canvas>
       </div>
     {% endif %}

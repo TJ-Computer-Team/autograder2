@@ -10,20 +10,20 @@
 {% include "partials/header.html" %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 <div class="mx-auto max-w-4xl px-4 py-6">
-  <div class="rounded-xl border border-slate-200/80 bg-white/85 p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
-    <div class="title text-2xl font-semibold text-slate-900 dark:text-slate-100">Profile</div>
+  <div>
+    <div class="title text-2xl font-semibold text-neutral-900 dark:text-neutral-100">Profile</div>
     {% if user.is_staff %}
-      <div class="mt-3 text-sm text-slate-700 dark:text-slate-300"><a class="text-slate-900 underline dark:text-slate-100" href="{% url 'admin:index' %}">Django admin</a></div>
+      <div class="mt-3 text-sm text-neutral-700 dark:text-neutral-300"><a class="text-neutral-900 underline dark:text-neutral-100" href="{% url 'admin:index' %}">Django admin</a></div>
     {% endif %}
-    <div class="mt-6 space-y-3 text-slate-700 dark:text-slate-200">
-      <div>Name: <span class="font-medium text-slate-900 dark:text-slate-100">{{ user.display_name }}</span></div>
-      <div>Username: <span class="font-medium text-slate-900 dark:text-slate-100">{{ user.username }}</span></div>
+    <div class="mt-6 space-y-3 text-neutral-700 dark:text-neutral-200">
+      <div>Name: <span class="font-medium text-neutral-900 dark:text-neutral-100">{{ user.display_name }}</span></div>
+      <div>Username: <span class="font-medium text-neutral-900 dark:text-neutral-100">{{ user.username }}</span></div>
     </div>
     <form id="profileForm" action="{% url 'index:update_stats' %}" method="POST" class="mt-6 space-y-6">
       {% csrf_token %}
       <div>
-        <label class="block text-sm font-medium text-slate-700 dark:text-slate-200" for="usaco_div">USACO Division</label>
-        <select name="usaco_div" id="usaco_div" class="mt-2 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-300 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-200" for="usaco_div">USACO Division</label>
+        <select name="usaco_div" id="usaco_div" class="mt-2 w-full rounded-xl border border-neutral-300 px-4 py-3 text-neutral-900 outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-300 dark:border-neutral-700 dark:text-neutral-100">
           <option value="" {% if user.usaco_division == "Not Participated" %} selected {% endif %}>Not Participated</option>
           <option value="bronze" {% if user.usaco_division == "Bronze" %} selected {% endif %}>Bronze</option>
           <option value="silver" {% if user.usaco_division == "Silver" %} selected {% endif %}>Silver</option>
@@ -32,13 +32,13 @@
         </select>
       </div>
       <div>
-        <label class="block text-sm font-medium text-slate-700 dark:text-slate-200" for="cf_handle">Codeforces Handle</label>
-        <input class="mt-2 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-300 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" name="cf_handle" id="cf_handle" value="{{ cf_handle }}" />
-        <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Leave blank if you don't have one.</p>
+        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-200" for="cf_handle">Codeforces Handle</label>
+        <input class="mt-2 w-full rounded-xl border border-neutral-300 px-4 py-3 text-neutral-900 outline-none transition focus:border-neutral-400 focus:ring-2 focus:ring-neutral-300 dark:border-neutral-700 dark:text-neutral-100" name="cf_handle" id="cf_handle" value="{{ cf_handle }}" />
+        <p class="mt-2 text-sm text-neutral-500 dark:text-neutral-400">Leave blank if you don't have one.</p>
       </div>
       <div id="message-container" class="min-h-[1.5rem] text-sm"></div>
-      <button class="button inline-flex rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700" type="submit">Save</button>
-      <p class="text-sm text-slate-500 dark:text-slate-400">Note: If the entered information is suspicious, it will be verified in-person.</p>
+      <button class="button inline-flex rounded-xl px-6 py-3 text-sm font-semibold" type="submit">Save</button>
+      <p class="text-sm text-neutral-500 dark:text-neutral-400">Note: If the entered information is suspicious, it will be verified in-person.</p>
     </form>
   </div>
 </div>

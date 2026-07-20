@@ -9,62 +9,57 @@
 {% block content %}
 {% include "partials/header.html" %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
-{% include "partials/contestNavbar.html" %}
 
 {% if messages %}
   {% for message in messages %}
-    <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-4 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
-      <div class="info text-slate-800 dark:text-slate-200">{{ message }}</div>
+    <div class="main-block">
+      <div class="info text-neutral-800 dark:text-neutral-200">{{ message }}</div>
     </div>
   {% endfor %}
 {% endif %}
 
 <div class="mx-auto max-w-6xl space-y-6 px-4 py-6">
-  <div class="main-block overflow-x-auto rounded-xl border border-slate-200/80 bg-white/85 p-4 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
+  <div class="main-block overflow-x-auto">
     {% if not_empty == "yes" %}
-      <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-        <thead class="bg-slate-50 dark:bg-slate-800">
+      <table class="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700">
+        <thead>
           <tr>
-            <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">#</th>
-            <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Name</th>
-            <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Points</th>
-            <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Solved</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-neutral-700 dark:text-neutral-300">#</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-neutral-700 dark:text-neutral-300">Name</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-neutral-700 dark:text-neutral-300">Points</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-neutral-700 dark:text-neutral-300">Solved</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-slate-950">
+        <tbody class="divide-y divide-neutral-200 bg-white dark:divide-neutral-700">
           {% for problem in problems %}
-            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800">
-              <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200">{{ problem.letter }}</td>
-              <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200"><a class="underline hover:text-slate-900 dark:hover:text-white" href="{% url "problems:problem" pid=problem.id %}">{{ problem.name }}</a></td>
-              <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200">{{ problem.points }}</td>
-              <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200">{{ problem.solves }}</td>
+            <tr>
+              <td class="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-200">{{ problem.letter }}</td>
+              <td class="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-200"><a class="underline hover:text-sky-700 dark:hover:text-sky-300" href="{% url "problems:problem" pid=problem.id %}">{{ problem.name }}</a></td>
+              <td class="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-200">{{ problem.points }}</td>
+              <td class="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-200">{{ problem.solves }}</td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
     {% else %}
-      <div class="info text-slate-700 dark:text-slate-200">No problems yet!</div>
+      <div class="info text-neutral-700 dark:text-neutral-200">No problems yet!</div>
     {% endif %}
   </div>
 
-  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-4 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
-    <div class="info text-slate-700 dark:text-slate-200">
+  <div class="main-block">
+    <div class="info text-neutral-700 dark:text-neutral-200">
       <p id="countdown">Contest Has Ended</p>
     </div>
   </div>
 
   {% if editorial is not None %}
-  <div class="main-block rounded-xl border border-slate-200/80 bg-white/85 p-4 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80">
-    <div class="info text-slate-700 dark:text-slate-200">
-      <a class="underline hover:text-slate-900 dark:hover:text-white" href="{{ editorial }}" target="_blank">Editorial</a>
+  <div class="main-block">
+    <div class="info text-neutral-700 dark:text-neutral-200">
+      <a class="underline hover:text-sky-700 dark:hover:text-sky-300" href="{{ editorial }}" target="_blank">Editorial</a>
     </div>
   </div>
   {% endif %}
 
-  <div class="option-buttons flex flex-wrap gap-3">
-    <a href="{% url "runtests:submitcontest" cid=cid %}" class="inline-flex rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-700">Submit</a>
-    <a href="{% url "contests:contests" %}" class="inline-flex rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">Back</a>
-  </div>
 </div>
 
 <script>

@@ -88,6 +88,7 @@ def contest_view(request, cid):
         "problems": ordered,
         "user": request.user.id,
         "cid": contest.id,
+        "contest_nav": True,
         "timeStatus": time_message,
         "timeType": time_type,
         "editorial": getattr(contest, "editorial", None),
@@ -113,6 +114,7 @@ def contest_standings_view(request, cid):
     context = {
         "title": standings["title"],
         "cid": cid,
+        "contest_nav": True,
         "pnum": standings["pnum"],
         "load": standings["load"],
         "problems": problems,
@@ -155,6 +157,7 @@ def contest_status_view(request, cid, mine_only, page):
         "title": contest.name,
         "user_id": request.user.id,
         "cid": cid,
+        "contest_nav": True,
         "page_obj": page_obj,
         "submissions": page_obj.object_list,
         "contest_over": timezone.now() > contest.end,
