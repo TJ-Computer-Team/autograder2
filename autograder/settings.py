@@ -179,7 +179,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 TJIOI_MODE = False
 
-CURRENT_SEASON = 2026
+CURRENT_SEASON = 2027
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
