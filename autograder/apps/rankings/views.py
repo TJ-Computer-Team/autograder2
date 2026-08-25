@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.conf import settings
+from django.db.models import Q
 from ..oauth.decorators import login_required
 from ..index.models import GraderUser
 
@@ -14,6 +15,11 @@ def rankings_view(request, season):
     if season != settings.CURRENT_SEASON:
         return redirect("rankings:rankings", season=settings.CURRENT_SEASON)
 
+    graduation_years = range(settings.CURRENT_SEASON, settings.CURRENT_SEASON + 4)
+    graduation_year_filter = Q()
+    for year in graduation_years:
+        graduation_year_filter |= Q(username__startswith=str(year))
+
     rankings = [
         {
             "id": user.id,
@@ -23,7 +29,9 @@ def rankings_view(request, season):
             "cf": user.cf_rating,
             "inhouse": user.inhouse,
         }
-        for user in GraderUser.objects.filter(is_tjioi=False, is_staff=False)
+        for user in GraderUser.objects.filter(
+            graduation_year_filter, is_tjioi=False, is_staff=False
+        )
     ]
 
     rankings = [
