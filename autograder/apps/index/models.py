@@ -5,6 +5,7 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.utils import timezone
 
 
 class GraderUserManager(BaseUserManager):
@@ -49,6 +50,7 @@ class GraderUser(AbstractBaseUser, PermissionsMixin):
     usaco_rating = models.IntegerField(default=800)
     cf_handle = models.CharField(max_length=30, blank=True, null=True)
     cf_rating = models.IntegerField(blank=True, null=True, default=0)
+    cf_verified_at = models.DateTimeField(blank=True, null=True)
     grade = models.CharField(max_length=10, default="N/A")
     first_time = models.BooleanField(default=True)
     is_tjioi = models.BooleanField(default=False)
@@ -88,3 +90,24 @@ class ProblemOfTheWeek(models.Model):
 
     def __str__(self):
         return f"PoTW ({self.get_level_display()})"
+
+
+class CodeforcesVerification(models.Model):
+    STATUS_PENDING = "pending"
+    STATUS_VERIFIED = "verified"
+    STATUS_EXPIRED = "expired"
+    STATUS_FAILED = "failed"
+
+    user = models.ForeignKey(GraderUser, on_delete=models.CASCADE)
+    handle = models.CharField(max_length=30)
+    contest_id = models.IntegerField()
+    problem_index = models.CharField(max_length=5)
+    language = models.CharField(max_length=50)
+    issued_at = models.DateTimeField(default=timezone.now)
+    expires_at = models.DateTimeField()
+    verified_at = models.DateTimeField(blank=True, null=True)
+    last_checked_at = models.DateTimeField(blank=True, null=True)
+    status = models.CharField(max_length=20, default=STATUS_PENDING)
+
+    def __str__(self):
+        return f"CF verify {self.handle} ({self.status})"

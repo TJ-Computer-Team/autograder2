@@ -3,7 +3,10 @@ from django.views.decorators.http import require_POST
 from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 from django_user_agents.utils import get_user_agent
-from .models import GraderUser, ProblemOfTheWeek
+from .models import GraderUser, ProblemOfTheWeek, CodeforcesVerification
+from .cf_utils import pick_random_challenge, verify_cf_submission
+from django.utils import timezone
+from datetime import timedelta
 from ..rankings.models import RatingChange
 from django.http import JsonResponse
 import requests
@@ -96,8 +99,98 @@ def profile_view(request):
 
     cfh = request.user.cf_handle
 
-    context = {"cf_handle": cfh if cfh and len(cfh) > 0 else ""}
+    pending_verification = CodeforcesVerification.objects.filter(
+        user=request.user, status=CodeforcesVerification.STATUS_PENDING
+    ).order_by("-issued_at").first()
+
+    if pending_verification and timezone.now() > pending_verification.expires_at:
+        pending_verification.status = CodeforcesVerification.STATUS_EXPIRED
+        pending_verification.save()
+        pending_verification = None
+
+    cf_verified = request.user.cf_verified_at is not None
+    if pending_verification:
+        cfh = pending_verification.handle
+        cf_verified = False
+
+    context = {
+        "cf_handle": cfh if cfh and len(cfh) > 0 else "",
+        "cf_verified": cf_verified,
+        "pending_verification": pending_verification
+    }
     return render(request, "index/profile.html", context=context)
+
+
+@login_required
+@require_POST
+def start_cf_verification(request):
+    handle = request.POST.get("cf_handle", "").strip()
+    if not handle:
+        return JsonResponse({"status": "error", "message": "Handle is required."})
+
+    CodeforcesVerification.objects.filter(user=request.user, status=CodeforcesVerification.STATUS_PENDING).update(status=CodeforcesVerification.STATUS_EXPIRED)
+
+    contest_id, problem_index, language = pick_random_challenge()
+    
+    issued_at = timezone.now()
+    expires_at = issued_at + timedelta(minutes=30)
+    
+    verification = CodeforcesVerification.objects.create(
+        user=request.user,
+        handle=handle,
+        contest_id=contest_id,
+        problem_index=problem_index,
+        language=language,
+        issued_at=issued_at,
+        expires_at=expires_at,
+        status=CodeforcesVerification.STATUS_PENDING
+    )
+    
+    return JsonResponse({
+        "status": "success",
+        "contest_id": contest_id,
+        "problem_index": problem_index,
+        "language": language,
+        "expires_at": expires_at.isoformat()
+    })
+
+
+@login_required
+def check_cf_verification(request):
+    verification = CodeforcesVerification.objects.filter(
+        user=request.user, 
+        status=CodeforcesVerification.STATUS_PENDING
+    ).order_by("-issued_at").first()
+    
+    if not verification:
+        return JsonResponse({"status": "none"})
+    
+    if timezone.now() > verification.expires_at:
+        verification.status = CodeforcesVerification.STATUS_EXPIRED
+        verification.save()
+        return JsonResponse({"status": "expired"})
+    
+    if verify_cf_submission(verification.handle, verification.contest_id, verification.problem_index, verification.language, verification.issued_at):
+        verification.status = CodeforcesVerification.STATUS_VERIFIED
+        verification.verified_at = timezone.now()
+        verification.save()
+        
+        request.user.cf_handle = verification.handle
+        request.user.cf_verified_at = timezone.now()
+        request.user.save()
+        
+        return JsonResponse({"status": "verified"})
+    
+    verification.last_checked_at = timezone.now()
+    verification.save()
+    
+    return JsonResponse({
+        "status": "pending",
+        "contest_id": verification.contest_id,
+        "problem_index": verification.problem_index,
+        "language": verification.language,
+        "expires_at": verification.expires_at.isoformat()
+    })
 
 # --- CF API Helper ---
 def get_codeforces_info(handle):
@@ -152,6 +245,7 @@ def update_stats(request):
                 return JsonResponse({"status": "error", "message": f"Codeforces name '{cf_name}' does not match your name '{user.display_name}'."})
         
         user.cf_handle = cf
+        user.cf_verified_at = None
 
     user.save()
     return JsonResponse({"status": "success", "message": "Profile updated successfully!"})
