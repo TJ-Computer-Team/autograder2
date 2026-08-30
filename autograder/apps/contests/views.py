@@ -4,6 +4,7 @@ from django.core.paginator import Paginator
 from django.conf import settings
 from django.utils import timezone
 from django.http import HttpResponse
+from urllib.parse import urlencode
 from ..oauth.decorators import login_required, admin_required
 from .models import Contest
 from ..problems.models import Problem
@@ -13,6 +14,25 @@ from .utils import get_standings
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def _parse_multi_values(values):
+    items = []
+    for raw in values:
+        if raw is None:
+            continue
+        for part in str(raw).split(","):
+            part = part.strip()
+            if part:
+                items.append(part)
+    seen = set()
+    deduped = []
+    for item in items:
+        if item in seen:
+            continue
+        seen.add(item)
+        deduped.append(item)
+    return deduped
 
 
 @login_required
@@ -144,7 +164,52 @@ def contest_status_view(request, cid, mine_only, page):
     if not request.user.is_staff:
         subs = subs.filter(timestamp__gte=contest.start)
 
-    subs = subs.order_by("-timestamp")
+    base_subs = subs
+
+    problem_values = _parse_multi_values(request.GET.getlist("problem"))
+    verdict_values = _parse_multi_values(request.GET.getlist("verdict"))
+    language_values = _parse_multi_values(request.GET.getlist("language"))
+
+    problem_ids = []
+    for value in problem_values:
+        try:
+            problem_ids.append(int(value))
+        except (TypeError, ValueError):
+            continue
+
+    if problem_ids:
+        subs = subs.filter(problem_id__in=problem_ids)
+
+    if verdict_values:
+        subs = subs.filter(verdict__in=verdict_values)
+
+    if language_values:
+        subs = subs.filter(language__in=language_values)
+
+    problem_options = (
+        Problem.objects.filter(
+            id__in=base_subs.values_list("problem_id", flat=True).distinct()
+        )
+        .select_related("contest")
+        .order_by("contest_letter", "id")
+    )
+    verdict_options = list(
+        base_subs.values_list("verdict", flat=True).order_by("verdict").distinct()
+    )
+    language_options = list(
+        base_subs.values_list("language", flat=True).order_by("language").distinct()
+    )
+
+    filter_params = {}
+    if problem_ids:
+        filter_params["problem"] = ",".join(str(pid) for pid in problem_ids)
+    if verdict_values:
+        filter_params["verdict"] = ",".join(verdict_values)
+    if language_values:
+        filter_params["language"] = ",".join(language_values)
+    filters_query = urlencode(filter_params)
+
+    subs = subs.select_related("problem", "usr", "contest").order_by("-timestamp")
 
     # Pagination
     paginator = Paginator(subs, 25)  # Show 25 submissions per page
@@ -159,6 +224,15 @@ def contest_status_view(request, cid, mine_only, page):
         "submissions": page_obj.object_list,
         "contest_over": timezone.now() > contest.end,
         "mine_only": mine_only,
+        "problem_options": problem_options,
+        "verdict_options": verdict_options,
+        "language_options": language_options,
+        "filters": {
+            "problem": problem_ids,
+            "verdict": verdict_values,
+            "language": language_values,
+        },
+        "filters_query": filters_query,
     }
     return render(request, "contest/status.html", context)
 

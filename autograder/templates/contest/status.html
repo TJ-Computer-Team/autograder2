@@ -15,12 +15,14 @@
 {% include "partials/contestNavbar.html" %}
 
 <div class='main-block' id="submissions">
+{% url "contests:status" cid=cid mine_only=mine_only page=1 as filter_action_url %}
+{% include "partials/submission_filters.html" with filter_form_id="contestFilters" filter_panel_id="contestFilterPanel" filter_toggle_id="contestFilterToggle" filter_action_url=filter_action_url %}
 <table>
     <tr>
         <th>Submission</th>
         <th>User</th>
         <th>Problem</th>
-        <th>Langauge</th>
+        <th>Language</th>
         <th>Runtime</th>
         <th>Verdict</th>
         {% if user.is_staff %}<th>Skip</th>{% endif %}
@@ -66,17 +68,130 @@
 </table>
     <div class="option-buttons">
     {% if page_obj.has_previous %}
-    <a href="{% url "contests:status" cid=cid mine_only=mine_only page=page_obj.previous_page_number %}">
+    <a href="{% url "contests:status" cid=cid mine_only=mine_only page=page_obj.previous_page_number %}{% if filters_query %}?{{ filters_query }}{% endif %}">
         <div class="button">Previous</div>
     </a>
     {% endif %}
     <div class="button">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
     {% if page_obj.has_next %}
-    <a href="{% url "contests:status" cid=cid mine_only=mine_only page=page_obj.next_page_number %}">
+    <a href="{% url "contests:status" cid=cid mine_only=mine_only page=page_obj.next_page_number %}{% if filters_query %}?{{ filters_query }}{% endif %}">
          <div class="button">Next</div>
     </a>
     {% endif %}
 </div>
 </div>
+
+<script>
+    const contestFilterForm = document.getElementById('contestFilters');
+    const contestFilterPanel = document.getElementById('contestFilterPanel');
+    const contestFilterToggle = document.getElementById('contestFilterToggle');
+    const contestFilterLabel = contestFilterToggle
+        ? contestFilterToggle.querySelector('.filter-toggle-label')
+        : null;
+
+    if (contestFilterForm && contestFilterPanel && contestFilterToggle) {
+        const updateContestFilterLabel = function(isOpen) {
+            if (contestFilterLabel) {
+                contestFilterLabel.textContent = isOpen ? 'Apply Filters' : 'Filter';
+            }
+        };
+
+        const resetContestFilterState = function() {
+            contestFilterForm.querySelectorAll('input[name="problem"], input[name="verdict"], input[name="language"]')
+                .forEach(function(input) {
+                    input.value = '';
+                });
+            contestFilterForm.querySelectorAll('.filter-section').forEach(function(section) {
+                section.querySelectorAll('.filter-option').forEach(function(item) {
+                    item.classList.remove('active');
+                });
+                const allOption = section.querySelector('.filter-option[data-value=""]');
+                if (allOption) {
+                    allOption.classList.add('active');
+                }
+            });
+        };
+
+        const clearButton = contestFilterForm.querySelector('.filter-clear');
+        if (clearButton) {
+            clearButton.addEventListener('click', function() {
+                resetContestFilterState();
+                contestFilterPanel.setAttribute('hidden', '');
+                contestFilterToggle.setAttribute('aria-expanded', 'false');
+                updateContestFilterLabel(false);
+                contestFilterForm.submit();
+            });
+        }
+
+        contestFilterToggle.addEventListener('click', function() {
+            if (contestFilterPanel.hasAttribute('hidden')) {
+                contestFilterPanel.removeAttribute('hidden');
+                contestFilterToggle.setAttribute('aria-expanded', 'true');
+                updateContestFilterLabel(true);
+                contestFilterPanel.querySelectorAll('details[open]').forEach(function(detail) {
+                    detail.removeAttribute('open');
+                });
+                return;
+            }
+            contestFilterPanel.setAttribute('hidden', '');
+            contestFilterToggle.setAttribute('aria-expanded', 'false');
+            updateContestFilterLabel(false);
+            contestFilterForm.submit();
+        });
+
+        contestFilterForm.querySelectorAll('.filter-option').forEach(function(option) {
+            option.addEventListener('click', function() {
+                const section = option.closest('.filter-section');
+                const name = section ? section.dataset.filterName : null;
+                if (!name) {
+                    return;
+                }
+                const input = contestFilterForm.querySelector(`input[name="${name}"]`);
+                const value = option.dataset.value || '';
+                const allOption = section.querySelector('.filter-option[data-value=""]');
+
+                if (value === '') {
+                    section.querySelectorAll('.filter-option').forEach(function(item) {
+                        item.classList.remove('active');
+                    });
+                    option.classList.add('active');
+                    if (input) {
+                        input.value = '';
+                    }
+                    return;
+                }
+
+                option.classList.toggle('active');
+                if (allOption) {
+                    allOption.classList.remove('active');
+                }
+
+                const activeValues = Array.from(
+                    section.querySelectorAll('.filter-option.active')
+                )
+                    .map(function(item) {
+                        return item.dataset.value || '';
+                    })
+                    .filter(function(item) {
+                        return item !== '';
+                    });
+
+                if (activeValues.length === 0) {
+                    if (allOption) {
+                        allOption.classList.add('active');
+                    }
+                    if (input) {
+                        input.value = '';
+                    }
+                    return;
+                }
+
+                if (input) {
+                    input.value = activeValues.join(',');
+                }
+            });
+        });
+    }
+</script>
 
 {% endblock content %}
