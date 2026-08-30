@@ -3,14 +3,17 @@ from django.views.decorators.http import require_POST
 from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 from django_user_agents.utils import get_user_agent
-from .models import GraderUser, ProblemOfTheWeek
+from .models import GraderUser, ProblemOfTheWeek, AttendanceSession, AttendanceRecord
 from ..rankings.models import RatingChange
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 import requests
 import json
 import os
+import csv
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
+from django.utils import timezone
+from django.db.models.functions import Lower
 
 # --- Start Settings Helpers ---
 SETTINGS_FILE = os.path.join(settings.BASE_DIR, 'autograder', 'validation_settings.json')
@@ -22,7 +25,8 @@ def get_validation_settings():
     except (FileNotFoundError, json.JSONDecodeError):
         return {
             "enforce_cf_handle_name_match": False,
-            "enforce_cf_handle_for_samuel_zhang": False
+            "enforce_cf_handle_for_samuel_zhang": False,
+            "enable_code_attendance": False
         }
 
 def save_validation_settings(settings_data):
@@ -204,6 +208,7 @@ def validation_settings_view(request):
         new_settings_data = {
             'enforce_cf_handle_name_match': request.POST.get('enforce_cf_handle_name_match') == 'on',
             'enforce_cf_handle_for_samuel_zhang': request.POST.get('enforce_cf_handle_for_samuel_zhang') == 'on',
+            'enable_code_attendance': request.POST.get('enable_code_attendance') == 'on',
         }
         save_validation_settings(new_settings_data)
 
@@ -219,3 +224,132 @@ def validation_settings_view(request):
         'has_permission': True, # For admin template
     }
     return render(request, 'admin/index/validation_settings.html', context)
+
+
+@login_required
+def attendance_view(request):
+    settings_data = get_validation_settings()
+    if not settings_data.get("enable_code_attendance", False):
+        messages.error(request, "Attendance system is currently disabled.")
+        return redirect("index:profile")
+
+    today = timezone.localdate()
+    sessions = AttendanceSession.objects.filter(date=today, is_active=True).order_by("block")
+
+    if request.method == "POST":
+        code = request.POST.get("code", "").strip()
+        block = request.POST.get("block", "").strip()
+        session = AttendanceSession.objects.filter(date=today, block=block, is_active=True).first()
+        
+        if not session:
+            messages.error(request, f"No active attendance session for {block} Block today.")
+        elif session.code != code:
+            messages.error(request, f"Invalid attendance code for {block} Block.")
+        else:
+            _, created = AttendanceRecord.objects.get_or_create(user=request.user, session=session)
+            if created:
+                messages.success(request, f"Attendance for {session.get_block_display()} marked successfully!")
+            else:
+                messages.info(request, f"You have already marked your attendance for {session.get_block_display()} today.")
+        return redirect("index:attendance")
+
+    sessions_data = []
+    for s in sessions:
+        sessions_data.append({
+            "session": s,
+            "already_marked": AttendanceRecord.objects.filter(user=request.user, session=s).exists()
+        })
+
+    context = {
+        "active": "attendance",
+        "sessions_data": sessions_data,
+    }
+    return render(request, "index/attendance.html", context)
+
+
+@staff_member_required
+def delete_attendance_session(request, session_id):
+    session = get_object_or_404(AttendanceSession, pk=session_id)
+    date_str = session.date.strftime("%Y-%m-%d")
+    block_str = session.get_block_display()
+    session.delete()
+    messages.success(request, f"Deleted {block_str} session for {date_str}.")
+    return redirect("index:attendance_admin")
+
+
+@staff_member_required
+def attendance_admin_view(request):
+    settings_data = get_validation_settings()
+    if not settings_data.get("enable_code_attendance", False):
+        messages.error(request, "Attendance system is currently disabled.")
+        return redirect("index:profile")
+
+    today = timezone.localdate()
+    
+    edit_session = None
+    edit_id = request.GET.get("edit")
+    if edit_id:
+        edit_session = AttendanceSession.objects.filter(pk=edit_id).first()
+
+    if request.method == "POST":
+        date_str = request.POST.get("date")
+        block = request.POST.get("block", "A").strip() or "A"
+        code = request.POST.get("code", "").strip()
+        is_active = request.POST.get("is_active") == "on"
+        
+        if date_str and code:
+            AttendanceSession.objects.update_or_create(
+                date=date_str,
+                block=block,
+                defaults={"code": code, "is_active": is_active}
+            )
+            messages.success(request, f"Attendance session for {date_str} {block} updated.")
+        return redirect("index:attendance_admin")
+
+    sessions = AttendanceSession.objects.all().order_by("-date", "block")
+    today_sessions = AttendanceSession.objects.filter(date=today).order_by("block")
+    
+    today_records = AttendanceRecord.objects.filter(session__date=today).select_related("user", "session").order_by("-timestamp")
+
+    context = {
+        "active": "attendance_admin",
+        "sessions": sessions,
+        "today_sessions": today_sessions,
+        "today_records": today_records,
+        "today": today,
+        "edit_session": edit_session,
+    }
+    return render(request, "index/attendance_admin.html", context)
+
+
+@staff_member_required
+def export_attendance_csv(request, session_id):
+    session = get_object_or_404(AttendanceSession, pk=session_id)
+    records = (
+        AttendanceRecord.objects.filter(session=session)
+        .select_related("user")
+    )
+
+    def _last_name_key(r):
+        name = (r.user.display_name or "").strip()
+        parts = name.split()
+        return parts[-1].lower() if parts else ""
+
+    records = sorted(records, key=_last_name_key)
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f'attachment; filename="attendance_{session.date}_{session.block}.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(["Username", "Display Name", "Email", "Grade", "Timestamp"])
+
+    for record in records:
+        writer.writerow([
+            record.user.username,
+            record.user.display_name,
+            record.user.email,
+            record.user.grade,
+            record.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+        ])
+
+    return response

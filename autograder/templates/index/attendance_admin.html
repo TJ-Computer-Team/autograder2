@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block stylesheet %}
+    <link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
+    <style>
+        .admin-shell {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .session-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .session-card {
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
+        }
+
+        .attendance-code-input {
+            width: 100% !important;
+            display: block;
+            min-height: 44px;
+            padding: 8px 12px;
+            font-size: 1.2rem !important;
+            background-color: rgba(0, 0, 0, 0.6) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            box-sizing: border-box;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.9em;
+            margin-right: 5px;
+            display: inline-block;
+        }
+        .btn-edit { background: #2196f3; color: white; }
+        .btn-delete { background: #f44336; color: white; }
+        .btn-export { background: #4caf50; color: white; }
+
+        input[type="date"], select {
+            background-color: rgba(0, 0, 0, 0.6) !important;
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            padding: 8px !important;
+            border-radius: 4px;
+        }
+
+        .submit-btn {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            border: none !important;
+            padding: 10px 20px !important;
+            font-size: 1rem !important;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .record-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .record-item {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9em;
+        }
+    </style>
+{% endblock stylesheet %}
+
+{% block title %}Attendance Admin{% endblock title %}
+
+{% block content %}
+{% include "partials/header.html" %}
+{% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
+<div id="mainContent">
+    <div id="subContent">
+        <div class="info-block admin-shell" style="padding: 3em;">
+            <div class="title" style="margin-bottom: 1em;"><p>Attendance Admin</p></div>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div style="color: #4caf50; margin-bottom: 15px;">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                <div class="subtitle" style="text-align: left; font-size: 1.2em; margin-bottom: 15px; color: white;">
+                    {% if edit_session %}Edit Session{% else %}Create Session{% endif %}
+                </div>
+                <form action="{% url 'index:attendance_admin' %}" method="POST">
+                    {% csrf_token %}
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-size: 0.9em;">Date</label>
+                            <input type="date" name="date" value="{% if edit_session %}{{ edit_session.date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}" required>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-size: 0.9em;">Block</label>
+                            <select name="block">
+                                <option value="A" {% if edit_session.block == 'A' %}selected{% endif %}>A Block</option>
+                                <option value="B" {% if edit_session.block == 'B' %}selected{% endif %}>B Block</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <label style="display: block; margin-bottom: 5px; font-size: 0.9em;">Code</label>
+                            <input type="text" name="code" value="{{ edit_session.code }}" class="attendance-code-input" style="margin-bottom: 0;" required>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label>
+                            <input type="checkbox" name="is_active" {% if edit_session %}{% if edit_session.is_active %}checked{% endif %}{% else %}checked{% endif %}> Active
+                        </label>
+                    </div>
+                    <input type="submit" class="submit-btn" value="{% if edit_session %}Update Session{% else %}Create Session{% endif %}">
+                    {% if edit_session %}
+                        <a href="{% url 'index:attendance_admin' %}" style="color: white; margin-left: 15px; font-size: 0.9em;">Cancel Edit</a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <div class="subtitle" style="text-align: left; font-size: 1.2em; margin-bottom: 15px; color: white;">Today's Attendance</div>
+            {% if today_sessions %}
+                <div class="session-grid">
+                    {% for session in today_sessions %}
+                        <div class="session-card">
+                            <div style="font-weight: bold; margin-bottom: 5px;">{{ session.get_block_display }}</div>
+                            <div style="font-size: 0.9em; opacity: 0.8; margin-bottom: 10px;">Code: <strong>{{ session.code }}</strong></div>
+                            <div>
+                                <a href="{% url 'index:attendance_admin' %}?edit={{ session.id }}" class="action-btn btn-edit">Edit</a>
+                                <a href="{% url 'index:export_attendance' session.id %}" class="action-btn btn-export">CSV</a>
+                            </div>
+                            
+                            <div class="record-list">
+                                <div style="font-size: 0.8em; opacity: 0.6; margin-bottom: 5px;">Students:</div>
+                                {% for record in today_records %}
+                                    {% if record.session_id == session.id %}
+                                        <div class="record-item">
+                                            {{ record.user.display_name }} ({{ record.user.username }})
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="opacity: 0.6;">No sessions active for today.</p>
+            {% endif %}
+
+            <div class="subtitle" style="text-align: left; font-size: 1.2em; margin: 30px 0 15px; color: white;">History</div>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left;">
+                            <th style="padding: 10px;">Date</th>
+                            <th style="padding: 10px;">Block</th>
+                            <th style="padding: 10px;">Code</th>
+                            <th style="padding: 10px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in sessions %}
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <td style="padding: 10px;">{{ s.date }}</td>
+                                <td style="padding: 10px;">{{ s.get_block_display }}</td>
+                                <td style="padding: 10px;">{{ s.code }}</td>
+                                <td style="padding: 10px;">
+                                    <a href="{% url 'index:attendance_admin' %}?edit={{ s.id }}" style="color: #2196f3; text-decoration: none; margin-right: 10px;">Edit</a>
+                                    <a href="{% url 'index:delete_attendance' s.id %}" style="color: #f44336; text-decoration: none;" onclick="return confirm('Delete this session?')">Delete</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

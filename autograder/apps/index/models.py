@@ -88,3 +88,35 @@ class ProblemOfTheWeek(models.Model):
 
     def __str__(self):
         return f"PoTW ({self.get_level_display()})"
+
+
+class AttendanceSession(models.Model):
+    BLOCK_A = "A"
+    BLOCK_B = "B"
+    BLOCK_CHOICES = (
+        (BLOCK_A, "A Block"),
+        (BLOCK_B, "B Block"),
+    )
+
+    date = models.DateField()
+    block = models.CharField(max_length=1, choices=BLOCK_CHOICES, default=BLOCK_A)
+    code = models.CharField(max_length=10)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ("date", "block")
+
+    def __str__(self):
+        return f"{self.date} - {self.get_block_display()} - {self.code}"
+
+
+class AttendanceRecord(models.Model):
+    user = models.ForeignKey(GraderUser, on_delete=models.CASCADE)
+    session = models.ForeignKey(AttendanceSession, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "session")
+
+    def __str__(self):
+        return f"{self.user.username} - {self.session.date}"

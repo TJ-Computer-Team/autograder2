@@ -16,4 +16,8 @@ urlpatterns = [
     path("mobile/", views.mobile_home, name="mobile"),
     path("toggle_particles/", views.toggle_particles, name="toggle_particles"),
     path("validation_settings/", views.validation_settings_view, name="validation_settings"),
+    path("attendance/", views.attendance_view, name="attendance"),
+    path("attendance/admin/", views.attendance_admin_view, name="attendance_admin"),
+    path("attendance/admin/delete/<int:session_id>/", views.delete_attendance_session, name="delete_attendance"),
+    path("attendance/export/<int:session_id>/", views.export_attendance_csv, name="export_attendance"),
 ]
