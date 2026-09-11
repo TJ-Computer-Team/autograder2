@@ -1,0 +1,53 @@
+<form class="filter-form" id="{{ filter_form_id }}" method="get" action="{{ filter_action_url }}">
+    <input type="hidden" name="problem" value="{{ filters.problem|join:"," }}">
+    <input type="hidden" name="verdict" value="{{ filters.verdict|join:"," }}">
+    <input type="hidden" name="language" value="{{ filters.language|join:"," }}">
+    <button class="button inline-button filter-toggle" id="{{ filter_toggle_id }}" type="button" aria-expanded="false">
+        <svg class="filter-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M3 5h18l-7 8v5l-4 2v-7L3 5z"></path>
+        </svg>
+        <span class="filter-toggle-label">Filter</span>
+    </button>
+    <div class="filter-panel" id="{{ filter_panel_id }}" hidden>
+        <details class="filter-section" data-filter-name="problem">
+            <summary class="filter-summary">Problem</summary>
+            <div class="filter-options">
+                <button class="filter-option{% if not filters.problem %} active{% endif %}" type="button" data-value="">All</button>
+                {% for problem in problem_options %}
+                <button class="filter-option{% if problem.id in filters.problem %} active{% endif %}" type="button" data-value="{{ problem.id }}">
+                    {% if cid %}
+                        {{ problem.contest_letter }} - {{ problem.name }}
+                    {% else %}
+                        {{ problem.contest.name }}: {{ problem.contest_letter }} - {{ problem.name }}
+                    {% endif %}
+                </button>
+                {% endfor %}
+            </div>
+        </details>
+        <details class="filter-section" data-filter-name="verdict">
+            <summary class="filter-summary">Verdict</summary>
+            <div class="filter-options">
+                <button class="filter-option{% if not filters.verdict %} active{% endif %}" type="button" data-value="">All</button>
+                {% for verdict in verdict_options %}
+                <button class="filter-option{% if verdict in filters.verdict %} active{% endif %}" type="button" data-value="{{ verdict }}">
+                    {{ verdict }}
+                </button>
+                {% endfor %}
+            </div>
+        </details>
+        <details class="filter-section" data-filter-name="language">
+            <summary class="filter-summary">Language</summary>
+            <div class="filter-options">
+                <button class="filter-option{% if not filters.language %} active{% endif %}" type="button" data-value="">All</button>
+                {% for language in language_options %}
+                <button class="filter-option{% if language in filters.language %} active{% endif %}" type="button" data-value="{{ language }}">
+                    {{ language|upper }}
+                </button>
+                {% endfor %}
+            </div>
+        </details>
+        <div class="filter-actions">
+            <button class="button inline-button filter-clear" type="button">Clear Filters</button>
+        </div>
+    </div>
+</form>

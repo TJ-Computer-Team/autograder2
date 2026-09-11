@@ -12,29 +12,29 @@
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/header.html" %}
 <div class="main-block">
-    <div class="title">
-        Submissions {% if admin %} - Viewing as Admin{% endif %}
+    <div class="title-bar">
+        <div class="title">
+            Submissions {% if admin %} - Viewing as Admin{% endif %}
+        </div>
+        <div class="title-actions">
+        {% if mine %}
+        <a class="button inline-button" href="{% url "runtests:status" mine=False cid=cid page=1 %}{% if filters_query %}?{{ filters_query }}{% endif %}">View All</a>
+        {% else %}
+        <a class="button inline-button" href="{% url "runtests:status" mine=True cid=cid page=1 %}{% if filters_query %}?{{ filters_query }}{% endif %}">View Mine Only</a>
+        {% endif %}
+        </div>
     </div>
 </div>
 
 <div class="main-block" id="submissions">
-    <div class="option-buttons">
-    {% if mine %}
-    <a href="{% url "runtests:status" mine=False cid=cid page=1 %}">
-        <div class="button">View All</div>
-    </a>
-    {% else %}
-    <a href="{% url "runtests:status" mine=True cid=cid page=1 %}">
-        <div class="button">View Mine Only</div>
-    </a>
-    {% endif %}
-    </div>
+    {% url "runtests:status" mine=mine cid=cid page=1 as filter_action_url %}
+    {% include "partials/submission_filters.html" with filter_form_id="submissionFilters" filter_panel_id="filterPanel" filter_toggle_id="filterToggle" filter_action_url=filter_action_url %}
     <table>
         <tr>
             <th>Submission</th>
             <th>User</th>
             <th>Problem</th>
-            <th>Langauge</th>
+            <th>Language</th>
             <th>Runtime</th>
             <th>Verdict</th>
         </tr>
@@ -69,13 +69,13 @@
     </table>
     <div class="option-buttons">
     {% if page_obj.has_previous %}
-    <a href="{% url "runtests:status" mine=mine cid=cid page=page_obj.previous_page_number %}">
+    <a href="{% url "runtests:status" mine=mine cid=cid page=page_obj.previous_page_number %}{% if filters_query %}?{{ filters_query }}{% endif %}">
         <div class="button">Previous</div>
     </a>
     {% endif %}
      <div class="button">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
     {% if page_obj.has_next %}
-    <a href="{% url "runtests:status" mine=mine cid=cid page=page_obj.next_page_number %}">
+    <a href="{% url "runtests:status" mine=mine cid=cid page=page_obj.next_page_number %}{% if filters_query %}?{{ filters_query }}{% endif %}">
          <div class="button">Next</div>
     </a>
     {% endif %}
@@ -115,5 +115,116 @@
     submissionSocket.onclose = function(e) {
         console.log('WebSocket connection closed.');
     };
+</script>
+
+<script>
+    const filterForm = document.getElementById('submissionFilters');
+    const filterPanel = document.getElementById('filterPanel');
+    const filterToggle = document.getElementById('filterToggle');
+    const filterLabel = filterToggle ? filterToggle.querySelector('.filter-toggle-label') : null;
+
+    if (filterForm && filterPanel && filterToggle) {
+        const updateFilterLabel = function(isOpen) {
+            if (filterLabel) {
+                filterLabel.textContent = isOpen ? 'Apply Filters' : 'Filter';
+            }
+        };
+
+        const resetFilterState = function() {
+            filterForm.querySelectorAll('input[name="problem"], input[name="verdict"], input[name="language"]')
+                .forEach(function(input) {
+                    input.value = '';
+                });
+            filterForm.querySelectorAll('.filter-section').forEach(function(section) {
+                section.querySelectorAll('.filter-option').forEach(function(item) {
+                    item.classList.remove('active');
+                });
+                const allOption = section.querySelector('.filter-option[data-value=""]');
+                if (allOption) {
+                    allOption.classList.add('active');
+                }
+            });
+        };
+
+        const clearButton = filterForm.querySelector('.filter-clear');
+        if (clearButton) {
+            clearButton.addEventListener('click', function() {
+                resetFilterState();
+                filterPanel.setAttribute('hidden', '');
+                filterToggle.setAttribute('aria-expanded', 'false');
+                updateFilterLabel(false);
+                filterForm.submit();
+            });
+        }
+
+        filterToggle.addEventListener('click', function() {
+            if (filterPanel.hasAttribute('hidden')) {
+                filterPanel.removeAttribute('hidden');
+                filterToggle.setAttribute('aria-expanded', 'true');
+                updateFilterLabel(true);
+                filterPanel.querySelectorAll('details[open]').forEach(function(detail) {
+                    detail.removeAttribute('open');
+                });
+                return;
+            }
+            filterPanel.setAttribute('hidden', '');
+            filterToggle.setAttribute('aria-expanded', 'false');
+            updateFilterLabel(false);
+            filterForm.submit();
+        });
+
+        filterForm.querySelectorAll('.filter-option').forEach(function(option) {
+            option.addEventListener('click', function() {
+                const section = option.closest('.filter-section');
+                const name = section ? section.dataset.filterName : null;
+                if (!name) {
+                    return;
+                }
+                const input = filterForm.querySelector(`input[name="${name}"]`);
+                const value = option.dataset.value || '';
+                const allOption = section.querySelector('.filter-option[data-value=""]');
+
+                if (value === '') {
+                    section.querySelectorAll('.filter-option').forEach(function(item) {
+                        item.classList.remove('active');
+                    });
+                    option.classList.add('active');
+                    if (input) {
+                        input.value = '';
+                    }
+                    return;
+                }
+
+                option.classList.toggle('active');
+                if (allOption) {
+                    allOption.classList.remove('active');
+                }
+
+                const activeValues = Array.from(
+                    section.querySelectorAll('.filter-option.active')
+                )
+                    .map(function(item) {
+                        return item.dataset.value || '';
+                    })
+                    .filter(function(item) {
+                        return item !== '';
+                    });
+
+                if (activeValues.length === 0) {
+                    if (allOption) {
+                        allOption.classList.add('active');
+                    }
+                    if (input) {
+                        input.value = '';
+                    }
+                    return;
+                }
+
+                if (input) {
+                    input.value = activeValues.join(',');
+                }
+            });
+        });
+    }
 </script>
 {% endblock content %}

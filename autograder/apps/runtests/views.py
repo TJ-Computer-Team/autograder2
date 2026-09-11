@@ -5,6 +5,7 @@ from django.views.decorators.http import require_POST
 from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
+from urllib.parse import urlencode
 from ..oauth.decorators import login_required
 from ..problems.models import Problem
 from ..contests.models import Contest
@@ -13,6 +14,25 @@ from .tasks import grade_submission_task
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def _parse_multi_values(values):
+    items = []
+    for raw in values:
+        if raw is None:
+            continue
+        for part in str(raw).split(","):
+            part = part.strip()
+            if part:
+                items.append(part)
+    seen = set()
+    deduped = []
+    for item in items:
+        if item in seen:
+            continue
+        seen.add(item)
+        deduped.append(item)
+    return deduped
 
 
 def get_last_sub_lang(user):
@@ -94,7 +114,58 @@ def status_view(request, page, cid=None, mine=False):
     elif request.user.is_tjioi:
         submissions = submissions.filter(usr__is_tjioi=True)
 
-    submissions = submissions.order_by("-timestamp")
+    base_submissions = submissions
+
+    problem_values = _parse_multi_values(request.GET.getlist("problem"))
+    verdict_values = _parse_multi_values(request.GET.getlist("verdict"))
+    language_values = _parse_multi_values(request.GET.getlist("language"))
+
+    problem_ids = []
+    for value in problem_values:
+        try:
+            problem_ids.append(int(value))
+        except (TypeError, ValueError):
+            continue
+
+    if problem_ids:
+        submissions = submissions.filter(problem_id__in=problem_ids)
+
+    if verdict_values:
+        submissions = submissions.filter(verdict__in=verdict_values)
+
+    if language_values:
+        submissions = submissions.filter(language__in=language_values)
+
+    problem_options = (
+        Problem.objects.filter(
+            id__in=base_submissions.values_list("problem_id", flat=True).distinct()
+        )
+        .select_related("contest")
+        .order_by("contest__name", "contest_letter", "id")
+    )
+    verdict_options = list(
+        base_submissions.values_list("verdict", flat=True)
+        .order_by("verdict")
+        .distinct()
+    )
+    language_options = list(
+        base_submissions.values_list("language", flat=True)
+        .order_by("language")
+        .distinct()
+    )
+
+    filter_params = {}
+    if problem_ids:
+        filter_params["problem"] = ",".join(str(pid) for pid in problem_ids)
+    if verdict_values:
+        filter_params["verdict"] = ",".join(verdict_values)
+    if language_values:
+        filter_params["language"] = ",".join(language_values)
+    filters_query = urlencode(filter_params)
+
+    submissions = submissions.select_related("problem", "usr", "contest").order_by(
+        "-timestamp"
+    )
     paginator = Paginator(submissions, 25)  # 25 per page
 
     try:
@@ -109,6 +180,15 @@ def status_view(request, page, cid=None, mine=False):
         "page": page,
         "cid": cid,
         "mine": mine,
+        "problem_options": problem_options,
+        "verdict_options": verdict_options,
+        "language_options": language_options,
+        "filters": {
+            "problem": problem_ids,
+            "verdict": verdict_values,
+            "language": language_values,
+        },
+        "filters_query": filters_query,
     }
 
     return render(request, "runtests/status.html", context)
