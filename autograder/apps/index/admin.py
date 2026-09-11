@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import GraderUser, ProblemOfTheWeek
+from .models import GraderUser, ProblemOfTheWeek, AttendanceSession, AttendanceRecord
 from django.urls import reverse
 from django.utils.html import format_html
 
@@ -99,3 +99,16 @@ admin.site.register(GraderUser, GraderUserAdmin)
 class ProblemOfTheWeekAdmin(admin.ModelAdmin):
     list_display = ("level", "title", "link")
     list_editable = ("title", "link")
+
+
+@admin.register(AttendanceSession)
+class AttendanceSessionAdmin(admin.ModelAdmin):
+    list_display = ("date", "block", "code", "is_active")
+    list_editable = ("block", "code", "is_active")
+
+
+@admin.register(AttendanceRecord)
+class AttendanceRecordAdmin(admin.ModelAdmin):
+    list_display = ("user", "session", "timestamp")
+    list_filter = ("session__date",)
+    search_fields = ("user__username", "user__display_name")

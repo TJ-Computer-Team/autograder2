@@ -1,6 +1,22 @@
 import logging
+import json
+import os
+
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
+
+SETTINGS_FILE = os.path.join(settings.BASE_DIR, 'autograder', 'validation_settings.json')
+
+
+def attendance_enabled(request):
+    try:
+        with open(SETTINGS_FILE, 'r') as f:
+            settings_data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        settings_data = {}
+
+    return {"attendance_enabled": settings_data.get("enable_code_attendance", False)}
 
 
 def active_nav_item(request):
