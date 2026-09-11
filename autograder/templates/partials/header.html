@@ -16,6 +16,12 @@
             <li class="nb"><a {% if active == "submit" %} class="cactive" {% endif %} href="{% url "runtests:submit" %}">Submit</a></li>
             <li class="nb"><a {% if active == "info" %} class="cactive" {% endif %} href="{% url 'index:info' %}">Rules and Info</a></li>
             <li class="nb"><a {% if active == "rankings" %} class="cactive" {% endif %} href="{% url "rankings:rankings" %}">Rankings</a></li>
+            {% if attendance_enabled %}
+                <li class="nb"><a {% if active == "attendance" %} class="cactive" {% endif %} href="{% url 'index:attendance' %}">Attendance</a></li>
+                {% if request.user.is_staff %}
+                    <li class="nb"><a {% if active == "attendance_admin" %} class="cactive" {% endif %} href="{% url 'index:attendance_admin' %}">Attendance Admin</a></li>
+                {% endif %}
+            {% endif %}
         {% endif %}
         <li class="nb topnav-right">
             <a href="{% url 'oauth:logout' %}">

@@ -87,6 +87,7 @@ TEMPLATES = [
                 "social_django.context_processors.backends",
                 "social_django.context_processors.login_redirect",
                 "autograder.context_processors.active_nav_item",
+                "autograder.context_processors.attendance_enabled",
             ],
         },
     },
@@ -179,7 +180,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 TJIOI_MODE = False
 
-CURRENT_SEASON = 2026
+CURRENT_SEASON = 2027
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
