@@ -1,5 +1,6 @@
 {% load static %}
 
+{% if contest_nav %}{% include "partials/contestHeader.html" %}{% else %}
 <div class="navbar">
     <ul class="nb">
         <li id="logoHolder" class="nb"><img class="logo" src="{% static 'images/logo.png' %}"></li>
@@ -35,3 +36,4 @@
         </li>
     </ul>
 </div>
+{% endif %}

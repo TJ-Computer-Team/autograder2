@@ -12,7 +12,6 @@
 {% block content %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/header.html" %}
-{% include "partials/contestNavbar.html" %}
 
 <div class='main-block' id="submissions">
 <table>
@@ -26,9 +25,9 @@
         {% if user.is_staff %}<th>Skip</th>{% endif %}
     </tr>
     {% for sub in submissions  %}
-    <tr>
+    <tr class="submission-item" data-submission-id="{{ sub.id }}">
         <td>
-            <a href="{% url "runtests:submission" sub.id %}">
+            <a href="{% url "runtests:submission" sub.id %}?contest={{ cid }}">
                 #{{sub.id}}
             </a>
         </td>
@@ -38,17 +37,17 @@
             </a>
         </td>
         <td>
-            <a href="{% url "problems:problem" sub.problem.id %}">
+            <a href="{% url "problems:problem" sub.problem.id %}?contest={{ cid }}">
                 {{sub.problem.name}}
             </a>
         </td>
         <td>
             {{sub.language}}
         </td>
-        <td>
+        <td class="submission-runtime">
             {{sub.runtime}}ms
         </td>
-        <td>
+        <td class="submission-status">
             {{sub.verdict}}
         </td>
         {% if user.is_staff %}
@@ -79,4 +78,33 @@
 </div>
 </div>
 
+<script>
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const socketUrl = `${protocol}://${window.location.host}/ws/submissions/`;
+    const submissionSocket = new WebSocket(socketUrl);
+
+    const submissionIds = Array.from(document.querySelectorAll('.submission-item'))
+                               .map(el => el.dataset.submissionId);
+
+    submissionSocket.onopen = function(e) {
+        submissionSocket.send(JSON.stringify({
+            'type': 'join_submissions',
+            'submission_ids': submissionIds
+        }));
+    };
+
+    submissionSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const { submission_id, message, runtime } = data;
+
+        const submissionElement = document.querySelector(`.submission-item[data-submission-id="${submission_id}"] .submission-status`);
+        if (submissionElement) {
+            submissionElement.textContent = message;
+        }
+        const submissionRuntimeElement = document.querySelector(`.submission-item[data-submission-id="${submission_id}"] .submission-runtime`);
+        if (submissionRuntimeElement) {
+            submissionRuntimeElement.textContent = runtime + "ms";
+        }
+    };
+</script>
 {% endblock content %}

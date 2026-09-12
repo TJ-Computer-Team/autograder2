@@ -63,12 +63,18 @@
     </div>
 </div>
 <div class="option-buttons">
+    {% if contest_nav %}
+    <a href="{% url "runtests:submitproblem" pid=problem.id %}?contest={{ contest_nav.id }}">
+        <div class="button">Submit</div>
+    </a>
+    {% else %}
     <a href="{% url "runtests:submitproblem" pid=problem.id %}">
         <div class="button">Submit</div>
     </a>
     <a href="{% url "contests:contest" cid=problem.contest.id %}">
         <div class="button">Back</div>
     </a>
+    {% endif %}
 </div>
 
 {% endblock content %}

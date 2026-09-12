@@ -3,6 +3,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.contrib import messages
 from ..oauth.decorators import login_required
+from ..contests.utils import get_contest_nav
 from .models import Problem
 import logging
 
@@ -55,6 +56,7 @@ def problem_view(request, pid):
 
     context = {
         "problem": problem,
+        "contest_nav": get_contest_nav(request, problem.contest_id),
         "tl_cpp": problem.tl / 1000,
         "tl_java": problem.tl / 1000 * 2,
         "tl_python": problem.tl / 1000 * 3,

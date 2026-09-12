@@ -24,6 +24,7 @@
 <div class="main-block">
     <form action="{% url "runtests:submit_post" %}" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
+        {% if contest_nav %}<input type="hidden" name="contest" value="{{ contest_nav.id }}">{% endif %}
 
         <div class="problem-text">
             <select id="problemid" name="problemid">

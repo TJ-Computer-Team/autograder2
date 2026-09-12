@@ -7,6 +7,34 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def get_contest_nav(request, expected_contest_id=None):
+    """Return the Contest named by ``?contest=<cid>``, or None.
+
+    Pages outside the contests app only show the contest navbar when the user
+    got there from a contest, which the URL has to say -- a problem's contest
+    FK can't distinguish that from browsing the problemset. Callers pass
+    ``expected_contest_id`` so a hand-edited cid for some other contest is
+    ignored rather than trusted.
+    """
+    cid = request.GET.get("contest", "")
+    if not cid.isdigit():
+        return None
+
+    cid = int(cid)
+    if expected_contest_id is not None and cid != expected_contest_id:
+        return None
+
+    contest = Contest.objects.filter(id=cid).first()
+    if contest is None:
+        return None
+
+    # Same gate the contest views apply.
+    if contest.tjioi and not request.user.is_staff and not request.user.is_tjioi:
+        return None
+
+    return contest
+
+
 def get_standings(cid):
     contest = Contest.objects.get(id=cid)
 

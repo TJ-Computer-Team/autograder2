@@ -8,6 +8,7 @@ from datetime import timedelta
 from ..oauth.decorators import login_required
 from ..problems.models import Problem
 from ..contests.models import Contest
+from ..contests.utils import get_contest_nav
 from .models import Submission
 from .tasks import grade_submission_task
 import logging
@@ -40,6 +41,7 @@ def submit_view(request, cid=None, pid=None):
             return redirect("runtests:submit")
 
         context["problem"] = problem
+        context["contest_nav"] = get_contest_nav(request, problem.contest_id)
 
     elif cid is not None:
         contest = get_object_or_404(Contest, id=cid)
@@ -58,6 +60,8 @@ def submit_view(request, cid=None, pid=None):
 
         problems = problems.order_by("contest_letter")
         context["contest"] = contest
+        # cid is in the path here, so reaching this route is itself the signal.
+        context["contest_nav"] = contest
         context["problems"] = problems
 
     else:
@@ -119,7 +123,11 @@ def submission_view(request, id):
     submission = get_object_or_404(Submission, id=id)
 
     if submission.usr == request.user or request.user.is_staff:
-        context = {"admin": request.user.is_staff, "submission": submission}
+        context = {
+            "admin": request.user.is_staff,
+            "submission": submission,
+            "contest_nav": get_contest_nav(request, submission.contest_id),
+        }
         if request.user.is_staff:
             context["insight"] = submission.insight
 
@@ -187,6 +195,18 @@ def submit_post(request):
         new_sub.save()
 
         grade_submission_task.delay(new_sub.id)
+
+        # Submitted from inside a contest: land back in the contest rather than
+        # the global list, so the contest navbar survives the POST.
+        submitted_contest = request.POST.get("contest", "")
+        if submitted_contest.isdigit() and int(submitted_contest) == problem.contest_id:
+            return redirect(
+                "contests:status",
+                cid=problem.contest_id,
+                mine_only="mine",
+                page=1,
+            )
+
         return redirect("runtests:status", page=1)
     else:
         return HttpResponse(

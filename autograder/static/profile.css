@@ -195,6 +195,20 @@ li.nb a {
     float: right !important;
 }
 
+/* Contest name in the contest navbar -- an li.nb with no <a> inside, so it
+   needs its own padding and centering. */
+li.nb.contest-name {
+    align-items: center;
+    padding: 0 1.25em 0 0.75em;
+    color: white;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+li.nb.contest-name:hover {
+    background-color: transparent;
+}
+
 .logoutbtn:hover:not(.active) {
     background-color: rgb(87 45 45);
 }
@@ -385,37 +399,6 @@ input[type="file"] {
     position: absolute;
     bottom: 2%;
     left: 2%;
-}
-.cnav {
-    background-color: rgb(0, 0, 0, 0.6);
-    width: 90%;
-    padding-left: 2%;
-    padding-right: 2%;
-    margin-left: auto;
-    margin-right: auto;
-    border-radius: 2vw;
-    line-height: 1em;
-    text-decoration: none;
-    /* font-family: "Lucida Sans"; */
-}
-ul.cnb {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-}
-li.cnb {
-    float: left;
-}
-li.cnb a {
-    display: block;
-    color: white;
-    text-align: center;
-    padding: 14px 16px;
-    text-decoration: none;
-}
-li.cnb a:hover:not(.active) {
-    background-color: rgb(62, 62, 62);
 }
 .cactive {
     background-color: rgb(100, 100, 100, 0.5);

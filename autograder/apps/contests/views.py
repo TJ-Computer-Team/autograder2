@@ -85,6 +85,7 @@ def contest_view(request, cid):
     context = {
         "not_empty": "yes" if ordered else "no",
         "title": contest.name,
+        "contest_nav": contest,
         "problems": ordered,
         "user": request.user.id,
         "cid": contest.id,
@@ -112,6 +113,7 @@ def contest_standings_view(request, cid):
 
     context = {
         "title": standings["title"],
+        "contest_nav": contest,
         "cid": cid,
         "pnum": standings["pnum"],
         "load": standings["load"],
@@ -153,6 +155,7 @@ def contest_status_view(request, cid, mine_only, page):
 
     context = {
         "title": contest.name,
+        "contest_nav": contest,
         "user_id": request.user.id,
         "cid": cid,
         "page_obj": page_obj,

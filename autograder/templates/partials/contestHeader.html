@@ -1,0 +1,21 @@
+{% load static %}
+
+<div class="navbar">
+    <ul class="nb">
+        <li id="logoHolder" class="nb"><img class="logo" src="{% static 'images/logo.png' %}"></li>
+        <li class="nb contest-name">{{ contest_nav.name }}</li>
+        <li class="nb"><a {% if cnav_active == "problems" %} class="cactive" {% endif %} href="{% url "contests:contest" contest_nav.id %}">Problems</a></li>
+        <li class="nb"><a {% if cnav_active == "submit" %} class="cactive" {% endif %} href="{% url "runtests:submitcontest" cid=contest_nav.id %}">Submit Code</a></li>
+        <li class="nb"><a {% if cnav_active == "mine" %} class="cactive" {% endif %} href="{% url "contests:status" cid=contest_nav.id mine_only="mine" page=1 %}">My Submissions</a></li>
+        <li class="nb"><a {% if cnav_active == "all" %} class="cactive" {% endif %} href="{% url "contests:status" cid=contest_nav.id mine_only="all" page=1 %}">All Submissions</a></li>
+        <li class="nb"><a {% if cnav_active == "standings" %} class="cactive" {% endif %} href="{% url "contests:standings" contest_nav.id %}">Standings</a></li>
+        <li class="nb topnav-right">
+            <a href="{% url 'oauth:logout' %}">
+                <button class="logoutbtn" type="button">Log Out</button>
+            </a>
+        </li>
+        <li class="nb topnav-right">
+            <a href="{% if request.user.is_tjioi %}{% url 'contests:contests' %}{% else %}{% url 'index:profile' %}{% endif %}">Return Home</a>
+        </li>
+    </ul>
+</div>

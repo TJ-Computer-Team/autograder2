@@ -13,7 +13,6 @@
 {% block content %}
 {% include "partials/header.html" %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
-{% include "partials/contestNavbar.html" %}
 
 
 {% if messages %}
@@ -38,7 +37,7 @@
     <tr>
         <td class="centertext">{{problem.letter}}</td>
         <td class="centertext">
-            <a href="{% url "problems:problem" pid=problem.id %}">
+            <a href="{% url "problems:problem" pid=problem.id %}?contest={{ cid }}">
             {{ problem.name }}
             </a>
         </td>
