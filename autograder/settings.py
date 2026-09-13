@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from decouple import config
 import os
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -253,6 +254,14 @@ CACHES = {
 
 CELERY_TIMEZONE = "America/New_York"
 CELERY_BROKER_URL = "redis://redis:6379/0" if DEBUG else "redis://127.0.0.1:6379"
+
+# Tests run against a throwaway database but would otherwise publish to the real
+# broker: every GraderUser created in a test fires post_save -> update_codeforces_
+# rating.delay(id), and once the test database is dropped the worker looks those
+# ids up in the real one and fails. A few test runs is enough to bury the queue in
+# dead tasks and starve everything else. An in-memory broker keeps them contained.
+if "test" in sys.argv:
+    CELERY_BROKER_URL = "memory://"
 
 CELERY_ACCEPT_CONTENT = ["json", "pickle"]
 CELERY_TASK_SERIALIZER = "pickle"

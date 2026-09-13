@@ -161,6 +161,7 @@ def duel_state(request, duel_id):
             # Fall back to username: an account with a blank display_name would
             # send "", which is falsy in JS and made the page report a draw.
             "winner": _name(duel.winner) if duel.winner else None,
+            "accepted": duel.accepted_at is not None,
             "end_reason": duel.end_reason,
             "selection_error": duel.selection_error,
             "players": [

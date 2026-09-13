@@ -14,7 +14,7 @@
 <div class="main-block">
     <div class="title"><strong>{{ duel.challenger.display_name|default:duel.challenger.username }} vs {{ duel.opponent.display_name|default:duel.opponent.username }}</strong></div>
     <div class="subtitle"><br>
-        <span id="duel-headline">{{ duel.get_status_display }}</span>
+        <span id="duel-headline">{% if duel.status == "pending" and duel.accepted_at %}Picking a problem&hellip;{% else %}{{ duel.get_status_display }}{% endif %}</span>
     </div>
 </div>
 
@@ -37,8 +37,11 @@
         {% endif %}
     </div>
     {% if duel.accepted_at %}
-    {# Accepted, but the problem is still being drawn in the background. Showing
-       Accept again here is what made clicking it look like it did nothing. #}
+    {% comment %}
+    Accepted, but the problem is still being drawn in the background. Showing
+    Accept again here is what made clicking it look like it did nothing.
+    Note: {# #} is single-line only in Django, so a multi-line one renders as text.
+    {% endcomment %}
     <div class="info">
         <span class="v-pending">Picking a problem&hellip;</span>
         <div class="field-hint">
@@ -146,7 +149,7 @@
         if (data.status === 'pending') {
             headline.textContent = data.selection_error
                 ? data.selection_error
-                : 'Waiting to be accepted';
+                : (data.accepted ? 'Picking a problem\u2026' : 'Waiting to be accepted');
         } else if (data.status === 'active') {
             headline.textContent = data.problem.name
                 ? 'In progress' : 'Picking a problem...';

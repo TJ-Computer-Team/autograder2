@@ -10,7 +10,14 @@ logger = logging.getLogger(__name__)
 
 @app.task(rate_limit="2/s")
 def update_codeforces_rating(user_id):
-    user = GraderUser.objects.get(id=user_id)
+    try:
+        user = GraderUser.objects.get(id=user_id)
+    except GraderUser.DoesNotExist:
+        # The user was deleted between queueing and running. Nothing to do, and
+        # raising here just fills the worker log with tracebacks.
+        logger.info(f"User {user_id} no longer exists; skipping CF refresh.")
+        return
+
     if not user.cf_handle:
         update_user_index.delay(user.id)
         return
