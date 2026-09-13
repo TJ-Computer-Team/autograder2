@@ -174,6 +174,23 @@ STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",  # For admin and other app static
 ]
 
+# In production, serve hashed filenames (profile.<hash>.css) so Cloudflare's
+# four-hour edge cache cannot hold a stale copy: a changed file is a new URL.
+# Left as plain storage in DEBUG, where there is no manifest and runserver
+# serves straight from STATICFILES_DIRS.
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": (
+            "django.contrib.staticfiles.storage.StaticFilesStorage"
+            if DEBUG
+            else "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+        ),
+    },
+}
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
