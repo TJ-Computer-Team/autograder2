@@ -71,9 +71,11 @@
     <a href="{% url "runtests:submitproblem" pid=problem.id %}">
         <div class="button">Submit</div>
     </a>
+    {% if problem.contest %}
     <a href="{% url "contests:contest" cid=problem.contest.id %}">
         <div class="button">Back</div>
     </a>
+    {% endif %}
     {% endif %}
 </div>
 

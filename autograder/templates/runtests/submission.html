@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load static %}
+{% load verdicts %}
 
 {% block stylesheet %}
 <link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
@@ -35,10 +36,10 @@ onload="auto_grow()"
     {% if submission %}
 
     <div class="title">
-        Problem: {{submission.name}}, Language:
+        Problem: {{submission.problem.name}}, Language:
         {{submission.language}}, Runtime:
         {{submission.runtime}}ms, Verdict:
-        {{submission.verdict}}, Time: {{submission.timestamp}}
+        <span class="{{ submission.verdict|verdict_class }}">{{submission.verdict}}</span>, Time: {{submission.timestamp}}
         {% if admin %} - Viewing as Admin {% endif %}
     </div>
     <br/>

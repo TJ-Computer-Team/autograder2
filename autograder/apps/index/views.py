@@ -3,7 +3,8 @@ from django.views.decorators.http import require_POST
 from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 from django_user_agents.utils import get_user_agent
-from .models import GraderUser, ProblemOfTheWeek, CodeforcesVerification, AttendanceSession, AttendanceRecord
+from .models import GraderUser, CodeforcesVerification, AttendanceSession, AttendanceRecord
+from ..lectures.models import LectureSet
 from .cf_utils import pick_random_challenge, verify_cf_submission
 from django.utils import timezone
 from datetime import timedelta
@@ -41,18 +42,19 @@ def save_validation_settings(settings_data):
 
 @login_required
 def potw_view(request):
-    """Render the Problem of the Week page with beginner, intermediate and advanced entries."""
-    beginner = ProblemOfTheWeek.objects.filter(level=ProblemOfTheWeek.BEGINNER).first()
-    intermediate = ProblemOfTheWeek.objects.filter(level=ProblemOfTheWeek.INTERMEDIATE).first()
-    advanced = ProblemOfTheWeek.objects.filter(level=ProblemOfTheWeek.ADVANCED).first()
+    """Problem of the Week now lives as a LectureSet; keep /potw/ pointing at it.
 
-    context = {
-        "active": "potw",
-        "beginner": beginner,
-        "intermediate": intermediate,
-        "advanced": advanced,
-    }
-    return render(request, "index/potw.html", context)
+    Redirects to the newest published POTW set so old links and the navbar item
+    keep working. Falls back to the Lecture Sets list if none exists yet.
+    """
+    latest = (
+        LectureSet.objects.filter(kind=LectureSet.POTW, published=True)
+        .order_by("-date", "-created_at")
+        .first()
+    )
+    if latest is None:
+        return redirect("lectures:list")
+    return redirect("lectures:detail", slug=latest.slug)
 
 import logging
 
@@ -275,7 +277,9 @@ def user_profile_view(request, id):
         "name": user.display_name,
         "username": user.username,
         "cf": user.cf_handle,
+        "cf_rating": user.cf_rating,
         "usaco": user.usaco_division,
+        "index": user.index,
         "rating_changes": list(rating_changes),
         "no_rating_history": "false",
         "admin": request.user.is_staff,

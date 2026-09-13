@@ -7,6 +7,25 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# nsjail's --cgroup_mem_max leaves the kernel OOM killer to SIGKILL the process
+# (exit 128+9), but a runtime that catches its own allocation failure exits
+# normally with a recognizable message instead, so both are checked.
+_OOM_SIGNATURES = (
+    "killed by cgroup",
+    "memory.events",
+    "Out of memory",
+    "Cannot allocate memory",
+    "std::bad_alloc",
+    "java.lang.OutOfMemoryError",
+    "MemoryError",
+)
+
+
+def _is_oom(returncode: int, stderr_text: str) -> bool:
+    if returncode == 137:  # 128 + SIGKILL
+        return True
+    return any(sig in stderr_text for sig in _OOM_SIGNATURES)
+
 
 def run_code(
     subdir: Path,
@@ -114,6 +133,8 @@ def run_code(
 
     if proc.returncode != 0:
         stderr_text = stderr.decode("utf-8", errors="ignore")
+        if _is_oom(proc.returncode, stderr_text):
+            return "Memory Limit Exceeded", stderr_text, elapsed
         return "Runtime Error", stderr_text, elapsed
 
     try:

@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('problems', '0011_alter_problem_testcases_zip'),
+        ("problems", "0011_alter_problem_testcases_zip"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='problem',
-            name='contest_letter',
-            field=models.CharField(default='A', max_length=1),
+            model_name="problem",
+            name="contest_letter",
+            field=models.CharField(default="A", max_length=1),
         ),
     ]

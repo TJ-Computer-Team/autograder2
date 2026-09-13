@@ -4,19 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('problems', '0013_problem_interactor_file'),
+        ("problems", "0013_problem_interactor_file"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='problem',
-            name='interactor_file',
+            model_name="problem",
+            name="interactor_file",
         ),
         migrations.AlterField(
-            model_name='problem',
-            name='id',
+            model_name="problem",
+            name="id",
             field=models.IntegerField(primary_key=True, serialize=False),
         ),
     ]

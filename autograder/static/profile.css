@@ -29,12 +29,13 @@ table {
     margin-left: auto;
     margin-right: auto;
     border-radius: 0.5vw;
-    border-collapse: collapse;
+    /* `collapse` discards the border-radius above; `separate` + overflow keeps it. */
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
 }
 th {
     font-size: 2em;
-    border: 1px solid;
-    border-color: black;
     padding-left: 0.5em;
     padding-right: 0.5em;
 }
@@ -43,8 +44,26 @@ td {
     padding-left: 0.5em;
     padding-right: 0.5em;
     text-decoration: none;
-    border: 1px solid;
-    border-color: black;
+}
+/* With border-collapse: separate, a full `border` on every cell would draw each
+   interior line twice. Bottom+right only keeps them single, and the last row and
+   column drop theirs so the rounded outer edge stays clean. */
+th,
+td {
+    border: 0;
+    border-bottom: 1px solid black;
+    border-right: 1px solid black;
+}
+th:last-child,
+td:last-child {
+    border-right: 0;
+}
+tr:last-child td {
+    border-bottom: 0;
+}
+/* Row hover, to track across long submission and problem lists. */
+tbody tr:hover td {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 
@@ -112,14 +131,112 @@ td {
     font-size: 1.7em;
 }
 
-.statsInfo {
-    margin: 0.5em;
-    font-size: 1.7em;
+.profile-header {
+    margin-bottom: 1.75em;
 }
-.statsInfo select, input {
-    background-color: black;
+
+.profile-name {
+    font-size: 2em;
+    font-weight: bold;
+}
+
+.profile-meta {
+    font-size: 1.25em;
+    opacity: 0.85;
+    margin-top: 0.25em;
+}
+
+.profile-section-title {
+    font-size: 1.4em;
+    font-weight: bold;
+    margin: 1.5em 0 0.6em 0;
+}
+
+/* USACO division colors, as plain colored text rather than a badge. */
+.division-bronze {
+    color: #e0a97c;
+}
+.division-silver {
+    color: #d4dce5;
+}
+.division-gold {
+    color: #f0d77a;
+}
+.division-platinum {
+    color: #a6f0e3;
+}
+.verified-badge {
+    color: #6ee7a0;
+    font-weight: bold;
+    margin-left: 0.5em;
+}
+
+.field-hint {
+    opacity: 0.7;
+    margin-top: 0.35em;
+}
+
+/* Set the scale once on the form so labels, controls, hints and the verification
+   panel all share it. Previously .statsInfo was 1.7em with a 0.75em label inside,
+   so a control rendered larger than its own label while notes outside .statsInfo
+   fell back to the 13px base -- four sizes in one short form. */
+#profileForm {
+    font-size: 1.25em;
+}
+
+.statsInfo {
+    margin: 0.5em 0 1.25em 0;
+}
+
+.statsInfo label {
+    display: block;
+    opacity: 0.8;
+    margin-bottom: 0.35em;
+}
+/* Form controls. The old rule here was `.statsInfo select, input`, where the
+   bare `input` matched every input on the site and painted it flat black with no
+   padding -- that is why the profile and submit pages looked unstyled. */
+input[type="text"],
+input[type="email"],
+input[type="date"],
+input[type="password"],
+select,
+textarea {
+    background-color: rgba(0, 0, 0, 0.45);
     color: white;
-    width: auto;
+    font-family: inherit;
+    font-size: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 0.35em;
+    padding: 0.35em 0.6em;
+    box-sizing: border-box;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="date"]:focus,
+input[type="password"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.7);
+}
+
+input[type="submit"],
+button:not(.logoutbtn):not(.toc-toggle) {
+    background-color: rgb(30, 51, 156);
+    color: white;
+    font-family: inherit;
+    font-size: inherit;
+    border: none;
+    border-radius: 0.35em;
+    padding: 0.4em 1.2em;
+    cursor: pointer;
+}
+
+input[type="submit"]:hover,
+button:not(.logoutbtn):not(.toc-toggle):hover {
+    background-color: rgb(40, 61, 166);
 }
 
 .navbar {
@@ -127,7 +244,10 @@ td {
     backdrop-filter: blur(10px);
     margin: 0;
     padding: 0;
+    /* `sticky` does nothing without an inset; without `top` this never stuck. */
     position: sticky;
+    top: 0;
+    z-index: 10;
     font-size: 1.2em;
     height: 50px;
 }
@@ -259,19 +379,12 @@ li.nb.contest-name:hover {
     flex-direction: column;
 }
 
-#problemid {
-    width: 20%;
-    background-color: black;
-    color: white;
-    font-size: .7em;
-}
-
+/* These are ID selectors, so they out-specify the shared control styling above;
+   background and font-size are left to it rather than repeated as flat black. */
+#problemid,
 #lang {
-    margin: auto;
-    width: 20%;
-    background-color: black;
-    color: white;
-    font-size: .7em;
+    margin: 0.25em auto;
+    min-width: 20%;
 }
 
 .custom-file-upload {
@@ -358,15 +471,17 @@ li.slg {
 }
 
 .button {
-    padding: 0.5em;
+    padding: 0.5em 1.2em;
     border-radius: 0.5em;
-    width: 80%;
+    /* was width: 80%, which inside a flex item squeezed labels like
+       "View Mine Only" into a wrapped, two-line box */
     justify-content: center;
     background-color: rgb(30, 51, 156);
     text-align: center;
     color: white;
     position: relative;
     margin: auto;
+    white-space: nowrap;
 }
 
 .button:hover {
@@ -374,13 +489,9 @@ li.slg {
     background-color: rgb(40, 61, 166);
 }
 
+/* `width: 5%` made every text input a tiny sliver; sized per-context instead. */
 input[type="text"] {
-    width: 5%;
-    padding-top: 0.25%;
-    padding-bottom: 0.25%;
-    box-sizing: border-box;
-    font-size: 100%;
-    margin: 1%;
+    min-width: 12em;
 }
 
 input[type="file"] {
@@ -403,6 +514,163 @@ input[type="file"] {
 .cactive {
     background-color: rgb(100, 100, 100, 0.5);
 }
+/* Table of contents on the Guide page. Matches .info sizing so it reads as the
+   same body text as every other section. */
+.toc {
+    text-align: left;
+    font-size: 1.5em;
+}
+.toc > strong {
+    display: block;
+    font-size: 1.2em;
+    margin-bottom: 0.6em;
+}
+.toc ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: toc;
+    columns: 2;
+    column-gap: 2em;
+}
+.toc li {
+    counter-increment: toc;
+    margin: 0 0 0.35em 0;
+    break-inside: avoid;
+}
+.toc li a {
+    color: white;
+    text-decoration: none;
+    display: inline-block;
+    padding: 0.15em 0;
+    border-bottom: 1px solid transparent;
+}
+.toc li a::before {
+    content: counter(toc) ".";
+    margin-right: 0.5em;
+}
+.toc li a:hover {
+    border-bottom-color: currentColor;
+}
+
+.toc-toggle {
+    margin-top: 1em;
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 4px;
+    color: white;
+    font-family: inherit;
+    font-size: inherit;
+    padding: 0.3em 0.8em;
+    cursor: pointer;
+}
+.toc-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Collapsible guide sections. */
+details.section {
+    padding-top: 1.25em;
+    padding-bottom: 1.25em;
+}
+details.section > summary {
+    cursor: pointer;
+    font-size: 1.8em;
+    font-weight: bold;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    user-select: none;
+}
+/* Replace the native marker with one we can rotate. */
+details.section > summary::-webkit-details-marker {
+    display: none;
+}
+details.section > summary::before {
+    content: '';
+    flex: none;
+    border-style: solid;
+    border-width: 0.3em 0 0.3em 0.42em;
+    border-color: transparent transparent transparent currentColor;
+    opacity: 0.65;
+    transition: transform 0.15s ease;
+}
+details.section[open] > summary::before {
+    transform: rotate(90deg);
+}
+details.section > summary:hover::before {
+    opacity: 1;
+}
+details.section > .info {
+    margin-top: 1em;
+}
+.rules-list {
+    margin: 0.5em 0 0 0;
+    padding-left: 1.5em;
+}
+.rules-list li {
+    margin-bottom: 0.5em;
+}
+
+/* Anchor targets clear the navbar instead of hiding under it. */
+.main-block[id] {
+    scroll-margin-top: 70px;
+}
+
+@media (max-width: 700px) {
+    .toc ol {
+        columns: 1;
+    }
+}
+
+/* Verdict colors. Chosen to stay legible on the blue table rows, which are
+   already fairly saturated, so these are light tints rather than pure hues. */
+.v-ac {
+    color: #6ee7a0;
+    font-weight: bold;
+}
+.v-wa {
+    color: #ff9c9c;
+}
+.v-tle {
+    color: #ffd479;
+}
+.v-err {
+    color: #ffb3c7;
+}
+.v-pending {
+    color: #cdd6ff;
+    font-style: italic;
+}
+.v-skipped {
+    color: #b8bdd4;
+    font-style: italic;
+}
+
+/* Lecture set difficulty, as plain colored text. */
+.diff-easy {
+    color: #6ee7a0;
+}
+.diff-medium {
+    color: #ffd479;
+}
+.diff-hard {
+    color: #ff9c9c;
+}
+.set-external,
+.set-draft {
+    opacity: 0.6;
+    font-size: 0.9em;
+    margin-left: 0.4em;
+    white-space: nowrap;
+}
+.set-note {
+    font-size: 0.8em;
+    opacity: 0.75;
+    margin-top: 0.25em;
+}
+
 .small-padding {
     padding-top: .4em;
     padding-bottom: .4em;
@@ -423,13 +691,16 @@ input[type="file"] {
 th[role=columnheader]:not(.no-sort) {
 	cursor: pointer;
 }
+/* Arrow sits inline right after the label so the two center as one unit.
+   It is always in the layout (visibility, not display) so sorting a column
+   never shifts the header text. Sized in em to track the 2em th font. */
 th[role=columnheader]:not(.no-sort):after {
-    position:absolute;
 	content: '';
-	float: right;
-	margin-top: 10px;
-    margin-left: 20px;
-	border-width: 0 4px 4px;
+	display: inline-block;
+	vertical-align: middle;
+	margin-left: 0.3em;
+	margin-bottom: 0.1em;
+	border-width: 0 0.22em 0.22em;
 	border-style: solid;
 	border-color: white transparent;
 	visibility: hidden;
@@ -440,14 +711,17 @@ th[role=columnheader]:not(.no-sort):after {
 	user-select: none;
 }
 th[aria-sort=ascending]:not(.no-sort):after {
-	border-bottom: none;
-	border-width: 4px 4px 0;
+	border-width: 0.22em 0.22em 0;
 }
+/* The column actually sorted is the strong signal; hover is only a hint. */
 th[aria-sort]:not(.no-sort):after {
 	visibility: visible;
-	opacity: 0.4;
+	opacity: 1;
 }
 th[role=columnheader]:not(.no-sort):hover:after {
 	visibility: visible;
+	opacity: 0.45;
+}
+th[aria-sort]:not(.no-sort):hover:after {
 	opacity: 1;
 }

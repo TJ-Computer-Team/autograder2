@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "autograder.apps.oauth",
     "autograder.apps.contests",
     "autograder.apps.problems",
+    "autograder.apps.lectures",
     "autograder.apps.runtests",
     "autograder.apps.rankings",
     "autograder.apps.tjioi",

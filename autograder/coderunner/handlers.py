@@ -149,6 +149,10 @@ def run_code_handler(tl, ml, lang, pid, sid, code):
             verdict_overall = "Runtime Error"
             insight_overall = insight
             break
+        if output_text == "Memory Limit Exceeded":
+            verdict_overall = f"Memory Limit Exceeded on test {test_name}"
+            insight_overall = insight
+            break
         if output_text == "Time Limit Exceeded":
             verdict_overall = f"Time Limit Exceeded on test {test_name}"
             insight_overall = insight

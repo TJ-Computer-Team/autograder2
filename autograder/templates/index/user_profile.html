@@ -15,23 +15,21 @@
 <div id="mainContent">
   <div id="subContent">
     <div class="info-block">
-      <div class="title">
-        <p>Profile</p>
+      <div class="profile-header">
+        <div class="profile-name">{{ name }}</div>
+        <div class="profile-meta">{{ username }}</div>
+        <div class="profile-meta">
+          Index {{ index|floatformat:0 }}{% if cf_rating %} &middot; Codeforces {{ cf_rating }}{% endif %}
+        </div>
+        <div class="profile-meta">
+          USACO <span class="division-{{ usaco|slugify }}">{{ usaco }}</span>
+          {% if admin and cf %}&middot; Handle {{ cf }}{% endif %}
+        </div>
       </div>
-      <div class="userinfo">Name: {{ name }}</div>
-      <div class="userinfo">Username: {{ username }}</div>
 
-      {% if admin %}
-      <div class="statsInfo">USACO Division: {{ usaco }}</div>
-      <div class="statsInfo">Codeforces Handle: {{ cf }}</div>
-      {% endif %}
-
-      <br>
-      <div class="subtitle">
-        <p>Rating History</p>
-      </div>
+      <div class="profile-section-title">Rating History</div>
       {% if no_rating_history == "true" %}
-      <div class="statsInfo">No rating history yet!</div>
+      <div class="profile-meta">No rating history yet.</div>
       {% else %}
       <canvas id="ratingChart" width="600" height="300"></canvas>
       {% endif %}

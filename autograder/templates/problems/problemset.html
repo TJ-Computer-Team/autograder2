@@ -8,6 +8,11 @@
 
 {% block title %}Problemset{% endblock title %}
 
+{% block head %}
+<script src="{% static 'js/tablesort.js' %}"></script>
+<script src="{% static 'js/tablesort.number.js' %}"></script>
+{% endblock head %}
+
 {% block content %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/header.html" %}
@@ -16,14 +21,51 @@
     <div class="title">Problemset</div>
 </div>
 <div class="main-block" id="problems">
-    <ul class="sl">
-        {% for problem in problems  %}
-            <li class="sl">
-                <a href="{% url "problems:problem" pid=problem.id %}">
-                    <div class="problem-text">{{problem.id}} - {{ problem.name }}</div>
-                </a>
-            </li>
+    {% if rows %}
+    <table id="problemset-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Contest</th>
+                <th data-sort-method="number">Points</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in rows %}
+            <tr>
+                <td class="centertext">{{ row.problem.id }}</td>
+                <td>
+                    <a href="{% url "problems:problem" pid=row.problem.id %}">{{ row.problem.name }}</a>
+                </td>
+                <td class="centertext">
+                    {% if row.problem.contest %}
+                        <a href="{% url "contests:contest" cid=row.problem.contest.id %}">{{ row.problem.contest.name }}</a>
+                    {% else %}
+                        <span class="set-external">&mdash;</span>
+                    {% endif %}
+                </td>
+                <td class="centertext">{{ row.problem.points }}</td>
+                <td class="centertext">
+                    {% if row.solved %}
+                        <span class="v-ac">Solved</span>
+                    {% else %}
+                        <span class="v-pending">Unsolved</span>
+                    {% endif %}
+                </td>
+            </tr>
         {% endfor %}
-    </ul>
+        </tbody>
+    </table>
+    {% else %}
+    <div class="info">No problems available yet.</div>
+    {% endif %}
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        new Tablesort(document.getElementById('problemset-table'));
+    }, false);
+</script>
 {% endblock content %}

@@ -4,7 +4,12 @@ from django.db import models
 class Problem(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=255)
-    contest = models.ForeignKey("contests.Contest", on_delete=models.CASCADE)
+    # Null for lecture-only problems: a problem written for a lecture set never
+    # belongs to a contest, and inventing a placeholder contest for it was the
+    # exact workaround lecture sets exist to remove.
+    contest = models.ForeignKey(
+        "contests.Contest", on_delete=models.CASCADE, null=True, blank=True
+    )
     points = models.IntegerField()
     contest_letter = models.CharField(max_length=1, default="A")
 
@@ -23,23 +28,24 @@ class Problem(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     def save(self, *args, **kwargs):
         # Auto-increment id if this is a new object and id wasn't provided
         if not self.pk and self.id is None:
             from django.db.models import Max
-            max_id = Problem.objects.aggregate(Max('id'))['id__max']
+
+            max_id = Problem.objects.aggregate(Max("id"))["id__max"]
             self.id = (max_id or 0) + 1
         super().save(*args, **kwargs)
         if self.interactive and self.testcases_zip:
             self._process_interactive_problem()
-    
+
     def _process_interactive_problem(self):
         import zipfile
         import os
         import subprocess
         from pathlib import Path
-        
+
         problem_dir = Path(f"/home/tjctgrader/problems/{self.id}")
         problem_dir.mkdir(parents=True, exist_ok=True)
         test_dir = problem_dir / "test"
@@ -48,62 +54,76 @@ class Problem(models.Model):
         test_dir.mkdir(parents=True, exist_ok=True)
         answer_dir.mkdir(parents=True, exist_ok=True)
         queries_dir.mkdir(parents=True, exist_ok=True)
-        
-        with zipfile.ZipFile(self.testcases_zip.path, 'r') as zip_ref:
+
+        with zipfile.ZipFile(self.testcases_zip.path, "r") as zip_ref:
             for file_info in zip_ref.filelist:
                 filename = os.path.basename(file_info.filename)
                 if not filename:
                     continue
-                
-                if filename.startswith('interactor.'):
+
+                if filename.startswith("interactor."):
                     interactor_content = zip_ref.read(file_info.filename)
-                    
-                    if filename.endswith('.py'):
+
+                    if filename.endswith(".py"):
                         interactor_path = problem_dir / "interactor.py"
                         interactor_path.write_bytes(interactor_content)
                         os.chmod(interactor_path, 0o755)
-                    
-                    elif filename.endswith('.cpp'):
+
+                    elif filename.endswith(".cpp"):
                         cpp_path = problem_dir / "interactor.cpp"
                         cpp_path.write_bytes(interactor_content)
-                        
-                        result = subprocess.run([
-                            '/usr/bin/g++', '-std=c++17', '-O2',
-                            '-o', str(problem_dir / 'interactor'),
-                            str(cpp_path)
-                        ], capture_output=True)
-                        
+
+                        result = subprocess.run(
+                            [
+                                "/usr/bin/g++",
+                                "-std=c++17",
+                                "-O2",
+                                "-o",
+                                str(problem_dir / "interactor"),
+                                str(cpp_path),
+                            ],
+                            capture_output=True,
+                        )
+
                         if result.returncode == 0:
                             cpp_path.unlink()
                         else:
-                            raise Exception(f"C++ compilation failed: {result.stderr.decode()}")
-                    
-                    elif filename.endswith('.java'):
+                            raise Exception(
+                                f"C++ compilation failed: {result.stderr.decode()}"
+                            )
+
+                    elif filename.endswith(".java"):
                         java_path = problem_dir / "Interactor.java"
                         java_path.write_bytes(interactor_content)
-                        
-                        result = subprocess.run([
-                            '/usr/bin/javac', str(java_path)
-                        ], capture_output=True, cwd=str(problem_dir))
-                        
+
+                        result = subprocess.run(
+                            ["/usr/bin/javac", str(java_path)],
+                            capture_output=True,
+                            cwd=str(problem_dir),
+                        )
+
                         if result.returncode == 0:
                             wrapper_path = problem_dir / "interactor"
-                            wrapper_path.write_text(f"#!/bin/bash\njava -cp {problem_dir} Interactor \"$@\"\n")
+                            wrapper_path.write_text(
+                                f'#!/bin/bash\njava -cp {problem_dir} Interactor "$@"\n'
+                            )
                             os.chmod(wrapper_path, 0o755)
                         else:
-                            raise Exception(f"Java compilation failed: {result.stderr.decode()}")
-                
-                elif filename.endswith('_answer.txt'):
+                            raise Exception(
+                                f"Java compilation failed: {result.stderr.decode()}"
+                            )
+
+                elif filename.endswith("_answer.txt"):
                     # Secret answer files for interactor
                     test_content = zip_ref.read(file_info.filename)
                     (answer_dir / filename).write_bytes(test_content)
-                
-                elif filename.endswith('_queries.txt'):
+
+                elif filename.endswith("_queries.txt"):
                     # Query limit files (optional)
                     test_content = zip_ref.read(file_info.filename)
                     (queries_dir / filename).write_bytes(test_content)
-                
-                elif filename.endswith('.txt'):
+
+                elif filename.endswith(".txt"):
                     # Public input files for user
                     test_content = zip_ref.read(file_info.filename)
                     (test_dir / filename).write_bytes(test_content)

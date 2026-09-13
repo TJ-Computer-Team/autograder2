@@ -19,17 +19,22 @@
 <div id="mainContent">
     <div id="subContent">
         <div class="info-block">
-            <div class="title"><p>Profile</p></div>
-            {% if user.is_staff %}
-                <a href="{% url 'admin:index' %}">Django admin</a>
-            {% endif %}
-            <div class="userinfo">Name: {{ user.display_name }}</div>
-            <div class="userinfo">Username: {{ user.username }}</div>
+            <div class="profile-header">
+                <div class="profile-name">{{ user.display_name|default:user.username }}</div>
+                <div class="profile-meta">{{ user.username }}</div>
+                <div class="profile-meta">
+                    Index {{ user.index|floatformat:0 }}{% if user.cf_rating %} &middot; Codeforces {{ user.cf_rating }}{% endif %}
+                </div>
+                {% if user.is_staff %}
+                    <div class="profile-meta"><a href="{% url 'admin:index' %}">Django admin</a></div>
+                {% endif %}
+            </div>
+
             <form id="profileForm" action="{% url 'index:update_stats' %}" method="POST">
                 {% csrf_token %}
                 <div class="statsInfo">
-                    <label for="usaco_div">USACO Division: </label>
-                    <select name="usaco_div">
+                    <label for="usaco_div">USACO Division</label>
+                    <select name="usaco_div" id="usaco_div">
                         <option value="" {% if user.usaco_division == "Not Participated" %} selected {% endif %}>Not Participated</option>
                         <option value="bronze" {% if user.usaco_division == "Bronze" %} selected {% endif %}>Bronze</option>
                         <option value="silver" {% if user.usaco_division == "Silver" %} selected {% endif %}>Silver</option>
@@ -38,13 +43,11 @@
                     </select>
                 </div>
                 <div class="statsInfo">
-                    <label for="cf_handle">Codeforces Handle: </label>
-                    <input name="cf_handle" id="cf_handle" value="{{ cf_handle }}">
-                    
-                      <span id="verifiedBadge"
-                          class="hidden-element"
-                          style="color: green; font-weight: bold; margin-left: 5px;">✓ Verified</span>
-                    <br>(leave blank if you don't have one)
+                    <label for="cf_handle">Codeforces Handle</label>
+                    <input type="text" name="cf_handle" id="cf_handle" value="{{ cf_handle }}">
+                    <span id="verifiedBadge"
+                          class="hidden-element verified-badge">&#10003; Verified</span>
+                    <div class="field-hint">Leave blank if you don't have one.</div>
                 </div>
 
                 <div id="verificationSection" 
@@ -66,7 +69,9 @@
                 <div class="statsInfo">
                     <input type="submit" value="Save">
                 </div>
-                Note: If the entered information is suspicious, it will be verified in-person.
+                <div class="field-hint">
+                    If the entered information is suspicious, it will be verified in person.
+                </div>
             </form>
         </div>
     </div>

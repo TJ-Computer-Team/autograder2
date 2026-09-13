@@ -103,10 +103,10 @@ class ContestNavbarTests(TestCase):
     def assertContestNav(self, response):
         self.assertContains(response, "Winter Inhouse")
         self.assertContains(response, "Return Home")
-        self.assertNotContains(response, "Rules and Info")
+        self.assertNotContains(response, "Rankings")
 
     def assertMainNav(self, response):
-        self.assertContains(response, "Rules and Info")
+        self.assertContains(response, "Rankings")
         self.assertNotContains(response, "Return Home")
 
     def test_contest_page_replaces_main_navbar(self):

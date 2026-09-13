@@ -7,11 +7,15 @@ from ..index.models import GraderUser
 @override_settings(CURRENT_SEASON=2027)
 class RankingsViewTests(TestCase):
     def create_user(self, username, display_name):
+        # Set the division, not the rating: GraderUser's post_save signal
+        # recomputes usaco_rating from usaco_division, so passing a rating here
+        # is immediately overwritten with Bronze's 800 and the user then fails
+        # rankings_view's `usaco > 800` filter.
         return GraderUser.objects.create_user(
             email=f"{username}@example.com",
             username=username,
             display_name=display_name,
-            usaco_rating=1200,
+            usaco_division=GraderUser.SILVER,
         )
 
     def test_only_users_graduating_within_four_seasons_are_shown(self):

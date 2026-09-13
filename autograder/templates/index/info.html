@@ -11,12 +11,31 @@
 {% include "partials/header.html" %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 <div class="main-block">
-    <div class="title"><strong>Rules and Information</strong></div>
+    <div class="title"><strong>Guide</strong></div>
 </div>
 
 <div class="main-block">
+    <nav class="toc" aria-label="Table of contents">
+        <strong>Contents</strong>
+        <ol>
+            <li><a href="#rules">Rules</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="#intro">Intro to CP &amp; In-Houses</a></li>
+            <li><a href="#rankings-formula">Rankings Formula</a></li>
+            <li><a href="#travel">Travel Competitions</a></li>
+            <li><a href="#verdicts">Verdicts</a></li>
+            <li><a href="#feedback">Feedback</a></li>
+            <li><a href="#submissions">Submissions</a></li>
+            <li><a href="#standings">Standings</a></li>
+        </ol>
+        <button type="button" class="toc-toggle" id="toggle-all">Expand all</button>
+    </nav>
+</div>
+
+<details class="main-block section" id="rules" open>
+    <summary>Rules</summary>
     <div class="info">
-        <strong> Rules<br /> </strong> Do NOT submit malicious code with
+         Do NOT submit malicious code with
         malicious intent to the grader. Do NOT attempt to exploit
         any aspect of this system, including but not limited to, accessing
         unauthorized admin privileges, accessing private user information, etc.
@@ -27,41 +46,302 @@
         system. Perhaps there will be collaborative contests, but unless
         otherwise stated, contests are individual. All aspects of the TJHSST
         honor code apply.
-        {% if tjioi %}
         <br /><br />
-        In general, please note what you can and
-        cannot do for contests. These are subject to change.
+        In general, please note what you can and cannot do for contests. These are
+        subject to change.
+        <ol class="rules-list">
+            <li>You ARE allowed to use templates and pre-written data structures. We
+            acknowledge that in-houses are short on time and having pre-written code
+            can make the process much less tedious.</li>
+            <li>You ARE allowed to use reference sources online such as language
+            specific documentation. General algorithm guides such as GeeksForGeeks
+            are allowed if the guide doesn't completely solve the problem.</li>
+            <li>You are NOT allowed to consult intelligent sources such as ChatGPT or
+            other generative AI, or any human sources, during a contest.</li>
+            <li>You are NOT allowed to discuss problem details until the allotted time
+            window for the contest is over.</li>
+        </ol>
         <br />
-        1. You ARE allowed to use templates and pre-written datastructures. We
-        acknowledge that in-houses are short on time and having pre-written code
-        can make the process much less tedious.
-        <br />
-        2. You ARE allowed to use reference sources online such as language
-        specific documentation. General algorithm guides such as GeeksForGeeks
-        are allowed if the guide doesn't completely solve the problem.
-        <br />
-        3. You are NOT allowed consult intelligent sources such as ChatGPT or other Generative AI, as well as any human sources during a
-        contest.
-        <br />
-        4. You are NOT allowed to discuss problem details until the alloted time
-        window for the contest is over. {% endif %}
-        <br /><br />
         During any in-house competition, we will be actively monitoring submissions for plagiarism or use of generative AI
         and will manually review any code that appears suspicious. Submissions flagged for plagiarism may result in disqualification from
         future in-houses and travel competitions.
         <br /><br />
         Thank you for your cooperation.
     </div>
-</div>
-<div class="main-block">
+</details>
+<details class="main-block section" id="contact">
+    <summary>Contact</summary>
     <div class="info">
-        <strong> Information</strong><br />
-        A guide to this website can be found <a target="_blank" href="https://docs.google.com/document/d/17r0fh2rezqDhNoCoUtwVtExn8hRml0BjeAqxQZk9MCs/edit?usp=sharing" >here</a>.
-        <br>
-        If you have any questions/concerns about the website, such as vulnerabily issues, account/data inquiries, please
-        contact tjctgrader@gmail.com and tjhsstictcaptains@gmail.com. If your inquiry is not seen, feel free to alert
-        one of your current officers.
+        If you have any questions or concerns about the website &mdash; vulnerability issues,
+        account or data inquiries &mdash; please contact
+        <a href="mailto:tjctgrader@gmail.com">tjctgrader@gmail.com</a> and
+        <a href="mailto:tjhsstictcaptains@gmail.com">tjhsstictcaptains@gmail.com</a>.
+        If your inquiry is not seen, feel free to alert one of your current officers.
     </div>
-</div>
+</details>
+
+<details class="main-block section" id="intro">
+    <summary>Intro to CP &amp; In-Houses</summary>
+    <div class="info">
+        Competitive programming contests involve competitors submitting a single file
+        (<code>.cpp</code>, <code>.py</code>, <code>.java</code>, etc.) that accepts input and prints
+        output from/to the system. A tutorial on how this works on
+        <a href="https://codeforces.com/" target="_blank">codeforces.com</a> is located
+        <a href="https://codeforces.com/blog/entry/72" target="_blank">here</a>. This grader,
+        maintained by Computer Team officers, functions in a similar manner to the Codeforces
+        contest system.
+        <br /><br />
+        We host contests (in-houses) on this site. Some are rated and others unrated. Rated
+        contests impact your overall standing, which is used to calculate rankings for travel
+        competition team selection to represent TJ. Other variables in the ranking calculation
+        include your USACO division and Codeforces rating. Dates for in-houses are in the
+        schedule in the public Google Drive.
+    </div>
+</details>
+
+<details class="main-block section" id="rankings-formula">
+    <summary>Rankings Formula</summary>
+    <div class="info">
+        
+        All data is taken from this grader website.
+        <br /><br />
+        <strong>Codeforces</strong> &mdash; the max rating your account has reached.
+        <br /><br />
+        <strong>USACO</strong> &mdash; each division maps to a rating:
+        Bronze / Not Participated &rarr; 800, Silver &rarr; 1200, Gold &rarr; 1600,
+        Platinum &rarr; 1900.
+        <br /><br />
+        <strong>In-houses</strong> &mdash; you get a rating for every rated in-house:
+        <pre class="code-block"><code>1200 &times; (N &minus; rank + 1) / N + 800</code></pre>
+        where <code>N</code> is the number of participants. This linearly maps rank to a rating
+        in the interval (800, 2000]. If you do not participate, you get a 0.
+        <br /><br />
+        Your overall in-house rating is the average of your ratings with
+        <code>max(0, min(2, #contests &minus; 2))</code> drops. So after 3 contests your lowest
+        score is dropped, and after 4 your lowest two are. Problem setters get one extra drop
+        for each rated contest they have authored.
+        <br /><br />
+        <strong>Index</strong> &mdash; a 0.2 / 0.35 / 0.45 weighted average of your USACO,
+        Codeforces, and in-house values, sorted so your higher values are weighted more.
+        <br /><br />
+        Problem setters who have to drop every rated contest they took instead get a
+        0.4 / 0.6 weighted average of USACO and Codeforces, weighting the higher value more.
+    </div>
+</details>
+
+<details class="main-block section" id="travel">
+    <summary>Travel Competitions</summary>
+    <div class="info">
+        
+        The in-person competitions we are very likely to send teams to are Widener, Code Quest,
+        PClassic, UMD HSPC, VCU HSPC, and UVA HSPC. If there are others you think we should
+        attend, let us know. Application forms are posted on Discord a few weeks before each
+        competition. Details below are based on past years and may change.
+        <br /><br />
+        By default you are <strong>not</strong> allowed to use electronic tools for anything
+        besides typing code or viewing documentation, and pre-written code is not allowed.
+        <br /><br />
+        <strong>Widener</strong> &mdash; at least 3 teams of 3, one of which is a freshman team.
+        There is no online judge; you run input/output locally through VSCode, Eclipse, etc. on
+        your own computer (one per team). To submit you raise your hand, they come to your table,
+        give you one or two inputs as tests, and check the output. One submission per problem,
+        plus one extra submission overall. No web browsers, internet, or other electronic devices.
+        <br /><br />
+        <strong>Code Quest</strong> &mdash; teams of 3, 4 in-person and 4 online teams, one laptop
+        per team, novice and advanced divisions.
+        <br /><br />
+        <strong>PClassic</strong> &mdash; one contest in the fall and another in the spring.
+        Teams of 4, no limit on number of teams, one laptop per team, classic and advanced
+        divisions. Templates and pre-downloaded code are allowed.
+        <br /><br />
+        <strong>UMD</strong> &mdash; teams of 4, we send 1 team. One laptop is provided, and you
+        must use Java.
+        <br /><br />
+        <strong>VCU</strong> &mdash; teams of 4, we send 2 teams. Two laptops are provided.
+        <br /><br />
+        <strong>UVA</strong> &mdash; teams of 3, we send 3 teams, one of which is a freshman team.
+        One laptop is provided per team.
+    </div>
+</details>
+
+<details class="main-block section" id="verdicts">
+    <summary>Verdicts</summary>
+    <div class="info">
+        
+
+        <strong>Accepted (AC)</strong> &mdash; Congratulations! Your submission passed all our tests.<br /><br />
+
+        <strong>Wrong Answer (WA)</strong> &mdash; Try again! Your submission failed a test and thus didn&rsquo;t
+        solve the problem correctly. You will not be able to see what the input you failed on was unless it was
+        the first one. Try creating and debugging on edge cases to catch the error.<br /><br />
+
+        <strong>Compilation Error / Runtime Error</strong> &mdash; Your code encountered an error. Check the
+        feedback, which may provide more detailed comments. This means your code does not follow the rules of
+        the programming language and did something illegal.<br /><br />
+
+        <strong>Time Limit Exceeded (TLE)</strong> &mdash; Your code was too slow. Try reducing time complexity
+        or optimizing your code. Note that our servers can only run around 10<sup>9</sup> operations a second.
+        The default time limits are 1 second for C++, 2 seconds for Java, and 3 seconds for Python.<br /><br />
+
+        <strong>Memory Limit Exceeded (MLE)</strong> &mdash; Your code used too much memory. Store less
+        information. The default memory limit is 256 megabytes.<br /><br />
+
+        <strong>Running / Compiling</strong> &mdash; Your code is currently being judged, and the verdict
+        updates live as it runs each test. If it hasn&rsquo;t finished for a couple of minutes, our servers
+        probably encountered an error. Try resubmitting. If that doesn&rsquo;t work, please let us know.
+    </div>
+</details>
+
+<details class="main-block section" id="feedback">
+    <summary>Feedback</summary>
+    <div class="info">
+        
+        By clicking on the ID of the submission, you can view additional feedback. Feedback is available for
+        the first test.
+    </div>
+</details>
+
+<details class="main-block section" id="submissions">
+    <summary>Submissions</summary>
+    <div class="info">
+        
+        Your code should take input from standard in (the terminal) and output to standard out (the terminal).
+        This can be done through <code>cin</code>/<code>cout</code> (C++), <code>input()</code> (Python), or
+        <code>Scanner</code> (Java). You can use online documentation to figure out the specifics. You should
+        use your own IDE or text editor to write solutions before uploading the file or pasting it into the
+        submission page. We recommend <a href="https://ide.usaco.guide/" target="_blank">ide.usaco.guide</a>.
+        <br /><br />
+        Java users, make sure you are naming the class <code>usercode</code>. We encourage you to use Python
+        or C++, though.
+        <br /><br />
+        Example code to sum an array (for more help, consult
+        <a href="https://usaco.guide/general/input-output" target="_blank">usaco.guide/general/input-output</a>):
+        <br /><br />
+
+        <strong>Java</strong>
+        <pre class="code-block"><code>import java.util.*;
+import java.io.*;
+
+public class usercode {
+    public static void main (String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
+        int[] a = new int[n];
+        for (int i = 0; i &lt; n; i++) {
+            a[i] = scanner.nextInt();
+        }
+        long sum = 0;
+        for (int i = 0; i &lt; n; i++) {
+            sum += a[i];
+        }
+        System.out.println(sum);
+    }
+}</code></pre>
+
+        <strong>C++</strong>
+        <pre class="code-block"><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    int n; cin &gt;&gt; n;
+    vector&lt;int&gt; a(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; a[i];
+    }
+    long long ans = 0;
+    for (int i = 0; i &lt; n; i++) {
+        ans += a[i];
+    }
+    cout &lt;&lt; ans &lt;&lt; "\n";
+}</code></pre>
+
+        <strong>Python</strong>
+        <pre class="code-block"><code>n = int(input())
+a = list(map(int, input().split()))
+print(sum(a))</code></pre>
+    </div>
+</details>
+
+<details class="main-block section" id="standings">
+    <summary>Standings</summary>
+    <div class="info">
+        
+        Standings are determined by your total points, where each problem solved rewards a set amount of
+        points, and ties are broken by penalty. The penalty for a solved problem is the number of minutes
+        taken to solve it plus 5 minutes for each submission made to it. Your overall penalty is the sum of
+        your penalty for each solved problem. The numbers in the columns for each problem denote the number
+        of submissions taken to solve the problem, and are negative if the participant has not solved it.
+    </div>
+</details>
+
+<style>
+.code-block {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 1em;
+    overflow-x: auto;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9em;
+    line-height: 1.4em;
+    margin: 0.5em 0 1em 0;
+    text-align: left;
+}
+/* Must out-specify `.info code` below, which would otherwise re-apply the
+   inline-code pill to every line inside a <pre>. */
+pre.code-block code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    white-space: pre;
+}
+.guide-hidden {
+    display: none;
+}
+.info code {
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.95em;
+    color: #6ad8ff;
+}
+</style>
+
+<script>
+(function () {
+    var sections = document.querySelectorAll('details.section');
+    var toggle = document.getElementById('toggle-all');
+
+    // A collapsed section can't be scrolled to, so open the target first.
+    function openTarget() {
+        if (!location.hash) return;
+        var el = document.querySelector(location.hash);
+        if (el && el.tagName === 'DETAILS') {
+            el.open = true;
+            el.scrollIntoView();
+        }
+    }
+    window.addEventListener('hashchange', openTarget);
+    openTarget();
+
+    function allOpen() {
+        return Array.prototype.every.call(sections, function (d) { return d.open; });
+    }
+    function syncLabel() {
+        toggle.textContent = allOpen() ? 'Collapse all' : 'Expand all';
+    }
+    toggle.addEventListener('click', function () {
+        var expand = !allOpen();
+        Array.prototype.forEach.call(sections, function (d) { d.open = expand; });
+        syncLabel();
+    });
+    Array.prototype.forEach.call(sections, function (d) {
+        d.addEventListener('toggle', syncLabel);
+    });
+    syncLabel();
+})();
+</script>
 
 {% endblock content %}
