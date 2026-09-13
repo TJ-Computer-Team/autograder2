@@ -1,0 +1,51 @@
+name: Run management command
+
+# Manual-only. Deploys are handled by deploy.yml; this exists so a one-off
+# management command can be run on the VM without needing personal SSH access.
+#
+# The command is chosen from a fixed list rather than free text: a workflow_dispatch
+# input interpolated into a shell command would let anyone who can trigger the
+# workflow run arbitrary code on the production box.
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "Management command to run"
+        required: true
+        type: choice
+        options:
+          - update_rankings
+          - collectstatic --noinput
+          - migrate
+          - showmigrations
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Install gcloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ethereal-effort-397820
+
+      - name: Set up SSH keys
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/google_compute_engine
+          echo "${{ secrets.GCP_SSH_PUBLIC_KEY }}" > ~/.ssh/google_compute_engine.pub
+          chmod 600 ~/.ssh/google_compute_engine
+          chmod 644 ~/.ssh/google_compute_engine.pub
+
+      - name: Run on VM
+        run: |
+          gcloud compute ssh tjctgrader@autograder2 \
+            --zone us-east4-b \
+            --command "cd /home/tjctgrader/autograder && /home/tjctgrader/.local/bin/uv run manage.py ${{ inputs.command }}"
