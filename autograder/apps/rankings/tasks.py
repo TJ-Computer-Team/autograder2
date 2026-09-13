@@ -68,7 +68,14 @@ def update_user_index(user_id):
 
     # Use writer formula if enabled: 0.4 * min(cf, usaco) + 0.6 * max(cf, usaco)
     # Otherwise use standard formula: 0.2 * min + 0.35 * mid + 0.45 * max
-    if user.use_writer_formula:
+    #
+    # `not user.inhouses` mirrors `len(valid_scores) == 0` in the update_rankings
+    # command. Without it the two paths disagreed: the command gave a user with no
+    # in-house scores the writer formula, then this task -- which runs on every
+    # GraderUser save -- recomputed the same user with the standard formula and an
+    # inhouse of 0, dragging their index down by the 0.2 * 0 term. The result was a
+    # ranking that silently changed depending on who had saved their profile last.
+    if user.use_writer_formula or not user.inhouses:
         cf_rating = Decimal(str(user.cf_rating))
         usaco_rating = Decimal(str(new_usaco_rating))
         new_index = (
