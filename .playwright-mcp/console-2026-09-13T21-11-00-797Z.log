@@ -1,0 +1,16 @@
+[     530ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/favicon.ico:0
+[    7738ms] [LOG] callback - particles.js config loaded @ http://localhost:3000/duels/2/:30
+[   22054ms] [LOG] callback - particles.js config loaded @ http://localhost:3000/duels/2/:30
+[   22878ms] [LOG] callback - particles.js config loaded @ http://localhost:3000/duels/2/:30
+[   23424ms] [LOG] callback - particles.js config loaded @ http://localhost:3000/duels/2/:30
+[   23596ms] [LOG] callback - particles.js config loaded @ http://localhost:3000/duels/2/:30
+[   23785ms] [LOG] callback - particles.js config loaded @ http://localhost:3000/duels/2/:30
+[   23973ms] [LOG] callback - particles.js config loaded @ http://localhost:3000/duels/2/:30
+[   24173ms] [LOG] callback - particles.js config loaded @ http://localhost:3000/duels/2/:30
+[   24319ms] [LOG] callback - particles.js config loaded @ http://localhost:3000/duels/2/:30
+[   24550ms] [LOG] callback - particles.js config loaded @ http://localhost:3000/duels/2/:30
+[   26180ms] [LOG] callback - particles.js config loaded @ http://localhost:3000/duels/2/:30
+[  269237ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://localhost:3000/duels/2/state/:0
+[  269244ms] [ERROR] duel poll failed TypeError: Failed to fetch
+    at poll (http://localhost:3000/duels/2/:196:9) @ http://localhost:3000/duels/2/:198
+[  397516ms] [LOG] callback - particles.js config loaded @ http://localhost:3000/duels/2/:30

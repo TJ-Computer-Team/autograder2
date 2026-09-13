@@ -6,6 +6,7 @@ from django.core.management.base import BaseCommand
 from ....index.models import GraderUser
 from ....contests.models import Contest
 from ....contests.utils import get_standings
+from ...formula import compute_index, usaco_rating_for
 from ...models import RatingChange
 
 
@@ -18,21 +19,12 @@ class Command(BaseCommand):
         # Load normal users
         users = GraderUser.objects.filter(is_tjioi=False, is_staff=False)
 
-        # Map USACO division to rating
-        usaco_map = {
-            "Not Participated": 800,
-            "Bronze": 800,
-            "Silver": 1200,
-            "Gold": 1600,
-            "Platinum": 1900,
-        }
-
         # Initialize ranking data for each user
         rankings = [
             {
                 "id": user.id,
                 "name": user.display_name,
-                "usaco": usaco_map[user.usaco_division],
+                "usaco": usaco_rating_for(user.usaco_division),
                 "cf": user.cf_rating,
                 "inhouses": [],
             }
@@ -48,11 +40,17 @@ class Command(BaseCommand):
             for i in range(len(rankings)):
                 user = get_object_or_404(GraderUser, id=rankings[i]["id"])
 
-                # Writer contests: mark as None, no penalty
+                # Authors score their own contest at the writer formula rather
+                # than taking a zero for not competing in it.
                 if user in contest.writers.all():
-                    cf_rating = Decimal(str(rankings[i]["cf"]))
-                    usaco_rating = Decimal(str(rankings[i]["usaco"]))
-                    rankings[i]["inhouses"].append(Decimal("0.4") * min(cf_rating, usaco_rating) + Decimal("0.6") * max(cf_rating, usaco_rating))
+                    rankings[i]["inhouses"].append(
+                        compute_index(
+                            rankings[i]["usaco"],
+                            rankings[i]["cf"],
+                            0,
+                            has_inhouses=False,
+                        )
+                    )
                     continue
 
                 # Check if user participated
@@ -86,24 +84,14 @@ class Command(BaseCommand):
 
             rankings[r]["inhouse"] = overall
 
-            # Compute index
-            cf_rating = Decimal(str(rankings[r]["cf"]))
-            usaco_rating = Decimal(str(rankings[r]["usaco"]))
-
-            # Use writer formula if user has no participated inhouses or writer formula is enabled
-            if user.use_writer_formula or len(valid_scores) == 0:
-                rankings[r]["index"] = (
-                    Decimal("0.4") * min(cf_rating, usaco_rating)
-                    + Decimal("0.6") * max(cf_rating, usaco_rating)
-                )
-            else:
-                vals = [rankings[r]["usaco"], rankings[r]["cf"], rankings[r]["inhouse"]]
-                vals.sort()
-                rankings[r]["index"] = (
-                    Decimal("0.2") * Decimal(str(vals[0]))
-                    + Decimal("0.35") * Decimal(str(vals[1]))
-                    + Decimal("0.45") * Decimal(str(vals[2]))
-                )
+            # Shared with the rankings page and update_user_index.
+            rankings[r]["index"] = compute_index(
+                rankings[r]["usaco"],
+                rankings[r]["cf"],
+                rankings[r]["inhouse"],
+                use_writer_formula=user.use_writer_formula,
+                has_inhouses=bool(valid_scores),
+            )
 
         # Sort users by index descending and assign ranks
         rankings.sort(key=lambda x: x["index"], reverse=True)

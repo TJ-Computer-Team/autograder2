@@ -1,0 +1,58 @@
+- generic [active] [ref=f15e1]:
+  - list [ref=f15e5]:
+    - listitem [ref=f15e6]
+    - listitem [ref=f15e8]:
+      - link "Home" [ref=f15e9] [cursor=pointer]:
+        - /url: /profile/
+    - listitem [ref=f15e10]:
+      - link "Submissions" [ref=f15e11] [cursor=pointer]:
+        - /url: /status/mine/1/
+    - listitem [ref=f15e12]:
+      - link "Contests" [ref=f15e13] [cursor=pointer]:
+        - /url: /contests/
+    - listitem [ref=f15e14]:
+      - link "Problemset" [ref=f15e15] [cursor=pointer]:
+        - /url: /problems/
+    - listitem [ref=f15e16]:
+      - link "Lecture Sets" [ref=f15e17] [cursor=pointer]:
+        - /url: /lectures/
+    - listitem [ref=f15e18]:
+      - link "Duels" [ref=f15e19] [cursor=pointer]:
+        - /url: /duels/
+    - listitem [ref=f15e20]:
+      - link "Submit" [ref=f15e21] [cursor=pointer]:
+        - /url: /status/submit/
+    - listitem [ref=f15e22]:
+      - link "Guide" [ref=f15e23] [cursor=pointer]:
+        - /url: /info/
+    - listitem [ref=f15e24]:
+      - link "Rankings" [ref=f15e25] [cursor=pointer]:
+        - /url: /rankings/
+    - listitem [ref=f15e26]:
+      - link "Attendance" [ref=f15e27] [cursor=pointer]:
+        - /url: /attendance/
+    - listitem [ref=f15e28]:
+      - link "Attendance Admin" [ref=f15e29] [cursor=pointer]:
+        - /url: /attendance/admin/
+    - listitem [ref=f15e30]:
+      - link [ref=f15e31] [cursor=pointer]:
+        - /url: /oauth/logout/
+        - button "Log Out" [ref=f15e32]
+    - listitem [ref=f15e33]:
+      - link "Toggle Particles" [ref=f15e34] [cursor=pointer]:
+        - /url: /toggle_particles/?next=/duels/2/
+  - generic [ref=f15e35]:
+    - strong [ref=f15e37]: admin vs Duel Bot
+    - generic [ref=f15e38]: Waiting to be accepted
+  - generic [ref=f15e39]:
+    - generic [ref=f15e40]:
+      - text: Rating
+      - strong [ref=f15e41]: 800–1200
+      - text: ", tags"
+      - strong [ref=f15e42]: any
+      - text: . The problem is drawn at random once accepted, excluding anything either of you has already solved on Codeforces.
+    - generic [ref=f15e43]:
+      - button "Accept" [ref=f15e45] [cursor=pointer]
+      - button "Decline" [ref=f15e47] [cursor=pointer]
+  - link "Back to Duels" [ref=f15e49] [cursor=pointer]:
+    - /url: /duels/

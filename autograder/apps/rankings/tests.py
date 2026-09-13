@@ -5,6 +5,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from ..index.models import GraderUser
+from .formula import compute_index, index_for_user
 from .tasks import update_codeforces_rating, update_user_index
 
 
@@ -182,3 +183,168 @@ class CodeforcesRefreshTests(TestCase):
         user.refresh_from_db()
         # 0.4*1600 + 0.6*1669
         self.assertEqual(user.index, Decimal("1641.400"))
+
+
+class IndexIsDerivedOnReadTests(TestCase):
+    """The rankings page must never show an index that contradicts its own columns.
+
+    The index used to be read from a stored column that three different code paths
+    wrote to. A gap between them left a value that disagreed with the USACO /
+    Codeforces / in-house numbers displayed next to it, and nothing ever noticed.
+    """
+
+    @override_settings(CURRENT_SEASON=2027)
+    def test_page_ignores_a_stale_stored_index(self):
+        user = GraderUser.objects.create_user(
+            email="zain@example.com",
+            username="2028zmarshal",
+            display_name="Zain",
+            usaco_division=GraderUser.GOLD,
+            cf_rating=1669,
+        )
+        # Exactly the reported bug: stored index left over from cf=1610.
+        GraderUser.objects.filter(pk=user.pk).update(index=Decimal("1606.000"))
+
+        viewer = GraderUser.objects.create_user(
+            email="v@example.com", username="2027viewer", display_name="V"
+        )
+        self.client.force_login(viewer)
+        resp = self.client.get(reverse("rankings:rankings", args=[2027]))
+
+        row = next(r for r in resp.context["rankings"] if r["name"] == "Zain")
+        # 0.4*1600 + 0.6*1669
+        self.assertEqual(row["index"], Decimal("1641.400"))
+        self.assertNotEqual(row["index"], Decimal("1606.000"))
+
+    @override_settings(CURRENT_SEASON=2027)
+    def test_displayed_index_always_follows_the_displayed_columns(self):
+        for division, cf in (
+            (GraderUser.PLATINUM, 2054),
+            (GraderUser.GOLD, 1669),
+            (GraderUser.SILVER, 900),
+            (GraderUser.BRONZE, 0),
+        ):
+            GraderUser.objects.all().delete()
+            user = GraderUser.objects.create_user(
+                email=f"u{cf}@example.com",
+                username=f"2028u{cf}",
+                display_name=f"U{cf}",
+                usaco_division=division,
+                cf_rating=cf,
+            )
+            GraderUser.objects.filter(pk=user.pk).update(index=Decimal("1"))
+            viewer = GraderUser.objects.create_user(
+                email="v@example.com", username="2027viewer", display_name="V"
+            )
+            self.client.force_login(viewer)
+            resp = self.client.get(reverse("rankings:rankings", args=[2027]))
+            row = next(
+                (r for r in resp.context["rankings"] if r["name"] == f"U{cf}"), None
+            )
+            if row is None:
+                continue  # filtered out for having nothing to rank on
+            expected = compute_index(
+                row["usaco"], row["cf"], row["inhouse"], has_inhouses=False
+            )
+            self.assertEqual(row["index"], expected, f"{division} / {cf}")
+
+
+class FormulaAgreementTests(TestCase):
+    """All three paths must agree. They previously did not."""
+
+    def test_task_and_page_agree(self):
+        user = GraderUser.objects.create_user(
+            email="a@example.com",
+            username="2028agree",
+            display_name="A",
+            usaco_division=GraderUser.PLATINUM,
+            cf_rating=2054,
+        )
+        update_user_index(user.id)
+        user.refresh_from_db()
+        self.assertEqual(user.index, index_for_user(user))
+
+    def test_no_inhouses_uses_writer_in_both(self):
+        user = GraderUser.objects.create_user(
+            email="b@example.com",
+            username="2028nohouse",
+            display_name="B",
+            usaco_division=GraderUser.GOLD,
+            cf_rating=1669,
+        )
+        self.assertEqual(index_for_user(user), Decimal("1641.400"))
+
+    def test_with_inhouses_uses_standard_in_both(self):
+        user = GraderUser.objects.create_user(
+            email="c@example.com",
+            username="2028house",
+            display_name="C",
+            usaco_division=GraderUser.GOLD,
+            cf_rating=1400,
+        )
+        GraderUser.objects.filter(pk=user.pk).update(
+            inhouses=[Decimal("1500")], inhouse=Decimal("1500")
+        )
+        user.refresh_from_db()
+        vals = sorted([Decimal("1600"), Decimal("1400"), Decimal("1500")])
+        expected = (
+            Decimal("0.2") * vals[0]
+            + Decimal("0.35") * vals[1]
+            + Decimal("0.45") * vals[2]
+        )
+        self.assertEqual(index_for_user(user), expected)
+
+
+class SignalLoopTests(TestCase):
+    """Saves made *by* the ranking tasks must not re-queue those tasks.
+
+    update_codeforces_rating calls update_user_index, which writes user.index,
+    which fired post_save, which queued update_codeforces_rating again. Each lap
+    cost a Codeforces call throttled to 2/s, and the default queue backed up to
+    hundreds of tasks -- starving unrelated work like starting a duel.
+    """
+
+    def setUp(self):
+        self.user = GraderUser.objects.create_user(
+            email="loop@example.com",
+            username="2028loop",
+            display_name="Loop",
+            usaco_division=GraderUser.GOLD,
+            cf_rating=1500,
+        )
+
+    @patch("autograder.apps.index.signals.update_codeforces_rating")
+    def test_index_only_save_does_not_requeue(self, task):
+        self.user.index = Decimal("1234.000")
+        self.user.save(update_fields=["index"])
+        task.delay.assert_not_called()
+
+    @patch("autograder.apps.index.signals.update_codeforces_rating")
+    def test_cf_rating_only_save_does_not_requeue(self, task):
+        self.user.cf_rating = 1600
+        self.user.save(update_fields=["cf_rating"])
+        task.delay.assert_not_called()
+
+    @patch("autograder.apps.index.signals.update_codeforces_rating")
+    def test_inhouse_only_save_does_not_requeue(self, task):
+        self.user.inhouse = Decimal("1500")
+        self.user.save(update_fields=["inhouse"])
+        task.delay.assert_not_called()
+
+    @patch("autograder.apps.index.signals.update_codeforces_rating")
+    def test_a_real_profile_edit_still_refreshes(self, task):
+        self.user.display_name = "Renamed"
+        self.user.save()
+        task.delay.assert_called_once_with(self.user.id)
+
+    @patch("autograder.apps.index.signals.update_codeforces_rating")
+    def test_editing_a_handle_still_refreshes(self, task):
+        self.user.cf_handle = "somebody"
+        self.user.save(update_fields=["cf_handle"])
+        task.delay.assert_called_once_with(self.user.id)
+
+    @patch("autograder.apps.index.signals.update_codeforces_rating")
+    def test_update_user_index_does_not_requeue(self, task):
+        """The full path: running the index task must not feed itself."""
+        update_user_index(self.user.id)
+        task.delay.assert_not_called()

@@ -3,6 +3,7 @@ from django.conf import settings
 from django.db.models import Q
 from ..oauth.decorators import login_required
 from ..index.models import GraderUser
+from .formula import index_for_user, usaco_rating_for
 
 import logging
 
@@ -20,12 +21,15 @@ def rankings_view(request, season):
     for year in graduation_years:
         graduation_year_filter |= Q(username__startswith=str(year))
 
+    # Derived here rather than read from user.index. The stored column is only as
+    # fresh as whatever last recomputed it, which let the page show an index that
+    # did not follow from the USACO/Codeforces/in-house numbers printed beside it.
     rankings = [
         {
             "id": user.id,
-            "name": user.display_name,
-            "index": user.index,
-            "usaco": user.usaco_rating,
+            "name": user.display_name or user.username,
+            "index": index_for_user(user),
+            "usaco": usaco_rating_for(user.usaco_division),
             "cf": user.cf_rating,
             "inhouse": user.inhouse,
         }
