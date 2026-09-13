@@ -79,22 +79,6 @@
 </div>
 {% endif %}
 
-{% if ongoing %}
-<div class="main-block">
-    <div class="info"><strong>In progress</strong></div>
-    <table>
-        <tr><th>Duel</th><th>Problem</th><th>Rating</th></tr>
-        {% for d in ongoing %}
-        <tr>
-            <td><a href="{% url 'duels:detail' duel_id=d.id %}">{{ d.challenger.display_name|default:d.challenger.username }} vs {{ d.opponent.display_name|default:d.opponent.username }}</a></td>
-            <td class="centertext">{{ d.cf_name|default:"picking..." }}</td>
-            <td class="centertext">{{ d.cf_rating|default:"&mdash;" }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-</div>
-{% endif %}
-
 {% if outgoing %}
 <div class="main-block">
     <div class="info"><strong>Waiting on them</strong></div>
@@ -111,9 +95,25 @@
 </div>
 {% endif %}
 
+{% if ongoing %}
+<div class="main-block">
+    <div class="info"><strong>In progress</strong> <span class="set-external">all players</span></div>
+    <table>
+        <tr><th>Duel</th><th>Problem</th><th>Rating</th></tr>
+        {% for d in ongoing %}
+        <tr>
+            <td><a href="{% url 'duels:detail' duel_id=d.id %}">{{ d.challenger.display_name|default:d.challenger.username }} vs {{ d.opponent.display_name|default:d.opponent.username }}</a></td>
+            <td class="centertext">{{ d.cf_name|default:"picking..." }}</td>
+            <td class="centertext">{{ d.cf_rating|default:"&mdash;" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
 {% if finished %}
 <div class="main-block">
-    <div class="info"><strong>Recent results</strong></div>
+    <div class="info"><strong>Recent results</strong> <span class="set-external">all players</span></div>
     <table>
         <tr><th>Duel</th><th>Problem</th><th>Winner</th><th>How</th></tr>
         {% for d in finished %}

@@ -36,18 +36,18 @@ def duel_list(request):
         Q(challenger=request.user) | Q(opponent=request.user)
     ).select_related("challenger", "opponent", "winner")
 
+    # Challenges are personal (and pending ones are private until accepted), but
+    # in-progress and finished duels are listed for everyone -- you want to watch
+    # other people's races, and the Blitz Cup needs spectators.
+    everyone = Duel.objects.select_related("challenger", "opponent", "winner")
+
     context = {
         "active": "duels",
         "can_duel": _can_duel(request.user),
         "incoming": mine.filter(status=Duel.PENDING, opponent=request.user),
         "outgoing": mine.filter(status=Duel.PENDING, challenger=request.user),
-        "ongoing": mine.filter(status=Duel.ACTIVE),
-        "finished": mine.filter(status=Duel.FINISHED)[:20],
-        "opponents": GraderUser.objects.filter(
-            cf_verified_at__isnull=False, is_active=True
-        )
-        .exclude(pk=request.user.pk)
-        .order_by("display_name"),
+        "ongoing": everyone.filter(status=Duel.ACTIVE),
+        "finished": everyone.filter(status=Duel.FINISHED)[:25],
         "rating_floor": RATING_FLOOR,
         "rating_ceil": RATING_CEIL,
     }
