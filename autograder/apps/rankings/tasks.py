@@ -41,7 +41,13 @@ def update_codeforces_rating(user_id):
         if user.cf_rating != max_rating:
             user.cf_rating = max_rating
             user.save(update_fields=["cf_rating"])
-            update_user_index.delay(user.id)
+
+        # Recompute unconditionally. This used to sit inside the branch above, so
+        # an index only ever refreshed when the Codeforces rating itself moved --
+        # a changed USACO division, recomputed in-houses, or a corrected formula
+        # would leave the stored index stale forever, because every later run saw
+        # the rating already matching and returned without touching it.
+        update_user_index.delay(user.id)
     else:
         logger.error(
             f"Codeforces API error for handle {handle}: {data.get('comment', 'No comment')}"
@@ -78,10 +84,9 @@ def update_user_index(user_id):
     if user.use_writer_formula or not user.inhouses:
         cf_rating = Decimal(str(user.cf_rating))
         usaco_rating = Decimal(str(new_usaco_rating))
-        new_index = (
-            Decimal("0.4") * min(cf_rating, usaco_rating)
-            + Decimal("0.6") * max(cf_rating, usaco_rating)
-        )
+        new_index = Decimal("0.4") * min(cf_rating, usaco_rating) + Decimal(
+            "0.6"
+        ) * max(cf_rating, usaco_rating)
     else:
         vals = sorted(
             [
@@ -91,7 +96,9 @@ def update_user_index(user_id):
             ]
         )
         new_index = (
-            Decimal("0.2") * vals[0] + Decimal("0.35") * vals[1] + Decimal("0.45") * vals[2]
+            Decimal("0.2") * vals[0]
+            + Decimal("0.35") * vals[1]
+            + Decimal("0.45") * vals[2]
         )
 
     if user.index != new_index:

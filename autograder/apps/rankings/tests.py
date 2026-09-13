@@ -1,10 +1,11 @@
 from decimal import Decimal
+from unittest.mock import patch
 
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from ..index.models import GraderUser
-from .tasks import update_user_index
+from .tasks import update_codeforces_rating, update_user_index
 
 
 @override_settings(CURRENT_SEASON=2027)
@@ -84,7 +85,9 @@ class IndexFormulaTests(TestCase):
         self.assertEqual(user.index, self.writer_index(1600, 1712))
 
     def test_with_inhouses_uses_standard_formula(self):
-        user = self.make("2027player", GraderUser.GOLD, 1400, inhouses=[Decimal("1500")])
+        user = self.make(
+            "2027player", GraderUser.GOLD, 1400, inhouses=[Decimal("1500")]
+        )
         GraderUser.objects.filter(pk=user.pk).update(inhouse=Decimal("1500"))
         user.refresh_from_db()
         update_user_index(user.id)
@@ -92,7 +95,9 @@ class IndexFormulaTests(TestCase):
 
         vals = sorted([Decimal("1600"), Decimal("1400"), Decimal("1500")])
         expected = (
-            Decimal("0.2") * vals[0] + Decimal("0.35") * vals[1] + Decimal("0.45") * vals[2]
+            Decimal("0.2") * vals[0]
+            + Decimal("0.35") * vals[1]
+            + Decimal("0.45") * vals[2]
         )
         self.assertEqual(user.index, expected)
 
@@ -108,3 +113,72 @@ class IndexFormulaTests(TestCase):
         update_user_index(user.id)
         user.refresh_from_db()
         self.assertEqual(user.index, before)
+
+
+class CodeforcesRefreshTests(TestCase):
+    """update_codeforces_rating must always leave the index consistent.
+
+    It used to recompute the index only when the CF rating changed, so a stale
+    index -- from an edited USACO division, recomputed in-houses, or a corrected
+    formula -- was never repaired.
+    """
+
+    def make(self, cf=1610, division=GraderUser.GOLD):
+        return GraderUser.objects.create_user(
+            email="zain@example.com",
+            username="2028zmarshal",
+            display_name="Zain",
+            usaco_division=division,
+            cf_rating=cf,
+            cf_handle="zen10",
+        )
+
+    def _cf_response(self, max_rating):
+        class Resp:
+            status_code = 200
+
+            def raise_for_status(self):
+                pass
+
+            def json(self):
+                return {"status": "OK", "result": [{"maxRating": max_rating}]}
+
+        return Resp()
+
+    @patch("autograder.apps.rankings.tasks.update_user_index")
+    @patch("autograder.apps.rankings.tasks.requests.get")
+    def test_recomputes_even_when_rating_is_unchanged(self, get, index_task):
+        user = self.make(cf=1669)
+        get.return_value = self._cf_response(1669)
+
+        update_codeforces_rating(user.id)
+
+        index_task.delay.assert_called_once_with(user.id)
+
+    @patch("autograder.apps.rankings.tasks.update_user_index")
+    @patch("autograder.apps.rankings.tasks.requests.get")
+    def test_recomputes_when_rating_changes(self, get, index_task):
+        user = self.make(cf=1610)
+        get.return_value = self._cf_response(1669)
+
+        update_codeforces_rating(user.id)
+
+        user.refresh_from_db()
+        self.assertEqual(user.cf_rating, 1669)
+        index_task.delay.assert_called_once_with(user.id)
+
+    @patch("autograder.apps.rankings.tasks.requests.get")
+    def test_index_follows_a_rating_rise(self, get):
+        """End to end: the stored index must track the new rating."""
+        user = self.make(cf=1610)
+        update_user_index(user.id)
+        user.refresh_from_db()
+        # writer formula, no in-houses: 0.4*1600 + 0.6*1610
+        self.assertEqual(user.index, Decimal("1606.000"))
+
+        get.return_value = self._cf_response(1669)
+        update_codeforces_rating(user.id)
+        update_user_index(user.id)
+        user.refresh_from_db()
+        # 0.4*1600 + 0.6*1669
+        self.assertEqual(user.index, Decimal("1641.400"))
