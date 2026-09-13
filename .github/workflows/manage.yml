@@ -16,6 +16,7 @@ on:
         options:
           - update_rankings
           - celery_queue
+          - duel_diagnostics
           - celery_queue --purge
           - collectstatic --noinput
           - migrate
