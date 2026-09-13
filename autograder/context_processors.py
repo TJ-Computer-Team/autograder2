@@ -56,6 +56,8 @@ def active_nav_item(request):
         active = "problems"
     elif path.startswith("/lectures/"):
         active = "lectures"
+    elif path.startswith("/duels/"):
+        active = "duels"
     elif path.startswith("/status/submit/"):
         active = "submit"
     elif path.startswith("/status/"):

@@ -29,7 +29,13 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG") == "True"
 
-ALLOWED_HOSTS = ["tjctgrader.org", "localhost", "127.0.0.1", "34.86.71.31", "www.tjctgrader.org"]
+ALLOWED_HOSTS = [
+    "tjctgrader.org",
+    "localhost",
+    "127.0.0.1",
+    "34.86.71.31",
+    "www.tjctgrader.org",
+]
 
 
 # Application definition
@@ -48,6 +54,7 @@ INSTALLED_APPS = [
     "autograder.apps.contests",
     "autograder.apps.problems",
     "autograder.apps.lectures",
+    "autograder.apps.duels",
     "autograder.apps.runtests",
     "autograder.apps.rankings",
     "autograder.apps.tjioi",
@@ -231,6 +238,18 @@ SOCIAL_AUTH_PIPELINE = (
     "social_core.pipeline.user.user_details",
 )
 
+
+# Shared cache. Without this Django falls back to a per-process LocMemCache, so
+# anything relying on cross-worker state silently breaks: the duel poll throttle
+# would keep a separate counter per worker and multiply Codeforces API calls, and
+# cf_utils' 24h problemset cache would be refetched once per worker.
+# Redis db 1 -- db 0 is the Celery broker.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": ("redis://redis:6379/1" if DEBUG else "redis://127.0.0.1:6379/1"),
+    }
+}
 
 CELERY_TIMEZONE = "America/New_York"
 CELERY_BROKER_URL = "redis://redis:6379/0" if DEBUG else "redis://127.0.0.1:6379"

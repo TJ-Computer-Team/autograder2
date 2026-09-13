@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block stylesheet %}
+<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
+{% endblock stylesheet %}
+
+{% block title %}Duels{% endblock title %}
+
+{% block content %}
+{% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
+{% include "partials/header.html" %}
+
+<div class="main-block">
+    <div class="title"><strong>Duels</strong></div>
+    <div class="subtitle"><br>Race someone to solve a Codeforces problem. First accepted submission wins.</div>
+</div>
+
+{% if messages %}
+{% for message in messages %}
+<div class="main-block small-padding"><div class="info">{{ message }}</div></div>
+{% endfor %}
+{% endif %}
+
+{% if not can_duel %}
+<div class="main-block">
+    <div class="info">
+        You need a <strong>verified</strong> Codeforces handle before you can duel.
+        Set one on your <a href="{% url 'index:profile' %}">profile</a> and complete
+        the verification challenge.
+    </div>
+</div>
+{% else %}
+<div class="main-block">
+    <div class="info"><strong>Challenge someone</strong></div>
+    <form method="POST" action="{% url 'duels:challenge' %}">
+        {% csrf_token %}
+        <div class="statsInfo">
+            <label for="opponent">Opponent</label>
+            <select name="opponent" id="opponent" required>
+                {% for o in opponents %}
+                <option value="{{ o.id }}">{{ o.display_name|default:o.username }} ({{ o.cf_handle }})</option>
+                {% empty %}
+                <option disabled>Nobody else has verified a handle yet</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="statsInfo">
+            <label for="rating_min">Rating range</label>
+            <input type="text" name="rating_min" id="rating_min" value="800" size="5">
+            to
+            <input type="text" name="rating_max" id="rating_max" value="1200" size="5">
+            <div class="field-hint">Codeforces ratings run {{ rating_floor }}&ndash;{{ rating_ceil }}. Your opponent sees this before accepting.</div>
+        </div>
+        <div class="statsInfo">
+            <label for="tags">Tags (optional)</label>
+            <input type="text" name="tags" id="tags" placeholder="dp, greedy">
+            <div class="field-hint">Comma-separated. Leave blank for any problem.</div>
+        </div>
+        <div class="statsInfo"><input type="submit" value="Send challenge"></div>
+    </form>
+</div>
+{% endif %}
+
+{% if incoming %}
+<div class="main-block">
+    <div class="info"><strong>Challenges for you</strong></div>
+    <table>
+        <tr><th>From</th><th>Rating</th><th>Tags</th><th></th></tr>
+        {% for d in incoming %}
+        <tr>
+            <td><a href="{% url 'duels:detail' duel_id=d.id %}">{{ d.challenger.display_name|default:d.challenger.username }}</a></td>
+            <td class="centertext">{{ d.rating_min }}&ndash;{{ d.rating_max }}</td>
+            <td class="centertext">{{ d.tags|default:"any" }}</td>
+            <td class="centertext"><a href="{% url 'duels:detail' duel_id=d.id %}">Open</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
+{% if ongoing %}
+<div class="main-block">
+    <div class="info"><strong>In progress</strong></div>
+    <table>
+        <tr><th>Duel</th><th>Problem</th><th>Rating</th></tr>
+        {% for d in ongoing %}
+        <tr>
+            <td><a href="{% url 'duels:detail' duel_id=d.id %}">{{ d.challenger.display_name|default:d.challenger.username }} vs {{ d.opponent.display_name|default:d.opponent.username }}</a></td>
+            <td class="centertext">{{ d.cf_name|default:"picking..." }}</td>
+            <td class="centertext">{{ d.cf_rating|default:"&mdash;" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
+{% if outgoing %}
+<div class="main-block">
+    <div class="info"><strong>Waiting on them</strong></div>
+    <table>
+        <tr><th>To</th><th>Rating</th><th>Tags</th></tr>
+        {% for d in outgoing %}
+        <tr>
+            <td><a href="{% url 'duels:detail' duel_id=d.id %}">{{ d.opponent.display_name|default:d.opponent.username }}</a></td>
+            <td class="centertext">{{ d.rating_min }}&ndash;{{ d.rating_max }}</td>
+            <td class="centertext">{{ d.tags|default:"any" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
+{% if finished %}
+<div class="main-block">
+    <div class="info"><strong>Recent results</strong></div>
+    <table>
+        <tr><th>Duel</th><th>Problem</th><th>Winner</th><th>How</th></tr>
+        {% for d in finished %}
+        <tr>
+            <td><a href="{% url 'duels:detail' duel_id=d.id %}">{{ d.challenger.display_name|default:d.challenger.username }} vs {{ d.opponent.display_name|default:d.opponent.username }}</a></td>
+            <td class="centertext">{{ d.cf_name|default:"&mdash;" }}</td>
+            <td class="centertext">
+                {% if d.winner %}<span class="v-ac">{{ d.winner.display_name|default:d.winner.username }}</span>{% else %}<span class="v-pending">draw</span>{% endif %}
+            </td>
+            <td class="centertext">{{ d.get_end_reason_display }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
+{% endblock content %}

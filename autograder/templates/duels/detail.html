@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block stylesheet %}
+<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
+{% endblock stylesheet %}
+
+{% block title %}Duel{% endblock title %}
+
+{% block content %}
+{% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
+{% include "partials/header.html" %}
+
+<div class="main-block">
+    <div class="title"><strong>{{ duel.challenger.display_name|default:duel.challenger.username }} vs {{ duel.opponent.display_name|default:duel.opponent.username }}</strong></div>
+    <div class="subtitle"><br>
+        <span id="duel-headline">{{ duel.get_status_display }}</span>
+    </div>
+</div>
+
+{% if messages %}
+{% for message in messages %}
+<div class="main-block small-padding"><div class="info">{{ message }}</div></div>
+{% endfor %}
+{% endif %}
+
+{# --- pending: the opponent decides --- #}
+{% if duel.status == "pending" %}
+<div class="main-block">
+    <div class="info">
+        Rating <strong>{{ duel.rating_min }}&ndash;{{ duel.rating_max }}</strong>,
+        tags <strong>{{ duel.tags|default:"any" }}</strong>.<br>
+        The problem is drawn at random once accepted, excluding anything either of
+        you has already solved on Codeforces.
+        {% if duel.selection_error %}
+        <br><br><span class="v-wa">{{ duel.selection_error }}</span>
+        {% endif %}
+    </div>
+    <div class="option-buttons">
+        {% if user == duel.opponent %}
+        <form method="POST" action="{% url 'duels:accept' duel_id=duel.id %}">{% csrf_token %}
+            <button type="submit">Accept</button>
+        </form>
+        {% endif %}
+        {% if is_player %}
+        <form method="POST" action="{% url 'duels:decline' duel_id=duel.id %}">{% csrf_token %}
+            <button type="submit">{% if user == duel.opponent %}Decline{% else %}Cancel{% endif %}</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{# --- the problem --- #}
+{% if duel.cf_contest_id %}
+<div class="main-block">
+    <div class="info">
+        <strong>Problem:</strong>
+        <a href="{{ duel.problem_url }}" target="_blank" rel="noopener">
+            {{ duel.cf_contest_id }}{{ duel.cf_index }} &mdash; {{ duel.cf_name }}
+        </a>
+        {% if duel.cf_rating %}(rated {{ duel.cf_rating }}){% endif %}
+        <div class="field-hint">Submit on Codeforces. This page watches for your verdict.</div>
+    </div>
+</div>
+{% endif %}
+
+{# --- result --- #}
+<div class="main-block" id="result-block" {% if duel.status != "finished" %}style="display:none"{% endif %}>
+    <div class="info">
+        <span id="result-text">
+            {% if duel.winner %}<span class="v-ac">{{ duel.winner.display_name|default:duel.winner.username }} wins</span> &mdash; {{ duel.get_end_reason_display }}
+            {% elif duel.status == "finished" %}<span class="v-pending">Draw &mdash; {{ duel.get_end_reason_display }}</span>
+            {% endif %}
+        </span>
+    </div>
+</div>
+
+{# --- live board --- #}
+{% if duel.status == "active" or duel.status == "finished" %}
+<div class="main-block">
+    <div class="info">
+        <strong>Submissions</strong>
+        <span id="clock" class="field-hint"></span>
+    </div>
+    <table>
+        <thead><tr><th>Player</th><th>Verdict</th><th>At</th></tr></thead>
+        <tbody id="sub-rows">
+            {% for row in rows %}
+            <tr>
+                <td>{{ row.user.display_name|default:row.user.username }}</td>
+                <td class="centertext {% if row.accepted %}v-ac{% else %}v-wa{% endif %}">{{ row.verdict }}</td>
+                <td class="centertext">{{ row.created_at|time:"H:i:s" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="centertext v-pending">No submissions yet</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if is_player and duel.status == "active" %}
+<div class="option-buttons">
+    <form method="POST" action="{% url 'duels:forfeit' duel_id=duel.id %}"
+          onsubmit="return confirm('Forfeit and give your opponent the win?');">
+        {% csrf_token %}
+        <button type="submit">Forfeit</button>
+    </form>
+</div>
+{% endif %}
+{% endif %}
+
+<div class="option-buttons">
+    <a href="{% url 'duels:list' %}"><div class="button">Back to Duels</div></a>
+</div>
+
+<script>
+(function () {
+    // The server refresh behind this endpoint is throttled per duel, so polling
+    // faster than that window only costs a database read. Extra spectators are free.
+    var STATE_URL = "{% url 'duels:state' duel_id=duel.id %}";
+    var POLL_MS = 2500;
+    var deadline = null;
+    var timer = null;
+    // What the server rendered. Only reload when the duel finishes *while we are
+    // watching* -- reloading whenever status is "finished" put an already-finished
+    // page into an endless reload loop.
+    var renderedStatus = "{{ duel.status }}";
+
+    function render(data) {
+        deadline = data.deadline ? new Date(data.deadline) : null;
+
+        var headline = document.getElementById('duel-headline');
+        if (data.status === 'pending') {
+            headline.textContent = data.selection_error
+                ? data.selection_error
+                : 'Waiting to be accepted';
+        } else if (data.status === 'active') {
+            headline.textContent = data.problem.name
+                ? 'In progress' : 'Picking a problem...';
+        } else {
+            headline.textContent = 'Finished';
+        }
+
+        var body = document.getElementById('sub-rows');
+        if (body) {
+            if (!data.submissions.length) {
+                body.innerHTML = '<tr><td colspan="3" class="centertext v-pending">No submissions yet</td></tr>';
+            } else {
+                body.innerHTML = data.submissions.map(function (s) {
+                    var cls = s.accepted ? 'v-ac' : 'v-wa';
+                    var at = new Date(s.at).toLocaleTimeString();
+                    return '<tr><td>' + s.name + '</td>' +
+                           '<td class="centertext ' + cls + '">' + s.verdict + '</td>' +
+                           '<td class="centertext">' + at + '</td></tr>';
+                }).join('');
+            }
+        }
+
+        if (data.status === 'finished') {
+            var block = document.getElementById('result-block');
+            var text = document.getElementById('result-text');
+            block.style.display = '';
+            text.innerHTML = data.winner
+                ? '<span class="v-ac">' + data.winner + '</span> wins &mdash; ' + data.end_reason
+                : '<span class="v-pending">Draw &mdash; ' + data.end_reason + '</span>';
+            stop();
+            if (renderedStatus !== 'finished') {
+                // It ended while we watched, so refresh once to drop the forfeit
+                // button and render the result server-side. Already-finished pages
+                // skip this, which is what stopped the reload loop.
+                renderedStatus = 'finished';
+                setTimeout(function () { window.location.reload(); }, 1200);
+            }
+        }
+    }
+
+    function tickClock() {
+        var el = document.getElementById('clock');
+        if (!el || !deadline) return;
+        var left = Math.max(0, Math.floor((deadline - new Date()) / 1000));
+        var m = Math.floor(left / 60), s = left % 60;
+        el.textContent = '  ' + m + 'm ' + (s < 10 ? '0' : '') + s + 's left';
+    }
+
+    function poll() {
+        fetch(STATE_URL, {headers: {'X-Requested-With': 'fetch'}})
+            .then(function (r) { return r.json(); })
+            .then(render)
+            .catch(function (e) { console.error('duel poll failed', e); });
+    }
+
+    function stop() {
+        if (timer) { clearInterval(timer); timer = null; }
+    }
+
+    poll();
+    timer = setInterval(poll, POLL_MS);
+    setInterval(tickClock, 1000);
+})();
+</script>
+{% endblock content %}

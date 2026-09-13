@@ -1,0 +1,10 @@
+[     205ms] [LOG] Service worker registered:  ServiceWorkerRegistration @ https://codeforces.com/problemset/problem/1789/A:1252
+[     240ms] [LOG] INFO [Sun Sep 13 2026 12:16:56 GMT-0400 (Eastern Daylight Time)]: Skipping the channel 'undefined'. @ https://codeforces.com/codeforces.org/s/71904/js/codeforces.js?v=20160131:2
+[     240ms] [LOG] INFO [Sun Sep 13 2026 12:16:56 GMT-0400 (Eastern Daylight Time)]: Skipping the channel 'undefined'. @ https://codeforces.com/codeforces.org/s/71904/js/codeforces.js?v=20160131:2
+[     240ms] [LOG] INFO [Sun Sep 13 2026 12:16:56 GMT-0400 (Eastern Daylight Time)]: Skipping the channel 'undefined'. @ https://codeforces.com/codeforces.org/s/71904/js/codeforces.js?v=20160131:2
+[     240ms] [LOG] INFO [Sun Sep 13 2026 12:16:56 GMT-0400 (Eastern Daylight Time)]: Adding the channel '840fc083028fc2dbeacc2e654fbf76550d377642'. @ https://codeforces.com/codeforces.org/s/71904/js/codeforces.js?v=20160131:2
+[     240ms] [LOG] INFO [Sun Sep 13 2026 12:16:56 GMT-0400 (Eastern Daylight Time)]: Skipping the channel 'undefined'. @ https://codeforces.com/codeforces.org/s/71904/js/codeforces.js?v=20160131:2
+[     240ms] [LOG] INFO [Sun Sep 13 2026 12:16:56 GMT-0400 (Eastern Daylight Time)]: Skipping the channel 'undefined'. @ https://codeforces.com/codeforces.org/s/71904/js/codeforces.js?v=20160131:2
+[     240ms] [LOG] INFO [Sun Sep 13 2026 12:16:56 GMT-0400 (Eastern Daylight Time)]: Disconnected. @ https://codeforces.com/codeforces.org/s/71904/js/codeforces.js?v=20160131:2
+[    6892ms] [WARNING] WebSocket connection to 'wss://pubsub.codeforces.com/ws/840fc083028fc2dbeacc2e654fbf76550d377642?_=1789316216162&tag=&time=&eventid=' failed: WebSocket is closed before the connection is established. @ https://codeforces.com/codeforces.org/s/71904/js/pushstream.js:575
+[    6893ms] [LOG] INFO [Sun Sep 13 2026 12:17:02 GMT-0400 (Eastern Daylight Time)]: Disconnected. @ https://codeforces.com/codeforces.org/s/71904/js/codeforces.js?v=20160131:2

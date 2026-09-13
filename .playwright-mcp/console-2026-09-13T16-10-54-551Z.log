@@ -1,0 +1,247 @@
+[  362841ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  362842ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  365342ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  365342ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  367849ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  367855ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  370388ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  370390ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  372966ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  372986ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  375320ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  375322ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  377947ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  377949ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  380338ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  380339ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  382852ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  382855ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  385361ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  385363ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  387942ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  387943ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  390424ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  390424ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  392859ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  392862ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  395423ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  395424ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  397843ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  397845ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  400362ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  400364ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  402855ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  402856ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  405392ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  405393ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  407823ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  407826ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  410437ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  410437ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  412851ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  412853ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  415375ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  415376ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  417857ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  417858ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  420316ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  420316ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  422866ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  422868ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  425364ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  425365ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  427843ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  427846ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  430329ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  430337ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  432835ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  432836ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  435351ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  435354ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  437868ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  437871ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  440400ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  440403ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  442861ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  442861ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  445362ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  445363ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  447863ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  447864ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  450498ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  450499ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  452809ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  452810ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  455328ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  455332ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  457859ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  457860ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  460315ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  460316ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  463040ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  463042ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  465359ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  465362ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  467932ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  467937ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  470342ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  470344ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  472791ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  472792ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  475316ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  475318ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  477833ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  477834ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  480340ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  480341ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  482805ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  482806ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  485334ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  485335ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  487908ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  487910ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  490301ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  490305ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  492774ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  492775ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  495322ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  495323ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  497790ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  497792ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  500555ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  500557ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  502766ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  502769ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  505606ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  505608ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  507759ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  507762ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  510457ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  510460ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  512773ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  512774ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  515358ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  515360ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  517792ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  517793ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  520301ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  520302ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  522761ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  522762ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  525320ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  525321ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  527843ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  527846ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  530466ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  530470ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  532821ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  532822ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  535680ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  535682ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  537837ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  537838ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  540279ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  540280ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  542916ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  542917ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  545361ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  545363ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  547763ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  547764ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  550318ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  550320ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  552796ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  552797ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  555323ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  555325ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  557807ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  557808ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  560325ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  560326ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  562812ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  562813ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  565320ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  565322ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  567796ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  567798ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  570321ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  570322ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  572822ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  572823ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  575296ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  575298ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  577806ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  577807ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  580462ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  580464ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  582901ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  582903ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  585291ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  585295ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  587824ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  587825ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  590273ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  590275ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  592798ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  592801ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  595440ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  595442ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  597784ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  597785ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  600277ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  600279ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  602803ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  602805ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  605481ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  605483ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  607773ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  607775ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  610372ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  610375ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  612791ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  612792ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  615354ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  615355ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  617862ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  617863ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  620315ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  620317ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  622803ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  622807ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  625495ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  625499ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  627808ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  627810ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  630283ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  630284ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  632777ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  632782ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  635335ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  635336ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  637776ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  637778ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  640309ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  640310ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  642786ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  642787ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  645339ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  645340ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  647854ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  647856ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  650315ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  650316ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  652945ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  652947ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  655344ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  655345ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  657913ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  657914ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  660267ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  660268ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  662954ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  662956ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  665252ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/state/:0
+[  665253ms] [ERROR] duel poll failed SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/duels/1/:194
+[  666732ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/:0
+[  892426ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/duels/1/:0
+[  892557ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/favicon.ico:0

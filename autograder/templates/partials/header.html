@@ -14,6 +14,7 @@
             <li class="nb"><a {% if active == "contests" %} class="cactive" {% endif %} href="{% url "contests:contests" %}">Contests</a></li>
             <li class="nb"><a {% if active == "problems" %} class="cactive" {% endif %} href="{% url "problems:problemset" %}">Problemset</a></li>
             <li class="nb"><a {% if active == "lectures" %} class="cactive" {% endif %} href="{% url 'lectures:list' %}">Lecture Sets</a></li>
+            <li class="nb"><a {% if active == "duels" %} class="cactive" {% endif %} href="{% url 'duels:list' %}">Duels</a></li>
             <li class="nb"><a {% if active == "submit" %} class="cactive" {% endif %} href="{% url "runtests:submit" %}">Submit</a></li>
             <li class="nb"><a {% if active == "info" %} class="cactive" {% endif %} href="{% url 'index:info' %}">Guide</a></li>
             <li class="nb"><a {% if active == "rankings" %} class="cactive" {% endif %} href="{% url "rankings:rankings" %}">Rankings</a></li>
