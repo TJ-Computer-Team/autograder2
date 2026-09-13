@@ -1,7 +1,0 @@
-- generic [ref=f1e3]:
-  - generic [ref=f1e4]:
-    - strong [ref=f1e6]:
-      - emphasis [ref=f1e7]: TJCT Grader
-    - link "Enter" [ref=f1e9] [cursor=pointer]:
-      - /url: /login/ion/
-  - generic [ref=f1e11]: Welcome to the automatic grader for TJ Computer Team. Please note that this website is hosted external to Director. Please email tjctgrader@gmail.com and message the officers if you have any questions.

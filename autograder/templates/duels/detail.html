@@ -36,6 +36,17 @@
         <br><br><span class="v-wa">{{ duel.selection_error }}</span>
         {% endif %}
     </div>
+    {% if duel.accepted_at %}
+    {# Accepted, but the problem is still being drawn in the background. Showing
+       Accept again here is what made clicking it look like it did nothing. #}
+    <div class="info">
+        <span class="v-pending">Picking a problem&hellip;</span>
+        <div class="field-hint">
+            Both Codeforces histories are being checked so you get something
+            neither of you has solved. Takes a few seconds.
+        </div>
+    </div>
+    {% else %}
     <div class="option-buttons">
         {% if user == duel.opponent %}
         <form method="POST" action="{% url 'duels:accept' duel_id=duel.id %}">{% csrf_token %}
@@ -48,6 +59,7 @@
         </form>
         {% endif %}
     </div>
+    {% endif %}
 </div>
 {% endif %}
 
@@ -165,13 +177,18 @@
                 ? '<span class="v-ac">' + data.winner + '</span> wins &mdash; ' + data.end_reason
                 : '<span class="v-pending">Draw &mdash; ' + data.end_reason + '</span>';
             stop();
-            if (renderedStatus !== 'finished') {
-                // It ended while we watched, so refresh once to drop the forfeit
-                // button and render the result server-side. Already-finished pages
-                // skip this, which is what stopped the reload loop.
-                renderedStatus = 'finished';
-                setTimeout(function () { window.location.reload(); }, 1200);
-            }
+        }
+
+        // Any status change needs the server-rendered controls redrawn: accepting
+        // leaves the page on "pending" while the problem is drawn in the
+        // background, so without this the Accept button stayed on screen and the
+        // problem never appeared. Only reload on an actual transition, or an
+        // already-finished page would reload forever.
+        if (data.status !== renderedStatus) {
+            renderedStatus = data.status;
+            stop();
+            setTimeout(function () { window.location.reload(); },
+                       data.status === 'finished' ? 1200 : 0);
         }
     }
 

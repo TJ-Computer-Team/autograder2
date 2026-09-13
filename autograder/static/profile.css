@@ -38,9 +38,18 @@ th {
     font-size: 2em;
     padding-left: 0.5em;
     padding-right: 0.5em;
+    /* Sortable headers render as "label + chevron" on one line, so a narrow
+       viewport could wrap the label onto a second line -- leaving that cell two
+       lines tall while its neighbours stayed one, which read as misalignment.
+       Header labels are short; none of them should ever wrap. */
+    white-space: nowrap;
+    vertical-align: middle;
 }
 td {
     font-size: 1.5em;
+    /* Centred rather than baseline-aligned, so a cell that does wrap (a long
+       problem name) doesn't shove its single-line neighbours to the top. */
+    vertical-align: middle;
     padding-left: 0.5em;
     padding-right: 0.5em;
     text-decoration: none;

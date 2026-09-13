@@ -1,5 +1,0 @@
-[     535ms] [LOG] 95.55 @ http://localhost:3000/static/js/animate.js:1
-[    3348ms] [LOG] JQMIGRATE: Migrate is installed, version 4.0.2 @ https://code.jquery.com/jquery-migrate-4.0.2.min.js:1
-[    3555ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ https://ion.tjhsst.edu/login?next=/oauth/authorize/%3Fclient_id%3DbjIPdEQmMPC8q7W9kzq23YzvUheN7ND1ih8L7sPK%26redirect_uri%3Dhttp%253A%252F%252Flocalhost%253A3000%252Fcomplete%252Fion%252F%253Fredirect_state%253DipvkAIy0rq5MxVdcZ7blyfhiRwg0XldH%26state%3DipvkAIy0rq5MxVdcZ7blyfhiRwg0XldH%26response_type%3Dcode%26scope%3Dread:0
-[    5131ms] [LOG] 95.55 @ http://localhost:3000/static/js/animate.js:1
-[    6860ms] [LOG] 44 @ http://localhost:3000/static/js/animate.js:78

@@ -1,4 +1,3 @@
-from decimal import Decimal
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.core.management.base import BaseCommand

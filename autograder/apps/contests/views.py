@@ -23,7 +23,31 @@ def contests_view(request):
             contests = contests.filter(tjioi=True)
         else:
             contests = contests.filter(start__lte=timezone.now())
-    context = {"contests": contests, "tjioi": settings.TJIOI_MODE}
+
+    # Grouped by season so past years collapse instead of burying this year's
+    # contests under every contest ever run.
+    seasons = {}
+    for contest in contests:
+        seasons.setdefault(contest.season, []).append(contest)
+
+    current = settings.CURRENT_SEASON
+    groups = [
+        {
+            "season": season,
+            "label": f"{season - 1}-{season}",
+            "contests": season_contests,
+            "is_current": season == current,
+        }
+        # Newest season first; anything newer than CURRENT_SEASON (a season that
+        # has been created but not switched to yet) still sorts to the top.
+        for season, season_contests in sorted(seasons.items(), reverse=True)
+    ]
+
+    context = {
+        "groups": groups,
+        "has_past": any(not g["is_current"] for g in groups),
+        "tjioi": settings.TJIOI_MODE,
+    }
     return render(request, "contest/contests.html", context)
 
 

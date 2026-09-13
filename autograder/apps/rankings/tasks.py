@@ -2,7 +2,6 @@ import requests
 import logging
 import string
 from ..index.models import GraderUser
-from decimal import Decimal
 from ...celery import app
 from .formula import index_for_user
 

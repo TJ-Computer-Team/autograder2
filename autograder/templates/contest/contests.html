@@ -15,24 +15,44 @@
 <div class="main-block">
   <div class="title">Contests</div>
 </div>
-<div class="main-block" id="problems">
-    {% for contest in contests  %}
-  <ul class="sl">
-    <li class="sl">
-      <a href="{% url "contests:contest" contest.id %}" >
-        <div class="problem-text">
-          [{{ contest.season|add:"-1" }}-{{ contest.season }}] {{ contest.name }} (
-            {% if contest.rated %}
-                Rated
-            {% else %}
-                Unrated
-            {% endif %}
-            )
-        </div>
-      </a>
-    </li>
-  </ul>
+{% for group in groups %}
+  {% if group.is_current %}
+  {# This season stays open; older ones collapse so they don't bury it. #}
+  <div class="main-block">
+    <div class="info"><strong>{{ group.label }} Contests</strong></div>
+    <ul class="sl">
+      {% for contest in group.contests %}
+      <li class="sl">
+        <a href="{% url "contests:contest" contest.id %}">
+          <div class="problem-text">
+            {{ contest.name }} ({% if contest.rated %}Rated{% else %}Unrated{% endif %})
+          </div>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% else %}
+  <details class="main-block section">
+    <summary>{{ group.label }} Contests <span class="set-external">{{ group.contests|length }}</span></summary>
+    <ul class="sl">
+      {% for contest in group.contests %}
+      <li class="sl">
+        <a href="{% url "contests:contest" contest.id %}">
+          <div class="problem-text">
+            {{ contest.name }} ({% if contest.rated %}Rated{% else %}Unrated{% endif %})
+          </div>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </details>
+  {% endif %}
+{% empty %}
+  <div class="main-block"><div class="info">No contests yet.</div></div>
 {% endfor %}
+
+<div class="main-block" id="problems">
   {% if not tjioi %}
   <ul class="sl">
     <li class="sl">

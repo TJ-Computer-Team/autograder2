@@ -1,4 +1,4 @@
-from django.test import TestCase, RequestFactory
+from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 from datetime import timedelta
@@ -197,3 +197,53 @@ class ContestNavbarTests(TestCase):
             reverse("runtests:status", kwargs={"page": 1}),
             fetch_redirect_response=False,
         )
+
+
+@override_settings(CURRENT_SEASON=2027)
+class ContestSeasonGroupingTests(TestCase):
+    """Past seasons collapse so they don't bury the current one."""
+
+    def setUp(self):
+        self.user = GraderUser.objects.create_user(
+            email="s@example.com", username="2027s", display_name="Student"
+        )
+        self.client.force_login(self.user)
+        now = timezone.now()
+        for season, count in ((2027, 2), (2026, 3), (2025, 1)):
+            for i in range(count):
+                Contest.objects.create(
+                    name=f"IH{i} {season}",
+                    season=season,
+                    start=now - timedelta(days=(2028 - season) * 100 + i),
+                    end=now - timedelta(days=(2028 - season) * 100 + i - 1),
+                )
+
+    def _groups(self):
+        return self.client.get(reverse("contests:contests")).context["groups"]
+
+    def test_grouped_newest_season_first(self):
+        self.assertEqual([g["season"] for g in self._groups()], [2027, 2026, 2025])
+
+    def test_only_the_current_season_is_expanded(self):
+        groups = self._groups()
+        self.assertTrue(groups[0]["is_current"])
+        self.assertFalse(any(g["is_current"] for g in groups[1:]))
+
+    def test_labels_span_two_years(self):
+        self.assertEqual(self._groups()[0]["label"], "2026-2027")
+
+    def test_every_contest_appears_exactly_once(self):
+        groups = self._groups()
+        total = sum(len(g["contests"]) for g in groups)
+        self.assertEqual(total, Contest.objects.count())
+
+    def test_past_seasons_render_as_collapsed_details(self):
+        resp = self.client.get(reverse("contests:contests"))
+        self.assertContains(resp, "2025-2026 Contests")
+        self.assertContains(resp, "<details")
+
+    def test_no_contests_is_handled(self):
+        Contest.objects.all().delete()
+        resp = self.client.get(reverse("contests:contests"))
+        self.assertEqual(resp.context["groups"], [])
+        self.assertContains(resp, "No contests yet")
