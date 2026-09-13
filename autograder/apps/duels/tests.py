@@ -442,3 +442,46 @@ class StateJsonNameTests(DuelBase):
         duel = self.make_duel()
         duel.finish(None, Duel.TIMEOUT)
         self.assertIsNone(self._state(duel)["winner"])
+
+
+class OpponentListTests(DuelBase):
+    """The challenge dropdown must actually be populated.
+
+    It once rendered its empty state ("Nobody else has verified a handle yet")
+    on a database with 32 eligible players, because an edit dropped `opponents`
+    from the view context. Nothing failed -- the template just fell through to
+    {% empty %}.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.client.force_login(self.alice)
+
+    def _opponents(self):
+        resp = self.client.get(reverse("duels:list"))
+        return list(resp.context["opponents"])
+
+    def test_verified_others_are_listed(self):
+        self.assertIn(self.bob, self._opponents())
+
+    def test_dropdown_is_rendered_not_empty_state(self):
+        resp = self.client.get(reverse("duels:list"))
+        self.assertContains(resp, self.bob.cf_handle)
+        self.assertNotContains(resp, "Nobody else has verified a handle yet")
+
+    def test_you_are_not_your_own_opponent(self):
+        self.assertNotIn(self.alice, self._opponents())
+
+    def test_unverified_users_are_excluded(self):
+        carol = make_user("carol", "carol_cf", verified=False)
+        self.assertNotIn(carol, self._opponents())
+
+    def test_verified_but_handle_wiped_is_excluded(self):
+        """reset_rankings and one admin toggle clear handles without clearing
+        cf_verified_at, which would otherwise leave unusable entries listed."""
+        GraderUser.objects.filter(pk=self.bob.pk).update(cf_handle="")
+        self.assertNotIn(self.bob, self._opponents())
+
+    def test_inactive_users_are_excluded(self):
+        GraderUser.objects.filter(pk=self.bob.pk).update(is_active=False)
+        self.assertNotIn(self.bob, self._opponents())

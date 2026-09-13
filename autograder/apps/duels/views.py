@@ -48,6 +48,15 @@ def duel_list(request):
         "outgoing": mine.filter(status=Duel.PENDING, challenger=request.user),
         "ongoing": everyone.filter(status=Duel.ACTIVE),
         "finished": everyone.filter(status=Duel.FINISHED)[:25],
+        # Anyone with a verified handle can be challenged. Without this the
+        # dropdown silently renders its empty state and claims nobody is verified.
+        "opponents": GraderUser.objects.filter(
+            cf_verified_at__isnull=False, is_active=True
+        )
+        .exclude(pk=request.user.pk)
+        .exclude(cf_handle__isnull=True)
+        .exclude(cf_handle="")
+        .order_by("display_name", "username"),
         "rating_floor": RATING_FLOOR,
         "rating_ceil": RATING_CEIL,
     }
