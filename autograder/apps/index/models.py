@@ -29,12 +29,14 @@ class GraderUser(AbstractBaseUser, PermissionsMixin):
     SILVER = "Silver"
     GOLD = "Gold"
     PLATINUM = "Platinum"
+    CAMPER = "Camper"
     NOT_PARTICIPATED = "Not Participated"
     USACO_DIVISIONS = {
         BRONZE: "Bronze",
         SILVER: "Silver",
         GOLD: "Gold",
         PLATINUM: "Platinum",
+        CAMPER: "Camper",
         NOT_PARTICIPATED: "Not Participated",
     }
 

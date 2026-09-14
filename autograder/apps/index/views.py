@@ -225,6 +225,7 @@ def update_stats(request):
             "silver": "Silver",
             "gold": "Gold",
             "plat": "Platinum",
+            "camper": "Camper",
         }.get(usaco, "Not Participated")
     else:
         user.usaco_division = "Not Participated"

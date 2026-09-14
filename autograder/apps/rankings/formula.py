@@ -14,6 +14,7 @@ USACO_RATINGS = {
     "Silver": 1200,
     "Gold": 1600,
     "Platinum": 1900,
+    "Camper": 2200,
 }
 DEFAULT_USACO_RATING = 800
 
