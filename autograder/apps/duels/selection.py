@@ -33,6 +33,7 @@ def pick_duel_problem(rating_min, rating_max, handles, tags=""):
         if p.get("rating") is not None
         and rating_min <= p["rating"] <= rating_max
         and p.get("contestId") is not None
+        and p["contestId"] >= 1000
         and p.get("index")
         and (not wanted_tags or wanted_tags <= {t.lower() for t in p.get("tags", [])})
     ]
