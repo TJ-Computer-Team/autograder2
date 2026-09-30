@@ -54,11 +54,11 @@ onload="auto_grow()"
 </div>
 <div class="option-buttons">
     {% if submission %}
-    <a href="{% url "problems:problem" submission.problem.id %}">
+    <a href="{% url "problems:problem" submission.problem.id %}{% if contest_nav %}?contest={{ contest_nav.id }}{% endif %}">
         <div class="button">Problem</div>
     </a>
     {% endif %}
-    <a href="{% url "runtests:status" page=1 %}">
+    <a href="{% if contest_nav %}{% url "contests:status" cid=contest_nav.id mine_only="mine" page=1 %}{% else %}{% url "runtests:status" page=1 %}{% endif %}">
         <div class="button">Back</div>
     </a>
 

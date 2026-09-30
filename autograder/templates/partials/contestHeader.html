@@ -2,7 +2,7 @@
 
 <div class="navbar">
     <ul class="nb">
-        <li id="logoHolder" class="nb"><img class="logo" src="{% static 'images/logo.png' %}"></li>
+        <li id="logoHolder" class="nb"><a href="{% if request.user.is_tjioi %}{% url 'contests:contests' %}{% else %}{% url 'index:profile' %}{% endif %}"><img class="logo" src="{% static 'images/logo.png' %}"></a></li>
         <li class="nb contest-name">{{ contest_nav.name }}</li>
         <li class="nb"><a {% if cnav_active == "problems" %} class="cactive" {% endif %} href="{% url "contests:contest" contest_nav.id %}">Problems</a></li>
         <li class="nb"><a {% if cnav_active == "submit" %} class="cactive" {% endif %} href="{% url "runtests:submitcontest" cid=contest_nav.id %}">Submit Code</a></li>

@@ -25,6 +25,58 @@ def natural_key(s):
     ]
 
 
+JAVA_PACKAGE_RE = re.compile(r"^\s*package\s+[\w.]+\s*;", re.MULTILINE)
+JAVA_NOISE_RE = re.compile(
+    r'//[^\n]*|/\*.*?\*/|"(?:\\.|[^"\\\n])*"|\'(?:\\.|[^\'\\\n])*\'', re.DOTALL
+)
+JAVA_PUBLIC_CLASS_RE = re.compile(r"\bpublic\s+(?:(?:final|abstract)\s+)*class\s+(\w+)")
+JAVA_CLASS_RE = re.compile(r"\bclass\s+(\w+)")
+JAVA_MAIN_RE = re.compile(r"\bstatic\s+void\s+main\s*\(")
+
+
+def prepare_java_source(code):
+    """Return (main class name, code) so any class name works and packages are ignored.
+
+    javac needs the file named after the public class, and `java` needs the
+    class to sit in the default package, so we detect the name and strip any
+    package declaration rather than forcing everyone to write `usercode`.
+    """
+    code = JAVA_PACKAGE_RE.sub("", code, count=1)
+    # Ignore "class" appearing in comments or string literals.
+    stripped = JAVA_NOISE_RE.sub(" ", code)
+
+    match = JAVA_PUBLIC_CLASS_RE.search(stripped)
+    if match:
+        return match.group(1), code
+
+    # No public class: use the last class declared before main.
+    main = JAVA_MAIN_RE.search(stripped)
+    classes = JAVA_CLASS_RE.findall(stripped[: main.start()] if main else stripped)
+    if classes:
+        return classes[-1], code
+
+    return "usercode", code
+
+
+def write_source(subdir, lang, code):
+    """Write the submission into subdir; returns (source path, base name)."""
+    if lang == "java":
+        name, code = prepare_java_source(code)
+        sol_path = subdir / f"{name}.java"
+    else:
+        extension = {"python": "py", "cpp": "cpp"}[lang]
+        name = "usercode"
+        sol_path = subdir / f"usercode.{extension}"
+
+    try:
+        sol_path.write_text(code)
+    except Exception as e:
+        logger.error(f"Failed to write to file: {e}")
+        raise
+
+    return sol_path, name
+
+
 def broadcast_status_update(submission_id, new_message, runtime=-1):
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
@@ -65,15 +117,8 @@ def run_code_handler(tl, ml, lang, pid, sid, code):
     subdir = Path("/home/tjctgrader/submissions") / str(sid)
     subdir.mkdir(parents=True, exist_ok=True)
 
-    extension = {"python": "py", "java": "java", "cpp": "cpp"}[lang]
-    sol_filename = f"usercode.{extension}"
-    sol_path = subdir / sol_filename
-
-    try:
-        sol_path.write_text(code)
-    except Exception as e:
-        logger.error(f"Failed to write to file: {e}")
-        raise
+    sol_path, main_name = write_source(subdir, lang, code)
+    sol_filename = sol_path.name
 
     if lang in ["cpp", "java"]:
         broadcast_status_update(submission.id, "Compiling")
@@ -96,8 +141,8 @@ def run_code_handler(tl, ml, lang, pid, sid, code):
             output = subprocess.run(
                 ["/usr/bin/javac", str(sol_path)], env=env_copy, capture_output=True
             )
-            sol_path = subdir / "usercode"
-            sol_filename = "usercode"
+            sol_path = subdir / main_name
+            sol_filename = main_name
 
         if output.returncode != 0:
             return {
@@ -213,15 +258,8 @@ def run_interactive_handler(tl, ml, lang, pid, sid, code):
     subdir = Path("/home/tjctgrader/submissions") / str(sid)
     subdir.mkdir(parents=True, exist_ok=True)
 
-    extension = {"python": "py", "java": "java", "cpp": "cpp"}[lang]
-    sol_filename = f"usercode.{extension}"
-    sol_path = subdir / sol_filename
-
-    try:
-        sol_path.write_text(code)
-    except Exception as e:
-        logger.error(f"Failed to write to file: {e}")
-        raise
+    sol_path, main_name = write_source(subdir, lang, code)
+    sol_filename = sol_path.name
 
     if lang in ["cpp", "java"]:
         broadcast_status_update(submission.id, "Compiling")
@@ -244,8 +282,8 @@ def run_interactive_handler(tl, ml, lang, pid, sid, code):
             output = subprocess.run(
                 ["/usr/bin/javac", str(sol_path)], env=env_copy, capture_output=True
             )
-            sol_path = subdir / "usercode"
-            sol_filename = "usercode"
+            sol_path = subdir / main_name
+            sol_filename = main_name
 
         if output.returncode != 0:
             return {
