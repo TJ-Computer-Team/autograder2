@@ -73,7 +73,7 @@ def submit_view(request, cid=None, pid=None):
         if request.user.is_tjioi:
             problems = problems.filter(contest__tjioi=True)
 
-        problems = problems.order_by("id")
+        problems = problems.order_by("number")
         context["problems"] = problems
 
     return render(request, "runtests/submit.html", context)

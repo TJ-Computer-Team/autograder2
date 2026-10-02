@@ -27,7 +27,7 @@ def problemset_view(request):
         if not request.user.is_tjioi:
             problems = problems.exclude(contest__tjioi=True)
 
-    problems = list(problems.select_related("contest").order_by("-id"))
+    problems = list(problems.select_related("contest").order_by("-number"))
     solved = solved_problem_ids(request.user, [p.id for p in problems])
 
     context = {

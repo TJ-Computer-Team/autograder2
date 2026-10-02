@@ -1,8 +1,55 @@
-from django.db import models
+from django.db import models, transaction
+
+
+def renumber_problems(ordered_pks):
+    """Give ``ordered_pks`` the problem numbers they currently hold, reassigned
+    top-down in the given order (first pk gets the highest of those numbers).
+
+    Numbers are only permuted among these problems, so the full set stays a
+    dense 1..n however many (or few) rows the admin had on screen.
+    """
+    with transaction.atomic():
+        current = dict(
+            Problem.objects.select_for_update()
+            .filter(pk__in=ordered_pks)
+            .values_list("pk", "number")
+        )
+        if set(current) != set(ordered_pks) or len(ordered_pks) != len(current):
+            raise ValueError("Unknown or duplicate problem ids")
+        numbers = sorted(current.values(), reverse=True)
+        _assign_numbers(dict(zip(ordered_pks, numbers)), current)
+
+
+def compact_problem_numbers():
+    """Close any holes so numbers run 1..n, keeping the existing order."""
+    with transaction.atomic():
+        current = dict(
+            Problem.objects.select_for_update()
+            .order_by("number")
+            .values_list("pk", "number")
+        )
+        _assign_numbers({pk: i for i, pk in enumerate(current, start=1)}, current)
+
+
+def _assign_numbers(wanted, current):
+    changed = {pk: n for pk, n in wanted.items() if current[pk] != n}
+    if not changed:
+        return
+    # `number` is unique and Postgres checks that per row, so swapping values
+    # directly collides. Park the moving rows on negatives first.
+    for pk in changed:
+        Problem.objects.filter(pk=pk).update(number=-pk)
+    for pk, n in changed.items():
+        Problem.objects.filter(pk=pk).update(number=n)
 
 
 class Problem(models.Model):
+    # Internal and stable: URLs, submissions and the coderunner's
+    # /home/tjctgrader/problems/<id> directories all key on it.
     id = models.IntegerField(primary_key=True)
+    # The number shown to people. Always a dense 1..n, set by drag-and-drop
+    # in the admin; new problems go on top as n+1.
+    number = models.IntegerField(unique=True, editable=False)
     name = models.CharField(max_length=255)
     # Null for lecture-only problems: a problem written for a lecture set never
     # belongs to a contest, and inventing a placeholder contest for it was the
@@ -30,12 +77,15 @@ class Problem(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
+        from django.db.models import Max
+
         # Auto-increment id if this is a new object and id wasn't provided
         if not self.pk and self.id is None:
-            from django.db.models import Max
-
             max_id = Problem.objects.aggregate(Max("id"))["id__max"]
             self.id = (max_id or 0) + 1
+        if self.number is None:
+            max_number = Problem.objects.aggregate(Max("number"))["number__max"]
+            self.number = (max_number or 0) + 1
         super().save(*args, **kwargs)
         if self.interactive and self.testcases_zip:
             self._process_interactive_problem()
