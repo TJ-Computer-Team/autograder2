@@ -1,40 +1,41 @@
 {% load static %}
 
-{% if contest_nav %}{% include "partials/contestHeader.html" %}{% else %}
-<div class="navbar">
-    <ul class="nb">
-        <li id="logoHolder" class="nb"><img class="logo" src="{% static 'images/logo.png' %}"></li>
+<header class="sticky top-0 z-50">
+<nav aria-label="Main navigation" class="navbar border-b border-stone-800 bg-stone-950/95 px-3 backdrop-blur-md sm:px-6">
+    <ul class="nb flex flex-wrap items-center gap-1 py-2">
+        <li id="logoHolder" class="nb flex items-center [&>a]:rounded-lg [&>a]:px-3 [&>a]:py-2 [&>a]:text-sm [&>a]:font-medium [&>a]:text-stone-300 [&>a:hover]:bg-stone-800 [&>a:hover]:text-white"><a href="{% if request.user.is_tjioi %}{% url 'contests:contests' %}{% else %}{% url 'index:profile' %}{% endif %}" aria-label="Home"><img alt="TJ Computer Team" class="logo h-8 w-8 object-contain" src="{% static 'images/logo.png' %}"></a></li>
         {% if request.user.is_tjioi %}
-            <li class="nb"><a {% if active == "status" %} class="cactive" {% endif %} href="{% url "runtests:status" page=1 mine=False %}">Submissions</a></li>
-            <li class="nb"><a {% if active == "contests" %} class="cactive" {% endif %} href="{% url "contests:contests" %}">Contests</a></li>
-            <li class="nb"><a {% if active == "submit" %} class="cactive" {% endif %} href="{% url "runtests:submit" %}">Submit</a></li>
+            <li class="nb flex items-center [&>a]:rounded-lg [&>a]:px-3 [&>a]:py-2 [&>a]:text-sm [&>a]:font-medium [&>a]:text-stone-300 [&>a:hover]:bg-stone-800 [&>a:hover]:text-white"><a {% if active == "status" and not contest_nav %} class="cactive rounded-lg bg-stone-200/15 text-stone-200!" {% endif %} href="{% url "runtests:status" page=1 mine=False %}">Submissions</a></li>
+            <li class="nb flex items-center [&>a]:rounded-lg [&>a]:px-3 [&>a]:py-2 [&>a]:text-sm [&>a]:font-medium [&>a]:text-stone-300 [&>a:hover]:bg-stone-800 [&>a:hover]:text-white"><a {% if active == "contests" or contest_nav %} class="cactive rounded-lg bg-stone-200/15 text-stone-200!" {% endif %} href="{% url "contests:contests" %}">Contests</a></li>
+
         {% else %}
-            <li class="nb"><a {% if active == "profile" %} class="cactive" {% endif %} href="{% url "index:profile" %}">Home</a></li>
-            <li class="nb"><a {% if active == "status" %} class="cactive" {% endif %} href="{% url "runtests:status" page=1 mine=True %}">Submissions</a></li>
-            <li class="nb"><a {% if active == "contests" %} class="cactive" {% endif %} href="{% url "contests:contests" %}">Contests</a></li>
-            <li class="nb"><a {% if active == "problems" %} class="cactive" {% endif %} href="{% url "problems:problemset" %}">Problemset</a></li>
-            <li class="nb"><a {% if active == "lectures" %} class="cactive" {% endif %} href="{% url 'lectures:list' %}">Lecture Sets</a></li>
-            <li class="nb"><a {% if active == "duels" %} class="cactive" {% endif %} href="{% url 'duels:list' %}">Duels</a></li>
-            <li class="nb"><a {% if active == "submit" %} class="cactive" {% endif %} href="{% url "runtests:submit" %}">Submit</a></li>
-            <li class="nb"><a {% if active == "info" %} class="cactive" {% endif %} href="{% url 'index:info' %}">Guide</a></li>
-            <li class="nb"><a {% if active == "rankings" %} class="cactive" {% endif %} href="{% url "rankings:rankings" %}">Rankings</a></li>
+
+            <li class="nb flex items-center [&>a]:rounded-lg [&>a]:px-3 [&>a]:py-2 [&>a]:text-sm [&>a]:font-medium [&>a]:text-stone-300 [&>a:hover]:bg-stone-800 [&>a:hover]:text-white"><a {% if active == "status" and not contest_nav %} class="cactive rounded-lg bg-stone-200/15 text-stone-200!" {% endif %} href="{% url "runtests:status" page=1 mine=True %}">Submissions</a></li>
+            <li class="nb flex items-center [&>a]:rounded-lg [&>a]:px-3 [&>a]:py-2 [&>a]:text-sm [&>a]:font-medium [&>a]:text-stone-300 [&>a:hover]:bg-stone-800 [&>a:hover]:text-white"><a {% if active == "contests" or contest_nav %} class="cactive rounded-lg bg-stone-200/15 text-stone-200!" {% endif %} href="{% url "contests:contests" %}">Contests</a></li>
+            <li class="nb flex items-center [&>a]:rounded-lg [&>a]:px-3 [&>a]:py-2 [&>a]:text-sm [&>a]:font-medium [&>a]:text-stone-300 [&>a:hover]:bg-stone-800 [&>a:hover]:text-white"><a {% if active == "problems" and not contest_nav %} class="cactive rounded-lg bg-stone-200/15 text-stone-200!" {% endif %} href="{% url "problems:problemset" %}">Problemset</a></li>
+            <li class="nb flex items-center [&>a]:rounded-lg [&>a]:px-3 [&>a]:py-2 [&>a]:text-sm [&>a]:font-medium [&>a]:text-stone-300 [&>a:hover]:bg-stone-800 [&>a:hover]:text-white"><a {% if active == "lectures" and not contest_nav %} class="cactive rounded-lg bg-stone-200/15 text-stone-200!" {% endif %} href="{% url 'lectures:list' %}">Lecture Sets</a></li>
+            <li class="nb flex items-center [&>a]:rounded-lg [&>a]:px-3 [&>a]:py-2 [&>a]:text-sm [&>a]:font-medium [&>a]:text-stone-300 [&>a:hover]:bg-stone-800 [&>a:hover]:text-white"><a {% if active == "duels" and not contest_nav %} class="cactive rounded-lg bg-stone-200/15 text-stone-200!" {% endif %} href="{% url 'duels:list' %}">Duels</a></li>
+
+            <li class="nb flex items-center [&>a]:rounded-lg [&>a]:px-3 [&>a]:py-2 [&>a]:text-sm [&>a]:font-medium [&>a]:text-stone-300 [&>a:hover]:bg-stone-800 [&>a:hover]:text-white"><a {% if active == "info" and not contest_nav %} class="cactive rounded-lg bg-stone-200/15 text-stone-200!" {% endif %} href="{% url 'index:info' %}">Guide</a></li>
+            <li class="nb flex items-center [&>a]:rounded-lg [&>a]:px-3 [&>a]:py-2 [&>a]:text-sm [&>a]:font-medium [&>a]:text-stone-300 [&>a:hover]:bg-stone-800 [&>a:hover]:text-white"><a {% if active == "rankings" and not contest_nav %} class="cactive rounded-lg bg-stone-200/15 text-stone-200!" {% endif %} href="{% url "rankings:rankings" %}">Rankings</a></li>
             {% if attendance_enabled %}
-                <li class="nb"><a {% if active == "attendance" %} class="cactive" {% endif %} href="{% url 'index:attendance' %}">Attendance</a></li>
+                <li class="nb flex items-center [&>a]:rounded-lg [&>a]:px-3 [&>a]:py-2 [&>a]:text-sm [&>a]:font-medium [&>a]:text-stone-300 [&>a:hover]:bg-stone-800 [&>a:hover]:text-white"><a {% if active == "attendance" and not contest_nav %} class="cactive rounded-lg bg-stone-200/15 text-stone-200!" {% endif %} href="{% url 'index:attendance' %}">Attendance</a></li>
                 {% if request.user.is_staff %}
-                    <li class="nb"><a {% if active == "attendance_admin" %} class="cactive" {% endif %} href="{% url 'index:attendance_admin' %}">Attendance Admin</a></li>
+                    <li class="nb flex items-center [&>a]:rounded-lg [&>a]:px-3 [&>a]:py-2 [&>a]:text-sm [&>a]:font-medium [&>a]:text-stone-300 [&>a:hover]:bg-stone-800 [&>a:hover]:text-white"><a {% if active == "attendance_admin" and not contest_nav %} class="cactive rounded-lg bg-stone-200/15 text-stone-200!" {% endif %} href="{% url 'index:attendance_admin' %}">Attendance Admin</a></li>
                 {% endif %}
             {% endif %}
         {% endif %}
-        <li class="nb topnav-right">
+        <li class="nb topnav-right lg:ml-auto flex items-center [&>a]:rounded-lg [&>a]:px-3 [&>a]:py-2 [&>a]:text-sm [&>a]:font-medium [&>a]:text-stone-300 [&>a:hover]:bg-stone-800 [&>a:hover]:text-white">
             <a href="{% url 'oauth:logout' %}">
-                <button class="logoutbtn" type="button">Log Out</button>
+                <button class="logoutbtn cursor-pointer rounded-lg px-2 py-1 text-rose-300 hover:text-rose-200" type="button">Log Out</button>
             </a>
         </li>
-        <li class="nb topnav-right">
+        <li class="nb topnav-right lg:ml-auto flex items-center [&>a]:rounded-lg [&>a]:px-3 [&>a]:py-2 [&>a]:text-sm [&>a]:font-medium [&>a]:text-stone-300 [&>a:hover]:bg-stone-800 [&>a:hover]:text-white">
             <a href="{% url 'index:toggle_particles' %}?next={{ request.get_full_path|urlencode }}">
                 Toggle Particles
             </a>
         </li>
     </ul>
-</div>
-{% endif %}
+</nav>
+</header>
+{% if contest_nav %}{% include "partials/contestHeader.html" %}{% endif %}

@@ -3,9 +3,7 @@
 {% load static %}
 {% load verdicts %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
+
 
 {% block title %}Viewing Submission{% endblock title %}
 
@@ -32,10 +30,10 @@ onload="auto_grow()"
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/header.html" %}
 
-<div class="main-block">
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
     {% if submission %}
 
-    <div class="title">
+    <div class="title text-2xl font-bold tracking-tight text-stone-100 sm:text-3xl">
         Problem: {{submission.problem.name}}, Language:
         {{submission.language}}, Runtime:
         {{submission.runtime}}ms, Verdict:
@@ -43,23 +41,23 @@ onload="auto_grow()"
         {% if admin %} - Viewing as Admin {% endif %}
     </div>
     <br/>
-    <textarea id="usercode" style="width: 100%; font-size: 1.5em" rows="4", cols="50" readonly>{{submission.code}}</textarea>
+    <textarea id="usercode" rows="4", cols="50" readonly class="w-full rounded-lg border border-stone-700 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-100/20 min-h-32 font-mono leading-6">{{submission.code}}</textarea>
     <br/>
-    <textarea id="feedback" style="width: 100%; font-size: 1.5em" rows="4", cols="50" readonly>{{insight}}</textarea>
+    <textarea id="feedback" rows="4", cols="50" readonly class="w-full rounded-lg border border-stone-700 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-100/20 min-h-32 font-mono leading-6">{{insight}}</textarea>
     {% else %}
-    <div class="title">
+    <div class="title text-2xl font-bold tracking-tight text-stone-100 sm:text-3xl">
         {{insight}}
     </div>
     {% endif %}
 </div>
-<div class="option-buttons">
+<div class="option-buttons mx-auto my-6 flex flex-wrap gap-3 px-5 sm:px-8 w-[calc(100%-2rem)] max-w-6xl">
     {% if submission %}
     <a href="{% url "problems:problem" submission.problem.id %}{% if contest_nav %}?contest={{ contest_nav.id }}{% endif %}">
-        <div class="button">Problem</div>
+        <div class="button inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">Problem</div>
     </a>
     {% endif %}
     <a href="{% if contest_nav %}{% url "contests:status" cid=contest_nav.id mine_only="mine" page=1 %}{% else %}{% url "runtests:status" page=1 %}{% endif %}">
-        <div class="button">Back</div>
+        <div class="button inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">Back</div>
     </a>
 
 

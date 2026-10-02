@@ -2,9 +2,7 @@
 
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
+
 
 {% block title %}{{problem.name}}{% endblock title %}
 
@@ -29,9 +27,9 @@
 {% include "partials/header.html" %}
 
 
- <div class="main-block">
-    <div class="title"><strong>{{problem.contest_letter}}: {{problem.name}}</strong></div>
-    <div class="subtitle">
+ <div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="title text-2xl font-bold tracking-tight text-stone-100 sm:text-3xl"><strong>{{problem.contest_letter}}: {{problem.name}}</strong></div>
+    <div class="subtitle text-lg font-semibold text-stone-200">
         <br>
         C++ Time Limit: {{tl_cpp}} seconds
         <br>
@@ -42,38 +40,38 @@
         Memory Limit: {{ problem.ml }} megabytes
     </div>
 </div>
-<div class="main-block">
-    <div class="info">
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
         {{ statement|safe }}
     </div>
 </div>
-<div class="main-block">
-    <div class="info"><strong>Input Format</strong><br>
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"><strong>Input Format</strong><br>
         {{ inputtxt|safe }}
     </div>
 </div>
-<div class="main-block">
-    <div class="info"><strong>Output Format</strong><br>
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"><strong>Output Format</strong><br>
         {{ outputtxt|safe }}
     </div>
 </div>
-<div class="main-block">
-    <div class="info"><strong>Samples</strong><br>
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"><strong>Samples</strong><br>
         {{ samples|safe }}
     </div>
 </div>
-<div class="option-buttons">
+<div class="option-buttons mx-auto my-6 flex flex-wrap gap-3 px-5 sm:px-8 w-[calc(100%-2rem)] max-w-6xl">
     {% if contest_nav %}
     <a href="{% url "runtests:submitproblem" pid=problem.id %}?contest={{ contest_nav.id }}">
-        <div class="button">Submit</div>
+        <div class="button inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">Submit</div>
     </a>
     {% else %}
     <a href="{% url "runtests:submitproblem" pid=problem.id %}">
-        <div class="button">Submit</div>
+        <div class="button inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">Submit</div>
     </a>
     {% if problem.contest %}
     <a href="{% url "contests:contest" cid=problem.contest.id %}">
-        <div class="button">Back</div>
+        <div class="button inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">Back</div>
     </a>
     {% endif %}
     {% endif %}

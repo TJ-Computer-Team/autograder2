@@ -1,7 +1,7 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="en" data-theme="abyss">
+<html lang="en" class="min-h-full bg-stone-900 [color-scheme:dark]">
   <head>
     <title>{% block title %}TJ Computer Team Grader{% endblock %}</title>
     <link
@@ -9,9 +9,9 @@
       type="image/png"
       href="{% static 'images/Logo.ico' %}"
     />
-    {% block stylesheet %}
-    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" />
-    {% endblock %}
+    <!-- Browser CDN for the initial Tailwind styling pass. -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    {% block stylesheet %}{% endblock stylesheet %}
 
     {% block head %}
 
@@ -20,7 +20,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
-  <body {% block bodyattr %}{% endblock bodyattr %} >
+  <body class="isolate min-h-screen bg-linear-to-br from-stone-900 via-stone-900 to-stone-800 font-sans text-stone-200 antialiased selection:bg-stone-200/30 [&_a]:transition-colors [&_a]:text-stone-200 [&_a:hover]:text-stone-100 [&_a]:focus-visible:outline-2 [&_a]:focus-visible:outline-offset-4 [&_a]:focus-visible:outline-stone-100 [&_.hidden]:hidden [&_.v-ac]:text-emerald-300 [&_.v-ac]:font-semibold [&_.v-wa]:text-rose-300 [&_.v-tle]:text-stone-200 [&_.v-err]:text-pink-300 [&_.v-pending]:text-indigo-300 [&_.v-pending]:italic [&_.v-skipped]:text-stone-400 [&_.diff-easy]:text-emerald-300 [&_.diff-medium]:text-stone-200 [&_.diff-hard]:text-rose-300 [&_.division-bronze]:text-orange-300 [&_.division-silver]:text-stone-300 [&_.division-gold]:text-yellow-300 [&_.division-platinum]:text-teal-300 [&_.info_code]:rounded [&_.info_code]:bg-stone-950 [&_.info_code]:px-1 [&_.info_code]:text-stone-200 [&_td]:border-b [&_td]:border-stone-800 [&_td]:px-4 [&_td]:py-3 [&_.centertext]:text-center" {% block bodyattr %}{% endblock bodyattr %} >
     {% block content %}
 
     {% endblock %}

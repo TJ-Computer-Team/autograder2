@@ -2,9 +2,7 @@
 
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
+
 
 {% block title %}Profile{% endblock title %}
 
@@ -12,24 +10,24 @@
 {% include "partials/header.html" %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 
-<div id="mainContent">
+<div id="mainContent" class="w-full py-6">
   <div id="subContent">
-    <div class="info-block">
-      <div class="profile-header">
-        <div class="profile-name">{{ name }}</div>
-        <div class="profile-meta">{{ username }}</div>
-        <div class="profile-meta">
+    <div class="info-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 flex flex-col bg-transparent max-w-6xl">
+      <div class="profile-header mb-6 space-y-1 border-b border-stone-800 pb-6">
+        <div class="profile-name text-3xl font-bold tracking-tight">{{ name }}</div>
+        <div class="profile-meta text-sm text-stone-400">{{ username }}</div>
+        <div class="profile-meta text-sm text-stone-400">
           Index {{ index|floatformat:0 }}{% if cf_rating %} &middot; Codeforces {{ cf_rating }}{% endif %}
         </div>
-        <div class="profile-meta">
+        <div class="profile-meta text-sm text-stone-400">
           USACO <span class="division-{{ usaco|slugify }}">{{ usaco }}</span>
           {% if admin and cf %}&middot; Handle {{ cf }}{% endif %}
         </div>
       </div>
 
-      <div class="profile-section-title">Rating History</div>
+      <div class="profile-section-title mb-3 mt-8 text-lg font-semibold">Rating History</div>
       {% if no_rating_history == "true" %}
-      <div class="profile-meta">No rating history yet.</div>
+      <div class="profile-meta text-sm text-stone-400">No rating history yet.</div>
       {% else %}
       <canvas id="ratingChart" width="600" height="300"></canvas>
       {% endif %}

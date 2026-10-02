@@ -4,9 +4,7 @@
 
 {% load charat %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
+
 
 {% block title %}Contest{% endblock title %}
 
@@ -17,59 +15,59 @@
 
 {% if messages %}
 {% for message in messages  %}
-<div class="main-block small-padding">
-    <div class="info">
+<div class="main-block small-padding relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 py-2 bg-transparent max-w-6xl">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
         {{message}}
     </div>
 </div>
 {% endfor %}
 {% endif %}
-<div class="main-block">
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
     {% if not_empty == "yes" %}
-    <table>
+    <table class="w-full border-separate border-spacing-0 text-left text-sm [&_tbody_tr]:transition [&_tbody_tr:hover]:bg-stone-800/70">
     <tr>
-        <th>#</th>
-        <th>Name</th>
-        <th>Points</th>
-        <th>Solved</th>
+        <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">#</th>
+        <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Name</th>
+        <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Points</th>
+        <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Solved</th>
     </tr>
     {% for problem in problems %}
     <tr>
-        <td class="centertext">{{problem.letter}}</td>
-        <td class="centertext">
+        <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{problem.letter}}</td>
+        <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">
             <a href="{% url "problems:problem" pid=problem.id %}?contest={{ cid }}">
             {{ problem.name }}
             </a>
         </td>
-        <td class="centertext">{{ problem.points }}</td>
-        <td class="centertext">{{ problem.solves }}</td>
+        <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ problem.points }}</td>
+        <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ problem.solves }}</td>
     </tr>
     {% endfor %}
     </table>
     {% else %}
-    <div class="info">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
         No problems yet!
     </div>
     {% endif %}
 </div>
-<div class="main-block small-padding">
-    <div class="info">
+<div class="main-block small-padding relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 py-2 bg-transparent max-w-6xl">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
         <p id="countdown">Contest Has Ended</p>
     </div>
 </div>
 {% if editorial is not None %}
-<div class="main-block small-padding">
-    <div class="info">
+<div class="main-block small-padding relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 py-2 bg-transparent max-w-6xl">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
     <a href="{{ editorial }}" target="_blank">Editorial</a>
     </div>
 </div>
 {% endif %}
-<div class="option-buttons">
+<div class="option-buttons mx-auto my-6 flex flex-wrap gap-3 px-5 sm:px-8 w-[calc(100%-2rem)] max-w-6xl">
     <a href="{% url "runtests:submitcontest" cid=cid %}">
-    <div class="button">Submit</div>
+    <div class="button inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">Submit</div>
     </a>
     <a href="{% url "contests:contests" %}">
-    <div class="button">Back</div>
+    <div class="button inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">Back</div>
     </a>
 </div>
 <script>

@@ -2,9 +2,7 @@
 
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
+
 
 {% block title %}Rankings{% endblock title %}
 
@@ -17,31 +15,31 @@
 {% include "partials/header.html" %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 
-<div class="main-block">
-    <div class="title">Rankings</div>
-    <div class="subtitle">
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="title text-2xl font-bold tracking-tight text-stone-100 sm:text-3xl">Rankings</div>
+    <div class="subtitle text-lg font-semibold text-stone-200">
         <br>
         <a href="https://docs.google.com/document/d/14CBtom9g0AKZkmncUQQJwV-dIwG54Arr26FnWfUcdvI/edit?usp=sharing" target="_blank">Learn about how rankings are formulated</a>
     </div>
 </div>
-    <div class="main-block">
-    <table id="rankings">
+    <div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <table id="rankings" class="w-full border-separate border-spacing-0 text-left text-sm [&_tbody_tr]:transition [&_tbody_tr:hover]:bg-stone-800/70">
         <tr data-sort-method="none">
-            <th>#</th>
-            <th>Name</th>
-            <th>USACO</th>
-            <th>Codeforces</th>
-            <th>In-Houses</th>
-            <th>Index</th>
+            <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">#</th>
+            <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Name</th>
+            <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">USACO</th>
+            <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Codeforces</th>
+            <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">In-Houses</th>
+            <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Index</th>
         </tr>
         {% for ranking in rankings %}
-            <tr class="{% if ranking.id == id %}row-highlight{% endif %}">
-            <td class="centertext">{{ ranking.rank }}</td>
-            <td class="centertext"><a href="{% url "index:user_profile" ranking.id %}">{{ ranking.name }}</a></td>
-            <td class="centertext">{{ ranking.usaco }}</td>
-            <td class="centertext">{{ ranking.cf }}</td>
-            <td class="centertext">{{ ranking.inhouse|floatformat:3 }}</td>
-            <td class="centertext">{{ ranking.index|floatformat:3 }}</td>
+            <tr class="{% if ranking.id == id %}row-highlight{% endif %} bg-stone-800!">
+            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ ranking.rank }}</td>
+            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle"><a href="{% url "index:user_profile" ranking.id %}">{{ ranking.name }}</a></td>
+            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ ranking.usaco }}</td>
+            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ ranking.cf }}</td>
+            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ ranking.inhouse|floatformat:3 }}</td>
+            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ ranking.index|floatformat:3 }}</td>
             </tr>
         {% endfor %}
     </table>

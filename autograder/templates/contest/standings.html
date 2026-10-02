@@ -3,9 +3,7 @@
 {% load static %}
 {% load charat %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
+
 
 {% block title %}Standings{% endblock title %}
 
@@ -14,33 +12,33 @@
 {% block content %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/header.html" %}
-<div class="main-block">
-    <table>
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <table class="w-full border-separate border-spacing-0 text-left text-sm [&_tbody_tr]:transition [&_tbody_tr:hover]:bg-stone-800/70">
         <thead>
             <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>Points</th>
-                <th>Penalty</th>
+                <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">#</th>
+                <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Name</th>
+                <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Points</th>
+                <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Penalty</th>
                 {% for problem in problems %}
-                <th>{{ "ABCDEFGHIJKLMNOPQRSTUVWXYZ"|char_at:forloop.counter0 }}</th>
+                <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">{{ "ABCDEFGHIJKLMNOPQRSTUVWXYZ"|char_at:forloop.counter0 }}</th>
                 {% endfor %}
             </tr>
         </thead>
         <tbody>
             {% for participant in load %}
                 <tr>
-                    <td class="centertext">{{ participant.rank }}</td>
-                    <td class="centertext"><a href="{% url "index:user_profile" participant.id %}">{{ participant.name }}</a></td>
-                    <td class="centertext">{{ participant.solved }}</td>
-                    <td class="centertext">{{ participant.penalty }}</td>
+                    <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ participant.rank }}</td>
+                    <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle"><a href="{% url "index:user_profile" participant.id %}">{{ participant.name }}</a></td>
+                    <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ participant.solved }}</td>
+                    <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ participant.penalty }}</td>
                     {% for problem_score in participant.problems %}
                         {% if problem_score > 0 %}
-                            <td class="centertext" style="color:lime;">{{ problem_score }}</td>
+                            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ problem_score }}</td>
                         {% elif problem_score < 0 %}
-                            <td class="centertext" style="color:red;">{{ problem_score }}</td>
+                            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ problem_score }}</td>
                         {% else %}
-                            <td class="centertext">{{ problem_score }}</td>
+                            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ problem_score }}</td>
                         {% endif %}
                     {% endfor %}
                 </tr>

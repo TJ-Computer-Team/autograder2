@@ -1,21 +1,12 @@
-{% load static %}
-
-<div class="navbar">
-    <ul class="nb">
-        <li id="logoHolder" class="nb"><a href="{% if request.user.is_tjioi %}{% url 'contests:contests' %}{% else %}{% url 'index:profile' %}{% endif %}"><img class="logo" src="{% static 'images/logo.png' %}"></a></li>
-        <li class="nb contest-name">{{ contest_nav.name }}</li>
-        <li class="nb"><a {% if cnav_active == "problems" %} class="cactive" {% endif %} href="{% url "contests:contest" contest_nav.id %}">Problems</a></li>
-        <li class="nb"><a {% if cnav_active == "submit" %} class="cactive" {% endif %} href="{% url "runtests:submitcontest" cid=contest_nav.id %}">Submit Code</a></li>
-        <li class="nb"><a {% if cnav_active == "mine" %} class="cactive" {% endif %} href="{% url "contests:status" cid=contest_nav.id mine_only="mine" page=1 %}">My Submissions</a></li>
-        <li class="nb"><a {% if cnav_active == "all" %} class="cactive" {% endif %} href="{% url "contests:status" cid=contest_nav.id mine_only="all" page=1 %}">All Submissions</a></li>
-        <li class="nb"><a {% if cnav_active == "standings" %} class="cactive" {% endif %} href="{% url "contests:standings" contest_nav.id %}">Standings</a></li>
-        <li class="nb topnav-right">
-            <a href="{% url 'oauth:logout' %}">
-                <button class="logoutbtn" type="button">Log Out</button>
-            </a>
-        </li>
-        <li class="nb topnav-right">
-            <a href="{% if request.user.is_tjioi %}{% url 'contests:contests' %}{% else %}{% url 'index:profile' %}{% endif %}">Return Home</a>
-        </li>
+<section class="mx-auto mt-8 w-[calc(100%-2rem)] max-w-6xl px-5 sm:px-8">
+    <h1 class="mb-4 text-2xl font-bold tracking-tight text-stone-100 sm:text-3xl">{{ contest_title|default:contest_nav.name }}</h1>
+    <nav aria-label="Contest navigation" class="contest-navbar bg-transparent">
+    <ul class="nb flex flex-wrap items-center gap-1">
+        <li class="nb flex items-center [&>a]:rounded-lg [&>a]:px-2 [&>a]:py-1.5 [&>a]:text-xs [&>a]:font-medium [&>a]:text-stone-300 [&>a:hover]:bg-stone-800 [&>a:hover]:text-white"><a {% if cnav_active == "problems" %} class="cactive rounded-lg bg-stone-200/15 text-stone-200!" {% endif %} href="{% url "contests:contest" contest_nav.id %}">Problems</a></li>
+        <li class="nb flex items-center [&>a]:rounded-lg [&>a]:px-2 [&>a]:py-1.5 [&>a]:text-xs [&>a]:font-medium [&>a]:text-stone-300 [&>a:hover]:bg-stone-800 [&>a:hover]:text-white"><a {% if cnav_active == "submit" %} class="cactive rounded-lg bg-stone-200/15 text-stone-200!" {% endif %} href="{% url "runtests:submitcontest" cid=contest_nav.id %}">Submit Code</a></li>
+        <li class="nb flex items-center [&>a]:rounded-lg [&>a]:px-2 [&>a]:py-1.5 [&>a]:text-xs [&>a]:font-medium [&>a]:text-stone-300 [&>a:hover]:bg-stone-800 [&>a:hover]:text-white"><a {% if cnav_active == "mine" %} class="cactive rounded-lg bg-stone-200/15 text-stone-200!" {% endif %} href="{% url "contests:status" cid=contest_nav.id mine_only="mine" page=1 %}">My Submissions</a></li>
+        <li class="nb flex items-center [&>a]:rounded-lg [&>a]:px-2 [&>a]:py-1.5 [&>a]:text-xs [&>a]:font-medium [&>a]:text-stone-300 [&>a:hover]:bg-stone-800 [&>a:hover]:text-white"><a {% if cnav_active == "all" %} class="cactive rounded-lg bg-stone-200/15 text-stone-200!" {% endif %} href="{% url "contests:status" cid=contest_nav.id mine_only="all" page=1 %}">All Submissions</a></li>
+        <li class="nb flex items-center [&>a]:rounded-lg [&>a]:px-2 [&>a]:py-1.5 [&>a]:text-xs [&>a]:font-medium [&>a]:text-stone-300 [&>a:hover]:bg-stone-800 [&>a:hover]:text-white"><a {% if cnav_active == "standings" %} class="cactive rounded-lg bg-stone-200/15 text-stone-200!" {% endif %} href="{% url "contests:standings" contest_nav.id %}">Standings</a></li>
     </ul>
-</div>
+    </nav>
+</section>

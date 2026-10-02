@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
+
 
 {% block title %}Duel{% endblock title %}
 
@@ -11,23 +9,23 @@
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/header.html" %}
 
-<div class="main-block">
-    <div class="title"><strong>{{ duel.challenger.display_name|default:duel.challenger.username }} vs {{ duel.opponent.display_name|default:duel.opponent.username }}</strong></div>
-    <div class="subtitle"><br>
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="title text-2xl font-bold tracking-tight text-stone-100 sm:text-3xl"><strong>{{ duel.challenger.display_name|default:duel.challenger.username }} vs {{ duel.opponent.display_name|default:duel.opponent.username }}</strong></div>
+    <div class="subtitle text-lg font-semibold text-stone-200"><br>
         <span id="duel-headline">{% if duel.status == "pending" and duel.accepted_at %}Picking a problem&hellip;{% else %}{{ duel.get_status_display }}{% endif %}</span>
     </div>
 </div>
 
 {% if messages %}
 {% for message in messages %}
-<div class="main-block small-padding"><div class="info">{{ message }}</div></div>
+<div class="main-block small-padding relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 py-2 bg-transparent max-w-6xl"><div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">{{ message }}</div></div>
 {% endfor %}
 {% endif %}
 
 {# --- pending: the opponent decides --- #}
 {% if duel.status == "pending" %}
-<div class="main-block">
-    <div class="info">
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
         Rating <strong>{{ duel.rating_min }}&ndash;{{ duel.rating_max }}</strong>,
         tags <strong>{{ duel.tags|default:"any" }}</strong>.<br>
         The problem is drawn at random once accepted, excluding anything either of
@@ -42,23 +40,23 @@
     Accept again here is what made clicking it look like it did nothing.
     Note: {# #} is single-line only in Django, so a multi-line one renders as text.
     {% endcomment %}
-    <div class="info">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
         <span class="v-pending">Picking a problem&hellip;</span>
-        <div class="field-hint">
+        <div class="field-hint mt-2 text-sm text-stone-400">
             Both Codeforces histories are being checked so you get something
             neither of you has solved. Takes a few seconds.
         </div>
     </div>
     {% else %}
-    <div class="option-buttons">
+    <div class="option-buttons mx-auto my-6 flex flex-wrap gap-3 px-5 sm:px-8 w-[calc(100%-2rem)] max-w-6xl">
         {% if user == duel.opponent %}
         <form method="POST" action="{% url 'duels:accept' duel_id=duel.id %}">{% csrf_token %}
-            <button type="submit">Accept</button>
+            <button type="submit" class="inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">Accept</button>
         </form>
         {% endif %}
         {% if is_player %}
         <form method="POST" action="{% url 'duels:decline' duel_id=duel.id %}">{% csrf_token %}
-            <button type="submit">{% if user == duel.opponent %}Decline{% else %}Cancel{% endif %}</button>
+            <button type="submit" class="inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">{% if user == duel.opponent %}Decline{% else %}Cancel{% endif %}</button>
         </form>
         {% endif %}
     </div>
@@ -68,21 +66,21 @@
 
 {# --- the problem --- #}
 {% if duel.cf_contest_id %}
-<div class="main-block">
-    <div class="info">
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
         <strong>Problem:</strong>
         <a href="{{ duel.problem_url }}" target="_blank" rel="noopener">
             {{ duel.cf_contest_id }}{{ duel.cf_index }} &mdash; {{ duel.cf_name }}
         </a>
         {% if duel.cf_rating %}(rated {{ duel.cf_rating }}){% endif %}
-        <div class="field-hint">Submit on Codeforces. This page watches for your verdict.</div>
+        <div class="field-hint mt-2 text-sm text-stone-400">Submit on Codeforces. This page watches for your verdict.</div>
     </div>
 </div>
 {% endif %}
 
 {# --- result --- #}
-<div class="main-block" id="result-block" {% if duel.status != "finished" %}style="display:none"{% endif %}>
-    <div class="info">
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent {% if duel.status != "finished" %}hidden{% endif %} max-w-6xl" id="result-block">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
         <span id="result-text">
             {% if duel.winner %}<span class="v-ac">{{ duel.winner.display_name|default:duel.winner.username }} wins</span> &mdash; {{ duel.get_end_reason_display }}
             {% elif duel.status == "finished" %}<span class="v-pending">Draw &mdash; {{ duel.get_end_reason_display }}</span>
@@ -93,40 +91,40 @@
 
 {# --- live board --- #}
 {% if duel.status == "active" or duel.status == "finished" %}
-<div class="main-block">
-    <div class="info">
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
         <strong>Submissions</strong>
-        <span id="clock" class="field-hint"></span>
+        <span id="clock" class="field-hint mt-2 text-sm text-stone-400"></span>
     </div>
-    <table>
-        <thead><tr><th>Player</th><th>Verdict</th><th>At</th></tr></thead>
+    <table class="w-full border-separate border-spacing-0 text-left text-sm [&_tbody_tr]:transition [&_tbody_tr:hover]:bg-stone-800/70">
+        <thead><tr><th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Player</th><th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Verdict</th><th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">At</th></tr></thead>
         <tbody id="sub-rows">
             {% for row in rows %}
             <tr>
-                <td>{{ row.user.display_name|default:row.user.username }}</td>
-                <td class="centertext {% if row.accepted %}v-ac{% else %}v-wa{% endif %}">{{ row.verdict }}</td>
-                <td class="centertext">{{ row.created_at|time:"H:i:s" }}</td>
+                <td class="border-b border-stone-800 px-4 py-3 align-middle">{{ row.user.display_name|default:row.user.username }}</td>
+                <td class="centertext {% if row.accepted %}v-ac{% else %}v-wa{% endif %} text-center border-b border-stone-800 px-4 py-3 align-middle">{{ row.verdict }}</td>
+                <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ row.created_at|time:"H:i:s" }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="3" class="centertext v-pending">No submissions yet</td></tr>
+            <tr><td colspan="3" class="centertext v-pending text-center border-b border-stone-800 px-4 py-3 align-middle">No submissions yet</td></tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 
 {% if is_player and duel.status == "active" %}
-<div class="option-buttons">
+<div class="option-buttons mx-auto my-6 flex flex-wrap gap-3 px-5 sm:px-8 w-[calc(100%-2rem)] max-w-6xl">
     <form method="POST" action="{% url 'duels:forfeit' duel_id=duel.id %}"
           onsubmit="return confirm('Forfeit and give your opponent the win?');">
         {% csrf_token %}
-        <button type="submit">Forfeit</button>
+        <button type="submit" class="inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">Forfeit</button>
     </form>
 </div>
 {% endif %}
 {% endif %}
 
-<div class="option-buttons">
-    <a href="{% url 'duels:list' %}"><div class="button">Back to Duels</div></a>
+<div class="option-buttons mx-auto my-6 flex flex-wrap gap-3 px-5 sm:px-8 w-[calc(100%-2rem)] max-w-6xl">
+    <a href="{% url 'duels:list' %}"><div class="button inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">Back to Duels</div></a>
 </div>
 
 <script>
@@ -160,14 +158,14 @@
         var body = document.getElementById('sub-rows');
         if (body) {
             if (!data.submissions.length) {
-                body.innerHTML = '<tr><td colspan="3" class="centertext v-pending">No submissions yet</td></tr>';
+                body.innerHTML = '<tr><td colspan="3" class="centertext v-pending text-center border-b border-stone-800 px-4 py-3 align-middle">No submissions yet</td></tr>';
             } else {
                 body.innerHTML = data.submissions.map(function (s) {
                     var cls = s.accepted ? 'v-ac' : 'v-wa';
                     var at = new Date(s.at).toLocaleTimeString();
-                    return '<tr><td>' + s.name + '</td>' +
-                           '<td class="centertext ' + cls + '">' + s.verdict + '</td>' +
-                           '<td class="centertext">' + at + '</td></tr>';
+                    return '<tr><td class="border-b border-stone-800 px-4 py-3 align-middle">' + s.name + '</td>' +
+                           '<td class="centertext ' + cls + ' text-center border-b border-stone-800 px-4 py-3 align-middle">' + s.verdict + '</td>' +
+                           '<td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">' + at + '</td></tr>';
                 }).join('');
             }
         }
@@ -175,7 +173,7 @@
         if (data.status === 'finished') {
             var block = document.getElementById('result-block');
             var text = document.getElementById('result-text');
-            block.style.display = '';
+            block.classList.remove('hidden');
             text.innerHTML = data.winner
                 ? '<span class="v-ac">' + data.winner + '</span> wins &mdash; ' + data.end_reason
                 : '<span class="v-pending">Draw &mdash; ' + data.end_reason + '</span>';

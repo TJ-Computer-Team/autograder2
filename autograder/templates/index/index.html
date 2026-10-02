@@ -2,38 +2,35 @@
 
 {% load static %}
 
-{% block stylesheet %}
-    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" />
-{% endblock %}
+
 
 
 {% block content %}
-<canvas width="0" height="0" id="animation" class="animation-area"></canvas>
+<canvas width="0" height="0" id="animation" class="animation-area pointer-events-none fixed inset-0 -z-10"></canvas>
     <script type="text/javascript" src="{% static 'js/animate.js' %}"></script>
     <br /><br /><br />
-    <section class="main">
-      <div class="bgbox">
-        <div id="title" class="title">
+    <section class="main mx-auto max-w-4xl px-4 py-16 sm:py-24">
+      <div class="bgbox rounded-2xl p-8 sm:p-12 bg-transparent">
+        <div id="title" class="title text-2xl font-bold tracking-tight text-stone-100 sm:text-3xl">
           <strong><em>TJCT Grader</em></strong>
         </div>
         <br />
-        <div class="cnt_buttons">
+        <div class="cnt_buttons mt-6 flex flex-wrap justify-center gap-4">
             {% if tjioi %}
-            <a class="button_link" id="login" href="{% url "tjioi:login" %}">
-            <div class="button">TJIOI Login</div>
+            <a class="button_link inline-block no-underline" id="login" href="{% url "tjioi:login" %}">
+            <div class="button inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">TJIOI Login</div>
           </a>
           {% else %}
-<a class="button_link" id="login" href="{% url 'social:begin' 'ion' %}">
-            <div class="button">Enter</div>
+<a class="button_link inline-block no-underline" id="login" href="{% url 'social:begin' 'ion' %}">
+            <div class="button inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">Enter</div>
           </a>
             {% endif %}
-          </a>
         </div>
         <br />
       </div>
 
-      <div class="subbox">
-        <div class="subtext">
+      <div class="subbox mt-6 rounded-xl p-6 bg-transparent">
+        <div class="subtext text-base leading-7 text-stone-300">
           Welcome to the automatic grader for TJ Computer Team. Please note that
           this website is hosted external to Director. Please email
           tjctgrader@gmail.com and message the officers if you have any

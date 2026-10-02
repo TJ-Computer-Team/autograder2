@@ -2,9 +2,7 @@
 
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
+
 
 {% block title %}Contests{% endblock title %}
 
@@ -12,19 +10,17 @@
 {% include "partials/header.html" %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 
-<div class="main-block">
-  <div class="title">Contests</div>
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+  <div class="title text-2xl font-bold tracking-tight text-stone-100 sm:text-3xl">Contests</div>
 </div>
 {% for group in groups %}
-  {% if group.is_current %}
-  {# This season stays open; older ones collapse so they don't bury it. #}
-  <div class="main-block">
-    <div class="info"><strong>{{ group.label }} Contests</strong></div>
-    <ul class="sl">
+  <div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"><strong>{{ group.label }} Contests</strong></div>
+    <ul class="sl space-y-3">
       {% for contest in group.contests %}
-      <li class="sl">
+      <li class="sl rounded-xl border border-stone-800 bg-stone-900 p-4 transition hover:bg-stone-800">
         <a href="{% url "contests:contest" contest.id %}">
-          <div class="problem-text">
+          <div class="problem-text text-lg leading-7 text-stone-200">
             {{ contest.name }} ({% if contest.rated %}Rated{% else %}Unrated{% endif %})
           </div>
         </a>
@@ -32,32 +28,17 @@
       {% endfor %}
     </ul>
   </div>
-  {% else %}
-  <details class="main-block section">
-    <summary>{{ group.label }} Contests <span class="set-external">{{ group.contests|length }}</span></summary>
-    <ul class="sl">
-      {% for contest in group.contests %}
-      <li class="sl">
-        <a href="{% url "contests:contest" contest.id %}">
-          <div class="problem-text">
-            {{ contest.name }} ({% if contest.rated %}Rated{% else %}Unrated{% endif %})
-          </div>
-        </a>
-      </li>
-      {% endfor %}
-    </ul>
-  </details>
-  {% endif %}
+
 {% empty %}
-  <div class="main-block"><div class="info">No contests yet.</div></div>
+  <div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl"><div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">No contests yet.</div></div>
 {% endfor %}
 
-<div class="main-block" id="problems">
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl" id="problems">
   {% if not tjioi %}
-  <ul class="sl">
-    <li class="sl">
+  <ul class="sl space-y-3">
+    <li class="sl rounded-xl border border-stone-800 bg-stone-900 p-4 transition hover:bg-stone-800">
       <a href="https://codeforces.com/group/M4wsRWBHyZ">
-        <div class="problem-text">
+        <div class="problem-text text-lg leading-7 text-stone-200">
           All Past Contests up to the 2022-2023 School Year
         </div>
       </a>
@@ -65,7 +46,7 @@
   </ul>
   {% endif %}
 </div>
-<div class="main-block">
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
   When participating in any in-house competition, please remember that all code
   submissions must be your own original work. Using outside sources or
   generative AI tools to generate solutions is not permitted and will be

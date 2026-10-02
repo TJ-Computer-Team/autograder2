@@ -2,9 +2,7 @@
 
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
+
 
 {% block title %}Problemset{% endblock title %}
 
@@ -17,37 +15,37 @@
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/header.html" %}
 
-<div class="main-block">
-    <div class="title">Problemset</div>
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="title text-2xl font-bold tracking-tight text-stone-100 sm:text-3xl">Problemset</div>
 </div>
-<div class="main-block" id="problems">
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl" id="problems">
     {% if rows %}
-    <table id="problemset-table">
+    <table id="problemset-table" class="w-full border-separate border-spacing-0 text-left text-sm [&_tbody_tr]:transition [&_tbody_tr:hover]:bg-stone-800/70">
         <thead>
             <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>Contest</th>
-                <th data-sort-method="number">Points</th>
-                <th>Status</th>
+                <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">#</th>
+                <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Name</th>
+                <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Contest</th>
+                <th data-sort-method="number" class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Points</th>
+                <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Status</th>
             </tr>
         </thead>
         <tbody>
         {% for row in rows %}
             <tr>
-                <td class="centertext">{{ row.problem.id }}</td>
-                <td>
+                <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ row.problem.id }}</td>
+                <td class="border-b border-stone-800 px-4 py-3 align-middle">
                     <a href="{% url "problems:problem" pid=row.problem.id %}">{{ row.problem.name }}</a>
                 </td>
-                <td class="centertext">
+                <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">
                     {% if row.problem.contest %}
                         <a href="{% url "contests:contest" cid=row.problem.contest.id %}">{{ row.problem.contest.name }}</a>
                     {% else %}
-                        <span class="set-external">&mdash;</span>
+                        <span class="set-external ml-2 text-xs text-stone-500">&mdash;</span>
                     {% endif %}
                 </td>
-                <td class="centertext">{{ row.problem.points }}</td>
-                <td class="centertext">
+                <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ row.problem.points }}</td>
+                <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">
                     {% if row.solved %}
                         <span class="v-ac">Solved</span>
                     {% else %}
@@ -59,7 +57,7 @@
         </tbody>
     </table>
     {% else %}
-    <div class="info">No problems available yet.</div>
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">No problems available yet.</div>
     {% endif %}
 </div>
 

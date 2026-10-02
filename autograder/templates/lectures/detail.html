@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
+
 
 {% block title %}{{ lecture_set.title }}{% endblock title %}
 
@@ -11,56 +9,56 @@
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/header.html" %}
 
-<div class="main-block">
-    <div class="title"><strong>{{ lecture_set.title }}</strong></div>
-    <div class="subtitle">
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="title text-2xl font-bold tracking-tight text-stone-100 sm:text-3xl"><strong>{{ lecture_set.title }}</strong></div>
+    <div class="subtitle text-lg font-semibold text-stone-200">
         <br>
         {% if lecture_set.topic %}{{ lecture_set.topic }}{% endif %}
         {% if lecture_set.topic and lecture_set.date %} &mdash; {% endif %}
         {% if lecture_set.date %}{{ lecture_set.date|date:"F j, Y" }}{% endif %}
-        {% if not lecture_set.published %}<br><span class="set-draft">Draft &mdash; only staff can see this</span>{% endif %}
+        {% if not lecture_set.published %}<br><span class="set-draft ml-2 text-xs text-stone-200">Draft &mdash; only staff can see this</span>{% endif %}
     </div>
 </div>
 
 {% if lecture_set.description %}
-<div class="main-block">
-    <div class="info">{{ lecture_set.description|linebreaks }}</div>
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">{{ lecture_set.description|linebreaks }}</div>
 </div>
 {% endif %}
 
-<div class="main-block">
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
     {% if rows %}
-    <table>
+    <table class="w-full border-separate border-spacing-0 text-left text-sm [&_tbody_tr]:transition [&_tbody_tr:hover]:bg-stone-800/70">
         <tr>
-            {% if lecture_set.label_style != "none" %}<th>#</th>{% endif %}
-            <th>Problem</th>
-            <th>Difficulty</th>
-            <th>Status</th>
+            {% if lecture_set.label_style != "none" %}<th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">#</th>{% endif %}
+            <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Problem</th>
+            <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Difficulty</th>
+            <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Status</th>
         </tr>
         {% for row in rows %}
         <tr>
             {% if lecture_set.label_style != "none" %}
-            <td class="centertext">{{ row.label }}</td>
+            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ row.label }}</td>
             {% endif %}
-            <td>
+            <td class="border-b border-stone-800 px-4 py-3 align-middle">
                 {% if row.entry.is_external %}
                     <a href="{{ row.entry.external_url }}" target="_blank" rel="noopener">
                         {{ row.entry.display_title }}
                     </a>
-                    <span class="set-external">external</span>
+                    <span class="set-external ml-2 text-xs text-stone-500">external</span>
                 {% else %}
                     <a href="{% url 'problems:problem' pid=row.entry.problem_id %}">
                         {{ row.entry.display_title }}
                     </a>
                 {% endif %}
-                {% if row.entry.note %}<div class="set-note">{{ row.entry.note }}</div>{% endif %}
+                {% if row.entry.note %}<div class="set-note mt-1 text-sm text-stone-400">{{ row.entry.note }}</div>{% endif %}
             </td>
-            <td class="centertext">
+            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">
                 {% if row.entry.difficulty %}
                 <span class="diff-{{ row.entry.difficulty }}">{{ row.entry.get_difficulty_display }}</span>
                 {% else %}&mdash;{% endif %}
             </td>
-            <td class="centertext">
+            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">
                 {% if row.entry.is_external %}
                     &mdash;
                 {% elif row.solved %}
@@ -73,13 +71,13 @@
         {% endfor %}
     </table>
     {% else %}
-    <div class="info">No problems in this set yet.</div>
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">No problems in this set yet.</div>
     {% endif %}
 </div>
 
-<div class="option-buttons">
+<div class="option-buttons mx-auto my-6 flex flex-wrap gap-3 px-5 sm:px-8 w-[calc(100%-2rem)] max-w-6xl">
     <a href="{% url 'lectures:list' %}">
-        <div class="button">Back to Lecture Sets</div>
+        <div class="button inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">Back to Lecture Sets</div>
     </a>
 </div>
 

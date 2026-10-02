@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
+
 
 {% block title %}Lecture Sets{% endblock title %}
 
@@ -11,32 +9,32 @@
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/header.html" %}
 
-<div class="main-block">
-    <div class="title"><strong>Lecture Sets</strong></div>
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="title text-2xl font-bold tracking-tight text-stone-100 sm:text-3xl"><strong>Lecture Sets</strong></div>
 </div>
 
 {% for group in groups %}
     {% if group.sets %}
-    <div class="main-block">
-        <div class="info">
+    <div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+        <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
             <strong>{{ group.label }}</strong>
         </div>
-        <table>
+        <table class="w-full border-separate border-spacing-0 text-left text-sm [&_tbody_tr]:transition [&_tbody_tr:hover]:bg-stone-800/70">
             <tr>
-                <th>Title</th>
-                <th>Topic</th>
-                <th>Date</th>
-                <th>Problems</th>
+                <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Title</th>
+                <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Topic</th>
+                <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Date</th>
+                <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Problems</th>
             </tr>
             {% for s in group.sets %}
             <tr>
-                <td>
+                <td class="border-b border-stone-800 px-4 py-3 align-middle">
                     <a href="{% url 'lectures:detail' slug=s.slug %}">{{ s.title }}</a>
-                    {% if not s.published %}<span class="set-draft">draft</span>{% endif %}
+                    {% if not s.published %}<span class="set-draft ml-2 text-xs text-stone-200">draft</span>{% endif %}
                 </td>
-                <td class="centertext">{{ s.topic|default:"&mdash;" }}</td>
-                <td class="centertext">{{ s.date|date:"M j, Y"|default:"&mdash;" }}</td>
-                <td class="centertext">{{ s.entry_count }}</td>
+                <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ s.topic|default:"&mdash;" }}</td>
+                <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ s.date|date:"M j, Y"|default:"&mdash;" }}</td>
+                <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ s.entry_count }}</td>
             </tr>
             {% endfor %}
         </table>
@@ -45,8 +43,8 @@
 {% endfor %}
 
 {% if not any_sets %}
-<div class="main-block">
-    <div class="info">No problem sets yet.</div>
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">No problem sets yet.</div>
 </div>
 {% endif %}
 

@@ -2,19 +2,17 @@
 
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" />
-{% endblock stylesheet %}
+
 
 {% block title %}First Time{% endblock title %}
 
 {% block content %}
-<section class="main">
-    <div class="bgbox">
-        <div class="title"><strong>Welcome!</strong></div>
+<section class="main mx-auto max-w-4xl px-4 py-16 sm:py-24">
+    <div class="bgbox rounded-2xl p-8 sm:p-12 bg-transparent">
+        <div class="title text-2xl font-bold tracking-tight text-stone-100 sm:text-3xl"><strong>Welcome!</strong></div>
 
-        <div class="subbox">
-            <div class="subtext">
+        <div class="subbox mt-6 rounded-xl p-6 bg-transparent">
+            <div class="subtext text-base leading-7 text-stone-300">
                 <form action="{% url 'index:update_first_time' %}" method="POST">
                     {% csrf_token %}
                     It looks like it's your first time here<br><br>
@@ -28,18 +26,18 @@
                     </strong><br>
                     <br>
                     Next, please input your personal email: <br>
-                    <input type="email" name="email" id="email" maxlength="100" required></input>
+                    <input type="email" name="email" id="email" maxlength="100" required class="w-full rounded-lg border border-stone-700 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-100/20"></input>
                     <br><br>
                     <br>
                     After all information is correct, click confirm to proceed.
                     <br><br>
-                    <div class="cnt_buttons">
-                        <button class="button" type="submit">Confirm</button>
+                    <div class="cnt_buttons mt-6 flex flex-wrap justify-center gap-4">
+                        <button class="button inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer" type="submit">Confirm</button>
                     </div>
                 </form>
             </div>
         </div>
-        <form class="submit" action="{% url 'oauth:logout' %}" method="POST">
+        <form class="submit mt-6 text-center" action="{% url 'oauth:logout' %}" method="POST">
         </form>
     </div>
 </section>

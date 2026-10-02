@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
+
 
 {% block title %}Duels{% endblock title %}
 
@@ -11,33 +9,33 @@
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/header.html" %}
 
-<div class="main-block">
-    <div class="title"><strong>Duels</strong></div>
-    <div class="subtitle"><br>Race someone to solve a Codeforces problem. First accepted submission wins.</div>
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="title text-2xl font-bold tracking-tight text-stone-100 sm:text-3xl"><strong>Duels</strong></div>
+    <div class="subtitle text-lg font-semibold text-stone-200"><br>Race someone to solve a Codeforces problem. First accepted submission wins.</div>
 </div>
 
 {% if messages %}
 {% for message in messages %}
-<div class="main-block small-padding"><div class="info">{{ message }}</div></div>
+<div class="main-block small-padding relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 py-2 bg-transparent max-w-6xl"><div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">{{ message }}</div></div>
 {% endfor %}
 {% endif %}
 
 {% if not can_duel %}
-<div class="main-block">
-    <div class="info">
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
         You need a <strong>verified</strong> Codeforces handle before you can duel.
         Set one on your <a href="{% url 'index:profile' %}">profile</a> and complete
         the verification challenge.
     </div>
 </div>
 {% else %}
-<div class="main-block">
-    <div class="info"><strong>Challenge someone</strong></div>
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"><strong>Challenge someone</strong></div>
     <form method="POST" action="{% url 'duels:challenge' %}">
         {% csrf_token %}
-        <div class="statsInfo">
+        <div class="statsInfo mb-5 space-y-2 [&_label]:block [&_label]:text-sm [&_label]:font-medium [&_label]:text-stone-300">
             <label for="opponent">Opponent</label>
-            <select name="opponent" id="opponent" required>
+            <select name="opponent" id="opponent" required class="w-full rounded-lg border border-stone-700 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-100/20">
                 {% for o in opponents %}
                 <option value="{{ o.id }}">{{ o.display_name|default:o.username }} ({{ o.cf_handle }})</option>
                 {% empty %}
@@ -45,34 +43,34 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="statsInfo">
+        <div class="statsInfo mb-5 space-y-2 [&_label]:block [&_label]:text-sm [&_label]:font-medium [&_label]:text-stone-300">
             <label for="rating_min">Rating range</label>
-            <input type="text" name="rating_min" id="rating_min" value="800" size="5">
+            <input type="text" name="rating_min" id="rating_min" value="800" size="5" class="w-full rounded-lg border border-stone-700 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-100/20">
             to
-            <input type="text" name="rating_max" id="rating_max" value="1200" size="5">
-            <div class="field-hint">Codeforces ratings run {{ rating_floor }}&ndash;{{ rating_ceil }}. Your opponent sees this before accepting.</div>
+            <input type="text" name="rating_max" id="rating_max" value="1200" size="5" class="w-full rounded-lg border border-stone-700 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-100/20">
+            <div class="field-hint mt-2 text-sm text-stone-400">Codeforces ratings run {{ rating_floor }}&ndash;{{ rating_ceil }}. Your opponent sees this before accepting.</div>
         </div>
-        <div class="statsInfo">
+        <div class="statsInfo mb-5 space-y-2 [&_label]:block [&_label]:text-sm [&_label]:font-medium [&_label]:text-stone-300">
             <label for="tags">Tags (optional)</label>
-            <input type="text" name="tags" id="tags" placeholder="dp, greedy">
-            <div class="field-hint">Comma-separated. Leave blank for any problem.</div>
+            <input type="text" name="tags" id="tags" placeholder="dp, greedy" class="w-full rounded-lg border border-stone-700 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-100/20">
+            <div class="field-hint mt-2 text-sm text-stone-400">Comma-separated. Leave blank for any problem.</div>
         </div>
-        <div class="statsInfo"><input type="submit" value="Send challenge"></div>
+        <div class="statsInfo mb-5 space-y-2 [&_label]:block [&_label]:text-sm [&_label]:font-medium [&_label]:text-stone-300"><input type="submit" value="Send challenge" class="inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer"></div>
     </form>
 </div>
 {% endif %}
 
 {% if incoming %}
-<div class="main-block">
-    <div class="info"><strong>Challenges for you</strong></div>
-    <table>
-        <tr><th>From</th><th>Rating</th><th>Tags</th><th></th></tr>
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"><strong>Challenges for you</strong></div>
+    <table class="w-full border-separate border-spacing-0 text-left text-sm [&_tbody_tr]:transition [&_tbody_tr:hover]:bg-stone-800/70">
+        <tr><th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">From</th><th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Rating</th><th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Tags</th><th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]"></th></tr>
         {% for d in incoming %}
         <tr>
-            <td><a href="{% url 'duels:detail' duel_id=d.id %}">{{ d.challenger.display_name|default:d.challenger.username }}</a></td>
-            <td class="centertext">{{ d.rating_min }}&ndash;{{ d.rating_max }}</td>
-            <td class="centertext">{{ d.tags|default:"any" }}</td>
-            <td class="centertext"><a href="{% url 'duels:detail' duel_id=d.id %}">Open</a></td>
+            <td class="border-b border-stone-800 px-4 py-3 align-middle"><a href="{% url 'duels:detail' duel_id=d.id %}">{{ d.challenger.display_name|default:d.challenger.username }}</a></td>
+            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ d.rating_min }}&ndash;{{ d.rating_max }}</td>
+            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ d.tags|default:"any" }}</td>
+            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle"><a href="{% url 'duels:detail' duel_id=d.id %}">Open</a></td>
         </tr>
         {% endfor %}
     </table>
@@ -80,15 +78,15 @@
 {% endif %}
 
 {% if outgoing %}
-<div class="main-block">
-    <div class="info"><strong>Waiting on them</strong></div>
-    <table>
-        <tr><th>To</th><th>Rating</th><th>Tags</th></tr>
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"><strong>Waiting on them</strong></div>
+    <table class="w-full border-separate border-spacing-0 text-left text-sm [&_tbody_tr]:transition [&_tbody_tr:hover]:bg-stone-800/70">
+        <tr><th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">To</th><th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Rating</th><th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Tags</th></tr>
         {% for d in outgoing %}
         <tr>
-            <td><a href="{% url 'duels:detail' duel_id=d.id %}">{{ d.opponent.display_name|default:d.opponent.username }}</a></td>
-            <td class="centertext">{{ d.rating_min }}&ndash;{{ d.rating_max }}</td>
-            <td class="centertext">{{ d.tags|default:"any" }}</td>
+            <td class="border-b border-stone-800 px-4 py-3 align-middle"><a href="{% url 'duels:detail' duel_id=d.id %}">{{ d.opponent.display_name|default:d.opponent.username }}</a></td>
+            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ d.rating_min }}&ndash;{{ d.rating_max }}</td>
+            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ d.tags|default:"any" }}</td>
         </tr>
         {% endfor %}
     </table>
@@ -96,15 +94,15 @@
 {% endif %}
 
 {% if ongoing %}
-<div class="main-block">
-    <div class="info"><strong>In progress</strong> <span class="set-external">all players</span></div>
-    <table>
-        <tr><th>Duel</th><th>Problem</th><th>Rating</th></tr>
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"><strong>In progress</strong> <span class="set-external ml-2 text-xs text-stone-500">all players</span></div>
+    <table class="w-full border-separate border-spacing-0 text-left text-sm [&_tbody_tr]:transition [&_tbody_tr:hover]:bg-stone-800/70">
+        <tr><th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Duel</th><th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Problem</th><th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Rating</th></tr>
         {% for d in ongoing %}
         <tr>
-            <td><a href="{% url 'duels:detail' duel_id=d.id %}">{{ d.challenger.display_name|default:d.challenger.username }} vs {{ d.opponent.display_name|default:d.opponent.username }}</a></td>
-            <td class="centertext">{{ d.cf_name|default:"picking..." }}</td>
-            <td class="centertext">{{ d.cf_rating|default:"&mdash;" }}</td>
+            <td class="border-b border-stone-800 px-4 py-3 align-middle"><a href="{% url 'duels:detail' duel_id=d.id %}">{{ d.challenger.display_name|default:d.challenger.username }} vs {{ d.opponent.display_name|default:d.opponent.username }}</a></td>
+            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ d.cf_name|default:"picking..." }}</td>
+            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ d.cf_rating|default:"&mdash;" }}</td>
         </tr>
         {% endfor %}
     </table>
@@ -112,18 +110,18 @@
 {% endif %}
 
 {% if finished %}
-<div class="main-block">
-    <div class="info"><strong>Recent results</strong> <span class="set-external">all players</span></div>
-    <table>
-        <tr><th>Duel</th><th>Problem</th><th>Winner</th><th>How</th></tr>
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"><strong>Recent results</strong> <span class="set-external ml-2 text-xs text-stone-500">all players</span></div>
+    <table class="w-full border-separate border-spacing-0 text-left text-sm [&_tbody_tr]:transition [&_tbody_tr:hover]:bg-stone-800/70">
+        <tr><th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Duel</th><th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Problem</th><th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Winner</th><th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">How</th></tr>
         {% for d in finished %}
         <tr>
-            <td><a href="{% url 'duels:detail' duel_id=d.id %}">{{ d.challenger.display_name|default:d.challenger.username }} vs {{ d.opponent.display_name|default:d.opponent.username }}</a></td>
-            <td class="centertext">{{ d.cf_name|default:"&mdash;" }}</td>
-            <td class="centertext">
+            <td class="border-b border-stone-800 px-4 py-3 align-middle"><a href="{% url 'duels:detail' duel_id=d.id %}">{{ d.challenger.display_name|default:d.challenger.username }} vs {{ d.opponent.display_name|default:d.opponent.username }}</a></td>
+            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ d.cf_name|default:"&mdash;" }}</td>
+            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">
                 {% if d.winner %}<span class="v-ac">{{ d.winner.display_name|default:d.winner.username }}</span>{% else %}<span class="v-pending">draw</span>{% endif %}
             </td>
-            <td class="centertext">{{ d.get_end_reason_display }}</td>
+            <td class="centertext text-center border-b border-stone-800 px-4 py-3 align-middle">{{ d.get_end_reason_display }}</td>
         </tr>
         {% endfor %}
     </table>

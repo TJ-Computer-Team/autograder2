@@ -2,77 +2,21 @@
 
 {% load static %}
 
-{% block stylesheet %}
-    <link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-    <style>
-        .attendance-shell {
-            max-width: 860px;
-            margin: 0 auto;
-        }
 
-        .attendance-box {
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            background: rgba(255, 255, 255, 0.04);
-            margin-bottom: 20px;
-            border-radius: 8px;
-        }
-
-        .attendance-note {
-            color: rgba(255, 255, 255, 0.6);
-            margin-top: 10px;
-            font-size: 0.9em;
-        }
-
-        .attendance-code-input {
-            width: 100% !important;
-            display: block;
-            min-height: 54px;
-            padding: 12px 16px;
-            font-size: 1.8rem !important;
-            letter-spacing: 0.1em;
-            background-color: rgba(0, 0, 0, 0.6) !important;
-            color: #ffffff !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            caret-color: #ffffff !important;
-            box-sizing: border-box;
-            border-radius: 4px;
-        }
-        .attendance-code-input:focus {
-            outline: none;
-            border-color: rgba(255, 255, 255, 0.5) !important;
-            background-color: #000000 !important;
-        }
-
-        .submit-btn {
-            background-color: #ffffff !important;
-            color: #000000 !important;
-            border: none !important;
-            padding: 10px 20px !important;
-            font-size: 1rem !important;
-            cursor: pointer;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-        .submit-btn:hover {
-            background-color: #e0e0e0 !important;
-        }
-    </style>
-{% endblock stylesheet %}
 
 {% block title %}Attendance{% endblock title %}
 
 {% block content %}
 {% include "partials/header.html" %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
-<div id="mainContent">
+<div id="mainContent" class="w-full py-6">
     <div id="subContent">
-        <div class="info-block attendance-shell" style="padding: 3em;">
-            <div class="title" style="margin-bottom: 1em;"><p>Attendance</p></div>
+        <div class="info-block attendance-shell relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 flex flex-col bg-transparent max-w-6xl">
+            <div class="title text-2xl font-bold tracking-tight text-stone-100 sm:text-3xl [margin-bottom:1em]"><p>Attendance</p></div>
             
             {% if messages %}
                 {% for message in messages %}
-                    <div style="color: white; margin-bottom: 15px; font-size: 1.1em;">
+                    <div class="[margin-bottom:15px]">
                         {{ message }}
                     </div>
                 {% endfor %}
@@ -80,34 +24,34 @@
 
             {% if sessions_data %}
                 {% for item in sessions_data %}
-                    <div class="attendance-box">
-                        <div class="subtitle" style="text-align: left; font-size: 1.3em; margin-bottom: 15px; color: #ffffff;">{{ item.session.get_block_display }}</div>
+                    <div class="attendance-box mb-5 rounded-xl border border-stone-700 bg-stone-800/40 p-5">
+                        <div class="subtitle text-lg font-semibold text-stone-200 [text-align:left] [margin-bottom:15px]">{{ item.session.get_block_display }}</div>
                         
                         {% if item.already_marked %}
-                            <div style="color: #4caf50; font-size: 1.1em; padding: 10px 0;">
+                            <div>
                                 ✓ Marked present
                             </div>
                         {% else %}
                             <form action="{% url 'index:attendance' %}" method="POST">
                                 {% csrf_token %}
                                 <input type="hidden" name="block" value="{{ item.session.block }}">
-                                <div class="statsInfo" style="margin: 0 0 15px 0;">
-                                    <input type="text" name="code" class="attendance-code-input" placeholder="Enter Code" autocomplete="off" required>
+                                <div class="statsInfo mb-5 space-y-2 [&_label]:block [&_label]:text-sm [&_label]:font-medium [&_label]:text-stone-300 [margin:0_0_15px_0]">
+                                    <input type="text" name="code" class="attendance-code-input block w-full min-w-0 text-xl tracking-widest rounded-lg border border-stone-700 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-100/20" placeholder="Enter Code" autocomplete="off" required>
                                 </div>
                                 <div>
-                                    <input type="submit" class="submit-btn" value="Submit">
+                                    <input type="submit" class="submit-btn inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer" value="Submit">
                                 </div>
                             </form>
                         {% endif %}
                     </div>
                 {% endfor %}
-                <div class="attendance-note">Date: {{ sessions_data.0.session.date }}</div>
+                <div class="attendance-note mt-3 text-sm text-stone-400">Date: {{ sessions_data.0.session.date }}</div>
             {% else %}
-                <div class="userinfo" style="text-align: center; opacity: 0.8;">No active sessions for today.</div>
+                <div class="userinfo my-3 text-base text-stone-300 [text-align:center]">No active sessions for today.</div>
             {% endif %}
             
-            <div style="margin-top: 30px; text-align: center;">
-                <a href="{% url 'index:profile' %}" style="text-decoration: none; opacity: 0.7;">← Back to Profile</a>
+            <div class="[margin-top:30px] [text-align:center]">
+                <a href="{% url 'index:profile' %}" class="[text-decoration:none]">← Back to Profile</a>
             </div>
         </div>
     </div>

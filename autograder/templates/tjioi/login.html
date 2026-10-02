@@ -2,37 +2,35 @@
 
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" />
-{% endblock stylesheet %}
+
 
 {% block title %}TJIOI Login{% endblock title %}
 
 {% block content %}
 
-<div class="bgbox">
-    <div class="title"><strong>TJIOI Login</strong></div>
+<div class="bgbox mx-auto my-12 w-[calc(100%-2rem)] max-w-lg rounded-2xl p-8 sm:p-12 bg-transparent">
+    <div class="title text-2xl font-bold tracking-tight text-stone-100 sm:text-3xl"><strong>TJIOI Login</strong></div>
     {% if error %}
-    <div class="alert">
+    <div class="alert rounded-lg border border-rose-500/30 bg-rose-500/10 p-4 text-rose-300">
         {{error}}
     </div>
     {% endif %}
-    <div class="subbox">
-        <div class="subtext">
+    <div class="subbox mt-6 rounded-xl p-6 bg-transparent">
+        <div class="subtext text-base leading-7 text-stone-300">
             <form action="{% url 'tjioi:login' %}" method="POST">
                 {% csrf_token %}
 
                 ID: <br>
-                <input type="text" name="id" id="id" maxlength="100" required></input>
+                <input type="text" name="id" id="id" maxlength="100" required class="w-full rounded-lg border border-stone-700 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-100/20"></input>
                 <br><br>
 
                 Password: <br>
-                <input type="password" name="password" id="password" maxlength="100" required></input>
+                <input type="password" name="password" id="password" maxlength="100" required class="w-full rounded-lg border border-stone-700 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-100/20"></input>
                 <br><br>
                 <br>
 
-                <div class="cnt_buttons">
-                    <button class="button" type="submit">Submit</button>
+                <div class="cnt_buttons mt-6 flex flex-wrap justify-center gap-4">
+                    <button class="button inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer" type="submit">Submit</button>
                 </div>
             </form>
 

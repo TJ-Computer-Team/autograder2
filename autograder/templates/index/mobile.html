@@ -2,28 +2,26 @@
 
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" />
-{% endblock %}
+
 
 {% block content %}
 
-<section class="phone">
-  <div class="subbox">
-    <div class="subtext">
+<section class="phone mx-auto max-w-xl px-4 py-12">
+  <div class="subbox mt-6 rounded-xl p-6 bg-transparent">
+    <div class="subtext text-base leading-7 text-stone-300">
       We have detected that you are on a mobile device. Functionality on mobile
       is heavily limited.
     </div>
   </div>
   <br />
-  <div class="bgbox">
-    <div class="title">
+  <div class="bgbox rounded-2xl p-8 sm:p-12 bg-transparent">
+    <div class="title text-2xl font-bold tracking-tight text-stone-100 sm:text-3xl">
       <strong><em>TJCT Grader</em></strong>
     </div>
     <br />
-    <div class="cnt_buttons">
+    <div class="cnt_buttons mt-6 flex flex-wrap justify-center gap-4">
       <a
-        class="button_link"
+        class="button_link inline-block no-underline"
         id="login"
         href="https://activities.tjhsst.edu/ict/"
       >

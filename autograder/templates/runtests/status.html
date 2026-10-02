@@ -3,81 +3,79 @@
 {% load static %}
 {% load verdicts %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
+
 
 {% block title %}Submissions{% endblock title %}
 
 {% block content %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/header.html" %}
-<div class="main-block">
-    <div class="title">
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="title text-2xl font-bold tracking-tight text-stone-100 sm:text-3xl">
         Submissions {% if admin %} - Viewing as Admin{% endif %}
     </div>
 </div>
 
-<div class="main-block" id="submissions">
-    <div class="option-buttons">
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl" id="submissions">
+    <div class="option-buttons mx-auto my-6 flex flex-wrap gap-3 px-5 sm:px-8 w-[calc(100%-2rem)] max-w-6xl">
     {% if mine %}
     <a href="{% url "runtests:status" mine=False cid=cid page=1 %}">
-        <div class="button">View All</div>
+        <div class="button inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">View All</div>
     </a>
     {% else %}
     <a href="{% url "runtests:status" mine=True cid=cid page=1 %}">
-        <div class="button">View Mine Only</div>
+        <div class="button inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">View Mine Only</div>
     </a>
     {% endif %}
     </div>
-    <table>
+    <table class="w-full border-separate border-spacing-0 text-left text-sm [&_tbody_tr]:transition [&_tbody_tr:hover]:bg-stone-800/70">
         <tr>
-            <th>Submission</th>
-            <th>User</th>
-            <th>Problem</th>
-            <th>Language</th>
-            <th>Runtime</th>
-            <th>Verdict</th>
+            <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Submission</th>
+            <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">User</th>
+            <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Problem</th>
+            <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Language</th>
+            <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Runtime</th>
+            <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Verdict</th>
         </tr>
         {% for submission in submissions  %}
         <tr class="submission-item" data-submission-id="{{ submission.id }}">
-            <td>
+            <td class="border-b border-stone-800 px-4 py-3 align-middle">
                 <a href="{% url "runtests:submission" submission.id %}">
                     View #{{submission.id}}
                 </a>
             </td>
-                <td>
+                <td class="border-b border-stone-800 px-4 py-3 align-middle">
                     <a href="{% url "index:user_profile" submission.usr.id %}">
                         {{submission.usr.display_name}}
                     </a>
                 </td>
-            <td>
+            <td class="border-b border-stone-800 px-4 py-3 align-middle">
                 <a href="{% url "problems:problem" submission.problem.id %}">
                     {{submission.problem.name}}
                 </a>
             </td>
-            <td>
+            <td class="border-b border-stone-800 px-4 py-3 align-middle">
                 {{submission.language}}
             </td>
-            <td class="submission-runtime">
+            <td class="submission-runtime border-b border-stone-800 px-4 py-3 align-middle">
                 {{submission.runtime}}ms
             </td>
-            <td class="submission-status {{ submission.verdict|verdict_class }}">
+            <td class="submission-status {{ submission.verdict|verdict_class }} border-b border-stone-800 px-4 py-3 align-middle">
                 {{submission.verdict}}
             </td>
         </tr>
         {% endfor %}
     </table>
-    <div class="option-buttons">
+    <div class="option-buttons mx-auto my-6 flex flex-wrap gap-3 px-5 sm:px-8 w-[calc(100%-2rem)] max-w-6xl">
     {% if page_obj.has_previous %}
     <a href="{% url "runtests:status" mine=mine cid=cid page=page_obj.previous_page_number %}">
-        <div class="button">Previous</div>
+        <div class="button inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">Previous</div>
     </a>
     {% endif %}
-     <div class="button">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
+     <div class="button inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
     {% if page_obj.has_next %}
     <a href="{% url "runtests:status" mine=mine cid=cid page=page_obj.next_page_number %}">
-         <div class="button">Next</div>
+         <div class="button inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">Next</div>
     </a>
     {% endif %}
 </div>

@@ -12,3 +12,4 @@ autograder/validation_settings.json
 CLAUDE.md
 .claude
 .playwright-mcp
+node_modules

@@ -1,6 +1,6 @@
 {% load static %}
 
-<div id="particles-js" class="particles-js"></div>
+<div id="particles-js" class="particles-js pointer-events-none fixed inset-0 -z-10 [&_canvas]:absolute"></div>
 <script type="text/javascript" src="{% static 'js/particles.js' %}"></script>
 <script>
     particlesJS.load("particles-js", "{% static 'js/particles.json' %}", function () {

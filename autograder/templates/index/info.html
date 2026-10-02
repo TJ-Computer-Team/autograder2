@@ -1,21 +1,19 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block stylesheet %}
-<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-{% endblock stylesheet %}
+
 
 {% block title %}Info{% endblock title %}
 
 {% block content %}
 {% include "partials/header.html" %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
-<div class="main-block">
-    <div class="title"><strong>Guide</strong></div>
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <div class="title text-2xl font-bold tracking-tight text-stone-100 sm:text-3xl"><strong>Guide</strong></div>
 </div>
 
-<div class="main-block">
-    <nav class="toc" aria-label="Table of contents">
+<div class="main-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 bg-transparent max-w-6xl">
+    <nav class="toc text-base leading-7 [&_strong]:text-lg [&_ol]:mt-3 [&_ol]:grid [&_ol]:gap-2 sm:[&_ol]:grid-cols-2" aria-label="Table of contents">
         <strong>Contents</strong>
         <ol>
             <li><a href="#rules">Rules</a></li>
@@ -28,13 +26,13 @@
             <li><a href="#submissions">Submissions</a></li>
             <li><a href="#standings">Standings</a></li>
         </ol>
-        <button type="button" class="toc-toggle" id="toggle-all">Expand all</button>
+        <button type="button" class="toc-toggle inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer mt-4" id="toggle-all">Expand all</button>
     </nav>
 </div>
 
-<details class="main-block section" id="rules" open>
+<details class="main-block section relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 scroll-mt-24 [&_summary]:cursor-pointer [&_summary]:text-lg [&_summary]:font-semibold [&_summary]:text-stone-100 bg-transparent max-w-6xl" id="rules" open>
     <summary>Rules</summary>
-    <div class="info">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
          Do NOT submit malicious code with
         malicious intent to the grader. Do NOT attempt to exploit
         any aspect of this system, including but not limited to, accessing
@@ -49,7 +47,7 @@
         <br /><br />
         In general, please note what you can and cannot do for contests. These are
         subject to change.
-        <ol class="rules-list">
+        <ol class="rules-list list-decimal space-y-2 pl-6">
             <li>You ARE allowed to use templates and pre-written data structures. We
             acknowledge that in-houses are short on time and having pre-written code
             can make the process much less tedious.</li>
@@ -69,9 +67,9 @@
         Thank you for your cooperation.
     </div>
 </details>
-<details class="main-block section" id="contact">
+<details class="main-block section relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 scroll-mt-24 [&_summary]:cursor-pointer [&_summary]:text-lg [&_summary]:font-semibold [&_summary]:text-stone-100 bg-transparent max-w-6xl" id="contact">
     <summary>Contact</summary>
-    <div class="info">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
         If you have any questions or concerns about the website &mdash; vulnerability issues,
         account or data inquiries &mdash; please contact
         <a href="mailto:tjctgrader@gmail.com">tjctgrader@gmail.com</a> and
@@ -80,9 +78,9 @@
     </div>
 </details>
 
-<details class="main-block section" id="intro">
+<details class="main-block section relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 scroll-mt-24 [&_summary]:cursor-pointer [&_summary]:text-lg [&_summary]:font-semibold [&_summary]:text-stone-100 bg-transparent max-w-6xl" id="intro">
     <summary>Intro to CP &amp; In-Houses</summary>
-    <div class="info">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
         Competitive programming contests involve competitors submitting a single file
         (<code>.cpp</code>, <code>.py</code>, <code>.java</code>, etc.) that accepts input and prints
         output from/to the system. A tutorial on how this works on
@@ -99,9 +97,9 @@
     </div>
 </details>
 
-<details class="main-block section" id="rankings-formula">
+<details class="main-block section relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 scroll-mt-24 [&_summary]:cursor-pointer [&_summary]:text-lg [&_summary]:font-semibold [&_summary]:text-stone-100 bg-transparent max-w-6xl" id="rankings-formula">
     <summary>Rankings Formula</summary>
-    <div class="info">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
         
         All data is taken from this grader website.
         <br /><br />
@@ -112,7 +110,7 @@
         Platinum &rarr; 1900.
         <br /><br />
         <strong>In-houses</strong> &mdash; you get a rating for every rated in-house:
-        <pre class="code-block"><code>1200 &times; (N &minus; rank + 1) / N + 800</code></pre>
+        <pre class="code-block my-4 overflow-x-auto rounded-xl border border-stone-800 bg-stone-950 p-4 text-left font-mono text-sm leading-6 text-stone-300 [&_code]:bg-transparent! [&_code]:p-0! [&_code]:text-inherit!"><code>1200 &times; (N &minus; rank + 1) / N + 800</code></pre>
         where <code>N</code> is the number of participants. This linearly maps rank to a rating
         in the interval (800, 2000]. If you do not participate, you get a 0.
         <br /><br />
@@ -129,9 +127,9 @@
     </div>
 </details>
 
-<details class="main-block section" id="travel">
+<details class="main-block section relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 scroll-mt-24 [&_summary]:cursor-pointer [&_summary]:text-lg [&_summary]:font-semibold [&_summary]:text-stone-100 bg-transparent max-w-6xl" id="travel">
     <summary>Travel Competitions</summary>
-    <div class="info">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
         
         The in-person competitions we are very likely to send teams to are Widener, Code Quest,
         PClassic, UMD HSPC, VCU HSPC, and UVA HSPC. If there are others you think we should
@@ -164,9 +162,9 @@
     </div>
 </details>
 
-<details class="main-block section" id="verdicts">
+<details class="main-block section relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 scroll-mt-24 [&_summary]:cursor-pointer [&_summary]:text-lg [&_summary]:font-semibold [&_summary]:text-stone-100 bg-transparent max-w-6xl" id="verdicts">
     <summary>Verdicts</summary>
-    <div class="info">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
         
 
         <strong>Accepted (AC)</strong> &mdash; Congratulations! Your submission passed all our tests.<br /><br />
@@ -192,18 +190,18 @@
     </div>
 </details>
 
-<details class="main-block section" id="feedback">
+<details class="main-block section relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 scroll-mt-24 [&_summary]:cursor-pointer [&_summary]:text-lg [&_summary]:font-semibold [&_summary]:text-stone-100 bg-transparent max-w-6xl" id="feedback">
     <summary>Feedback</summary>
-    <div class="info">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
         
         By clicking on the ID of the submission, you can view additional feedback. Feedback is available for
         the first test.
     </div>
 </details>
 
-<details class="main-block section" id="submissions">
+<details class="main-block section relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 scroll-mt-24 [&_summary]:cursor-pointer [&_summary]:text-lg [&_summary]:font-semibold [&_summary]:text-stone-100 bg-transparent max-w-6xl" id="submissions">
     <summary>Submissions</summary>
-    <div class="info">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
         
         Your code should take input from standard in (the terminal) and output to standard out (the terminal).
         This can be done through <code>cin</code>/<code>cout</code> (C++), <code>input()</code> (Python), or
@@ -219,7 +217,7 @@
         <br /><br />
 
         <strong>Java</strong>
-        <pre class="code-block"><code>import java.util.*;
+        <pre class="code-block my-4 overflow-x-auto rounded-xl border border-stone-800 bg-stone-950 p-4 text-left font-mono text-sm leading-6 text-stone-300 [&_code]:bg-transparent! [&_code]:p-0! [&_code]:text-inherit!"><code>import java.util.*;
 import java.io.*;
 
 public class Main {
@@ -239,7 +237,7 @@ public class Main {
 }</code></pre>
 
         <strong>C++</strong>
-        <pre class="code-block"><code>#include &lt;bits/stdc++.h&gt;
+        <pre class="code-block my-4 overflow-x-auto rounded-xl border border-stone-800 bg-stone-950 p-4 text-left font-mono text-sm leading-6 text-stone-300 [&_code]:bg-transparent! [&_code]:p-0! [&_code]:text-inherit!"><code>#include &lt;bits/stdc++.h&gt;
 using namespace std;
 
 int main() {
@@ -256,15 +254,15 @@ int main() {
 }</code></pre>
 
         <strong>Python</strong>
-        <pre class="code-block"><code>n = int(input())
+        <pre class="code-block my-4 overflow-x-auto rounded-xl border border-stone-800 bg-stone-950 p-4 text-left font-mono text-sm leading-6 text-stone-300 [&_code]:bg-transparent! [&_code]:p-0! [&_code]:text-inherit!"><code>n = int(input())
 a = list(map(int, input().split()))
 print(sum(a))</code></pre>
     </div>
 </details>
 
-<details class="main-block section" id="standings">
+<details class="main-block section relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 overflow-x-auto space-y-4 scroll-mt-24 [&_summary]:cursor-pointer [&_summary]:text-lg [&_summary]:font-semibold [&_summary]:text-stone-100 bg-transparent max-w-6xl" id="standings">
     <summary>Standings</summary>
-    <div class="info">
+    <div class="info space-y-4 text-base leading-7 text-stone-300 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
         
         Standings are determined by your total points, where each problem solved rewards a set amount of
         points, and ties are broken by penalty. The penalty for a solved problem is the number of minutes
@@ -274,40 +272,7 @@ print(sum(a))</code></pre>
     </div>
 </details>
 
-<style>
-.code-block {
-    background-color: #1a1a1a;
-    color: #e0e0e0;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 6px;
-    padding: 1em;
-    overflow-x: auto;
-    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-    font-size: 0.9em;
-    line-height: 1.4em;
-    margin: 0.5em 0 1em 0;
-    text-align: left;
-}
-/* Must out-specify `.info code` below, which would otherwise re-apply the
-   inline-code pill to every line inside a <pre>. */
-pre.code-block code {
-    background: none;
-    color: inherit;
-    padding: 0;
-    white-space: pre;
-}
-.guide-hidden {
-    display: none;
-}
-.info code {
-    background-color: rgba(0, 0, 0, 0.4);
-    padding: 0.1em 0.35em;
-    border-radius: 3px;
-    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-    font-size: 0.95em;
-    color: #6ad8ff;
-}
-</style>
+
 
 <script>
 (function () {

@@ -2,157 +2,76 @@
 
 {% load static %}
 
-{% block stylesheet %}
-    <link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-    <style>
-        .admin-shell {
-            max-width: 800px;
-            margin: 0 auto;
-        }
 
-        .session-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .session-card {
-            padding: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            background: rgba(255, 255, 255, 0.04);
-            border-radius: 8px;
-        }
-
-        .attendance-code-input {
-            width: 100% !important;
-            display: block;
-            min-height: 44px;
-            padding: 8px 12px;
-            font-size: 1.2rem !important;
-            background-color: rgba(0, 0, 0, 0.6) !important;
-            color: #ffffff !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            box-sizing: border-box;
-            border-radius: 4px;
-            margin-bottom: 10px;
-        }
-
-        .action-btn {
-            padding: 6px 12px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-size: 0.9em;
-            margin-right: 5px;
-            display: inline-block;
-        }
-        .btn-edit { background: #2196f3; color: white; }
-        .btn-delete { background: #f44336; color: white; }
-        .btn-export { background: #4caf50; color: white; }
-
-        input[type="date"], select {
-            background-color: rgba(0, 0, 0, 0.6) !important;
-            color: white !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            padding: 8px !important;
-            border-radius: 4px;
-        }
-
-        .submit-btn {
-            background-color: #ffffff !important;
-            color: #000000 !important;
-            border: none !important;
-            padding: 10px 20px !important;
-            font-size: 1rem !important;
-            cursor: pointer;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-
-        .record-list {
-            max-height: 300px;
-            overflow-y: auto;
-            margin-top: 15px;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: 4px;
-        }
-        .record-item {
-            padding: 5px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            font-size: 0.9em;
-        }
-    </style>
-{% endblock stylesheet %}
 
 {% block title %}Attendance Admin{% endblock title %}
 
 {% block content %}
 {% include "partials/header.html" %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
-<div id="mainContent">
+<div id="mainContent" class="w-full py-6">
     <div id="subContent">
-        <div class="info-block admin-shell" style="padding: 3em;">
-            <div class="title" style="margin-bottom: 1em;"><p>Attendance Admin</p></div>
+        <div class="info-block admin-shell relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 flex flex-col bg-transparent max-w-6xl">
+            <div class="title text-2xl font-bold tracking-tight text-stone-100 sm:text-3xl [margin-bottom:1em]"><p>Attendance Admin</p></div>
             
             {% if messages %}
                 {% for message in messages %}
-                    <div style="color: #4caf50; margin-bottom: 15px;">{{ message }}</div>
+                    <div class="[margin-bottom:15px]">{{ message }}</div>
                 {% endfor %}
             {% endif %}
 
-            <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-                <div class="subtitle" style="text-align: left; font-size: 1.2em; margin-bottom: 15px; color: white;">
+            <div class="[margin-bottom:30px]">
+                <div class="subtitle text-lg font-semibold text-stone-200 [text-align:left] [margin-bottom:15px]">
                     {% if edit_session %}Edit Session{% else %}Create Session{% endif %}
                 </div>
                 <form action="{% url 'index:attendance_admin' %}" method="POST">
                     {% csrf_token %}
-                    <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px;">
+                    <div class="[display:flex] [gap:15px] [flex-wrap:wrap] [margin-bottom:15px]">
                         <div>
-                            <label style="display: block; margin-bottom: 5px; font-size: 0.9em;">Date</label>
-                            <input type="date" name="date" value="{% if edit_session %}{{ edit_session.date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}" required>
+                            <label class="[display:block] [margin-bottom:5px]">Date</label>
+                            <input type="date" name="date" value="{% if edit_session %}{{ edit_session.date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}" required class="w-full rounded-lg border border-stone-700 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-100/20">
                         </div>
                         <div>
-                            <label style="display: block; margin-bottom: 5px; font-size: 0.9em;">Block</label>
-                            <select name="block">
+                            <label class="[display:block] [margin-bottom:5px]">Block</label>
+                            <select name="block" class="w-full rounded-lg border border-stone-700 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-100/20">
                                 <option value="A" {% if edit_session.block == 'A' %}selected{% endif %}>A Block</option>
                                 <option value="B" {% if edit_session.block == 'B' %}selected{% endif %}>B Block</option>
                             </select>
                         </div>
-                        <div style="flex: 1; min-width: 150px;">
-                            <label style="display: block; margin-bottom: 5px; font-size: 0.9em;">Code</label>
-                            <input type="text" name="code" value="{{ edit_session.code }}" class="attendance-code-input" style="margin-bottom: 0;" required>
+                        <div class="[flex:1]">
+                            <label class="[display:block] [margin-bottom:5px]">Code</label>
+                            <input type="text" name="code" value="{{ edit_session.code }}" class="attendance-code-input block w-full min-w-0 text-xl tracking-widest rounded-lg border border-stone-700 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-100/20 [margin-bottom:0]" required>
                         </div>
                     </div>
-                    <div style="margin-bottom: 15px;">
+                    <div class="[margin-bottom:15px]">
                         <label>
-                            <input type="checkbox" name="is_active" {% if edit_session %}{% if edit_session.is_active %}checked{% endif %}{% else %}checked{% endif %}> Active
+                            <input type="checkbox" name="is_active" {% if edit_session %}{% if edit_session.is_active %}checked{% endif %}{% else %}checked{% endif %} class="accent-stone-200"> Active
                         </label>
                     </div>
-                    <input type="submit" class="submit-btn" value="{% if edit_session %}Update Session{% else %}Create Session{% endif %}">
+                    <input type="submit" class="submit-btn inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer" value="{% if edit_session %}Update Session{% else %}Create Session{% endif %}">
                     {% if edit_session %}
-                        <a href="{% url 'index:attendance_admin' %}" style="color: white; margin-left: 15px; font-size: 0.9em;">Cancel Edit</a>
+                        <a href="{% url 'index:attendance_admin' %}" class="[margin-left:15px]">Cancel Edit</a>
                     {% endif %}
                 </form>
             </div>
 
-            <div class="subtitle" style="text-align: left; font-size: 1.2em; margin-bottom: 15px; color: white;">Today's Attendance</div>
+            <div class="subtitle text-lg font-semibold text-stone-200 [text-align:left] [margin-bottom:15px]">Today's Attendance</div>
             {% if today_sessions %}
-                <div class="session-grid">
+                <div class="session-grid mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {% for session in today_sessions %}
-                        <div class="session-card">
-                            <div style="font-weight: bold; margin-bottom: 5px;">{{ session.get_block_display }}</div>
-                            <div style="font-size: 0.9em; opacity: 0.8; margin-bottom: 10px;">Code: <strong>{{ session.code }}</strong></div>
+                        <div class="session-card rounded-xl border border-stone-700 bg-stone-800/40 p-4">
+                            <div class="[font-weight:bold] [margin-bottom:5px]">{{ session.get_block_display }}</div>
+                            <div class="[margin-bottom:10px]">Code: <strong>{{ session.code }}</strong></div>
                             <div>
-                                <a href="{% url 'index:attendance_admin' %}?edit={{ session.id }}" class="action-btn btn-edit">Edit</a>
-                                <a href="{% url 'index:export_attendance' session.id %}" class="action-btn btn-export">CSV</a>
+                                <a href="{% url 'index:attendance_admin' %}?edit={{ session.id }}" class="action-btn btn-edit mr-2 inline-block rounded-lg px-3 py-1.5 text-sm font-medium bg-stone-200/15 text-stone-200! hover:bg-stone-200/25">Edit</a>
+                                <a href="{% url 'index:export_attendance' session.id %}" class="action-btn btn-export mr-2 inline-block rounded-lg px-3 py-1.5 text-sm font-medium bg-emerald-500/15 text-emerald-300! hover:bg-emerald-500/25">CSV</a>
                             </div>
                             
-                            <div class="record-list">
-                                <div style="font-size: 0.8em; opacity: 0.6; margin-bottom: 5px;">Students:</div>
+                            <div class="record-list mt-4 max-h-72 overflow-y-auto rounded-lg bg-stone-950/50 p-3">
+                                <div class="[margin-bottom:5px]">Students:</div>
                                 {% for record in today_records %}
                                     {% if record.session_id == session.id %}
-                                        <div class="record-item">
+                                        <div class="record-item border-b border-stone-800 py-2 text-sm">
                                             {{ record.user.display_name }} ({{ record.user.username }})
                                         </div>
                                     {% endif %}
@@ -162,29 +81,29 @@
                     {% endfor %}
                 </div>
             {% else %}
-                <p style="opacity: 0.6;">No sessions active for today.</p>
+                <p>No sessions active for today.</p>
             {% endif %}
 
-            <div class="subtitle" style="text-align: left; font-size: 1.2em; margin: 30px 0 15px; color: white;">History</div>
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+            <div class="subtitle text-lg font-semibold text-stone-200 [text-align:left] [margin:30px_0_15px]">History</div>
+            <div class="[overflow-x:auto]">
+                <table class="w-full border-separate border-spacing-0 text-left text-sm [&_tbody_tr]:transition [&_tbody_tr:hover]:bg-stone-800/70 [border-collapse:collapse]">
                     <thead>
-                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left;">
-                            <th style="padding: 10px;">Date</th>
-                            <th style="padding: 10px;">Block</th>
-                            <th style="padding: 10px;">Code</th>
-                            <th style="padding: 10px;">Actions</th>
+                        <tr class="[border-bottom:1px_solid_rgba(255,255,255,0.1)] [text-align:left]">
+                            <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Date</th>
+                            <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Block</th>
+                            <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Code</th>
+                            <th class="whitespace-nowrap border-b border-stone-700 bg-stone-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-stone-400 [&[role=columnheader]]:cursor-pointer [&[aria-sort=ascending]]:text-stone-200 [&[aria-sort=descending]]:text-stone-200 [&[aria-sort=ascending]]:after:content-[&quot;_↑&quot;] [&[aria-sort=descending]]:after:content-[&quot;_↓&quot;]">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for s in sessions %}
-                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                <td style="padding: 10px;">{{ s.date }}</td>
-                                <td style="padding: 10px;">{{ s.get_block_display }}</td>
-                                <td style="padding: 10px;">{{ s.code }}</td>
-                                <td style="padding: 10px;">
-                                    <a href="{% url 'index:attendance_admin' %}?edit={{ s.id }}" style="color: #2196f3; text-decoration: none; margin-right: 10px;">Edit</a>
-                                    <a href="{% url 'index:delete_attendance' s.id %}" style="color: #f44336; text-decoration: none;" onclick="return confirm('Delete this session?')">Delete</a>
+                            <tr class="[border-bottom:1px_solid_rgba(255,255,255,0.05)]">
+                                <td class="border-b border-stone-800 px-4 py-3 align-middle">{{ s.date }}</td>
+                                <td class="border-b border-stone-800 px-4 py-3 align-middle">{{ s.get_block_display }}</td>
+                                <td class="border-b border-stone-800 px-4 py-3 align-middle">{{ s.code }}</td>
+                                <td class="border-b border-stone-800 px-4 py-3 align-middle">
+                                    <a href="{% url 'index:attendance_admin' %}?edit={{ s.id }}" class="[text-decoration:none] [margin-right:10px]">Edit</a>
+                                    <a href="{% url 'index:delete_attendance' s.id %}" onclick="return confirm('Delete this session?')" class="[text-decoration:none]">Delete</a>
                                 </td>
                             </tr>
                         {% endfor %}

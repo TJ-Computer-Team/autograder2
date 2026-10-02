@@ -2,39 +2,32 @@
 
 {% load static %}
 
-{% block stylesheet %}
-    <link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
-    <style>
-        .hidden-element {
-            display: none !important;
-        }
-    </style>
-{% endblock %}
+
 
 {% block title %}Profile{% endblock %}
 
 {% block content %}
 {% include "partials/header.html" %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
-<div id="mainContent">
+<div id="mainContent" class="w-full py-6">
     <div id="subContent">
-        <div class="info-block">
-            <div class="profile-header">
-                <div class="profile-name">{{ user.display_name|default:user.username }}</div>
-                <div class="profile-meta">{{ user.username }}</div>
-                <div class="profile-meta">
+        <div class="info-block relative mx-auto my-6 w-[calc(100%-2rem)] rounded-2xl p-5 sm:p-8 flex flex-col bg-transparent max-w-6xl">
+            <div class="profile-header mb-6 space-y-1 border-b border-stone-800 pb-6">
+                <div class="profile-name text-3xl font-bold tracking-tight">{{ user.display_name|default:user.username }}</div>
+                <div class="profile-meta text-sm text-stone-400">{{ user.username }}</div>
+                <div class="profile-meta text-sm text-stone-400">
                     Index {{ user.index|floatformat:0 }}{% if user.cf_rating %} &middot; Codeforces {{ user.cf_rating }}{% endif %}
                 </div>
                 {% if user.is_staff %}
-                    <div class="profile-meta"><a href="{% url 'admin:index' %}">Django admin</a></div>
+                    <div class="profile-meta text-sm text-stone-400"><a href="{% url 'admin:index' %}">Django admin</a></div>
                 {% endif %}
             </div>
 
             <form id="profileForm" action="{% url 'index:update_stats' %}" method="POST">
                 {% csrf_token %}
-                <div class="statsInfo">
+                <div class="statsInfo mb-5 space-y-2 [&_label]:block [&_label]:text-sm [&_label]:font-medium [&_label]:text-stone-300">
                     <label for="usaco_div">USACO Division</label>
-                    <select name="usaco_div" id="usaco_div">
+                    <select name="usaco_div" id="usaco_div" class="w-full rounded-lg border border-stone-700 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-100/20">
                         <option value="" {% if user.usaco_division == "Not Participated" %} selected {% endif %}>Not Participated</option>
                         <option value="bronze" {% if user.usaco_division == "Bronze" %} selected {% endif %}>Bronze</option>
                         <option value="silver" {% if user.usaco_division == "Silver" %} selected {% endif %}>Silver</option>
@@ -43,34 +36,34 @@
                         <option value="camper" {% if user.usaco_division == "Camper" %} selected {% endif %}>Camper</option>
                     </select>
                 </div>
-                <div class="statsInfo">
+                <div class="statsInfo mb-5 space-y-2 [&_label]:block [&_label]:text-sm [&_label]:font-medium [&_label]:text-stone-300">
                     <label for="cf_handle">Codeforces Handle</label>
-                    <input type="text" name="cf_handle" id="cf_handle" value="{{ cf_handle }}">
+                    <input type="text" name="cf_handle" id="cf_handle" value="{{ cf_handle }}" class="w-full rounded-lg border border-stone-700 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-100/20">
                     <span id="verifiedBadge"
-                          class="hidden-element verified-badge">&#10003; Verified</span>
-                    <div class="field-hint">Leave blank if you don't have one.</div>
+                          class="hidden verified-badge ml-2 text-sm font-semibold text-emerald-300">&#10003; Verified</span>
+                    <div class="field-hint mt-2 text-sm text-stone-400">Leave blank if you don't have one.</div>
                 </div>
 
                 <div id="verificationSection" 
-                     class="{% if not pending_verification %}hidden-element{% endif %}"
+                     class="{% if not pending_verification %}hidden{% endif %} mt-4 rounded-xl border border-stone-700 bg-stone-800/50 p-5 space-y-3"
                      data-pending="{% if pending_verification %}true{% else %}false{% endif %}"
                      data-expires="{{ pending_verification.expires_at|date:'c' }}"
-                     style="margin-top: 15px; border: 1px solid #ccc; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 8px;">
-                    <h3 style="margin-top: 0;">Codeforces Verification Challenge</h3>
+                    >
+                    <h3 class="[margin-top:0]">Codeforces Verification Challenge</h3>
                     <p>To verify your handle, submit a compilation error to:</p>
-                    <ul style="list-style: none; padding: 0;">
-                        <li style="margin-bottom: 8px;"><strong>Problem:</strong> <a id="verifyLink" href="https://codeforces.com/contest/{{ pending_verification.contest_id }}/problem/{{ pending_verification.problem_index }}" target="_blank" style="color: #4da3ff; font-weight: bold;">{{ pending_verification.contest_id }}{{ pending_verification.problem_index }}</a></li>
+                    <ul class="[list-style:none]">
+                        <li class="[margin-bottom:8px]"><strong>Problem:</strong> <a id="verifyLink" href="https://codeforces.com/contest/{{ pending_verification.contest_id }}/problem/{{ pending_verification.problem_index }}" target="_blank" class="[font-weight:bold]">{{ pending_verification.contest_id }}{{ pending_verification.problem_index }}</a></li>
                     </ul>
-                    <p>Status: <span id="verifyStatus" style="font-weight: bold; color: #ffcc00;">{% if pending_verification %}Polling for submission...{% endif %}</span></p>
-                    <p style="font-size: 0.9em; color: #aaa;">Codeforces can take a minute to update.</p>
-                    <p style="font-size: 0.9em; margin-bottom: 0;">Expires in: <span id="verifyTimer" style="font-weight: bold;"></span></p>
+                    <p>Status: <span id="verifyStatus" class="[font-weight:bold]">{% if pending_verification %}Polling for submission...{% endif %}</span></p>
+                    <p>Codeforces can take a minute to update.</p>
+                    <p class="[margin-bottom:0]">Expires in: <span id="verifyTimer" class="[font-weight:bold]"></span></p>
                 </div>
 
-                <div id="message-container" style="margin-top: 10px;"></div>
-                <div class="statsInfo">
-                    <input type="submit" value="Save">
+                <div id="message-container" class="[margin-top:10px]"></div>
+                <div class="statsInfo mb-5 space-y-2 [&_label]:block [&_label]:text-sm [&_label]:font-medium [&_label]:text-stone-300">
+                    <input type="submit" value="Save" class="inline-flex items-center justify-center rounded-lg bg-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-950 transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-100 cursor-pointer">
                 </div>
-                <div class="field-hint">
+                <div class="field-hint mt-2 text-sm text-stone-400">
                     If the entered information is suspicious, it will be verified in person.
                 </div>
             </form>
@@ -95,9 +88,9 @@
                 handleDirty = true;
                 var currentHandle = handleEl.value.trim();
                 if (cfVerified && currentHandle === originalHandle) {
-                    verifiedBadge.classList.remove('hidden-element');
+                    verifiedBadge.classList.remove('hidden');
                 } else {
-                    verifiedBadge.classList.add('hidden-element');
+                    verifiedBadge.classList.add('hidden');
                 }
             });
         }
@@ -145,10 +138,10 @@
         function showVerifiedState() {
             var sectionEl = document.getElementById('verificationSection');
             if (sectionEl) {
-                sectionEl.classList.add('hidden-element');
+                sectionEl.classList.add('hidden');
             }
             if (verifiedBadge) {
-                verifiedBadge.classList.remove('hidden-element');
+                verifiedBadge.classList.remove('hidden');
             }
             cfVerified = true;
             if (handleEl) {
@@ -186,7 +179,7 @@
                         stopPolling();
                         var sectionEl = document.getElementById('verificationSection');
                         if (sectionEl) {
-                            sectionEl.classList.add('hidden-element');
+                            sectionEl.classList.add('hidden');
                         }
                     }
                 })
@@ -265,7 +258,7 @@
                             var statusEl = document.getElementById('verifyStatus');
 
                             if (sectionEl) {
-                                sectionEl.classList.remove('hidden-element');
+                                sectionEl.classList.remove('hidden');
                             }
                             if (linkEl) {
                                 linkEl.href = 'https://codeforces.com/contest/' + data.contest_id + '/problem/' + data.problem_index;
