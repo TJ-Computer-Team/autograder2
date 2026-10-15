@@ -59,9 +59,17 @@ def add_tests_to_coderunner(pid: int):
                 if not os.path.isfile(full_path):
                     continue
 
-                base, ext = os.path.splitext(name)
-                if not base.isdigit() or ext not in [".in", ".out"]:
-                    logger.error(f"Invalid file name: {name}")
+                filename = os.path.basename(name)
+                base, ext = os.path.splitext(filename)
+
+                if ext not in [".in", ".out"]:
+                    continue
+
+                if len(Path(name).parts) > 2:
+                    continue
+
+                if not base.isdigit():
+                    logger.error(f"Invalid test file name: {name}")
                     return
 
                 tid = int(base)
