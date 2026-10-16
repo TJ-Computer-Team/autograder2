@@ -64,6 +64,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "autograder.middleware.access_log.AccessLogMiddleware",
     "django_user_agents.middleware.UserAgentMiddleware",
     "autograder.middleware.mobile.MobileRedirectMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -112,6 +113,23 @@ LOGGING = {
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+        },
+        "access": {
+            "class": "logging.StreamHandler",
+            "formatter": "access",
+        },
+    },
+    "formatters": {
+        "access": {
+            "format": "%(asctime)s %(message)s",
+            "datefmt": "[%d/%b/%Y:%H:%M:%S]",
+        },
+    },
+    "loggers": {
+        "autograder.access": {
+            "handlers": ["access"],
+            "level": "INFO",
+            "propagate": False,
         },
     },
     "root": {
