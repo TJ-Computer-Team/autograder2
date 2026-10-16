@@ -156,6 +156,8 @@ class VisibilityTests(TestCase):
         self.tjioi_problem = make_problem(
             make_contest("TJIOI", tjioi=True), "TJIOI Problem"
         )
+        for problem in (self.secret_problem, self.unstarted_problem):
+            problem.contest.visible_to.add(self.staff)
 
     def test_open_problem_visible_to_everyone(self):
         self.assertTrue(can_see_problem(self.open_problem, self.user))

@@ -1,4 +1,6 @@
 from django.contrib import admin
+from ..contests.models import Contest
+from ..problems.models import Problem
 from .models import Submission
 from .tasks import grade_submission_task
 
@@ -35,7 +37,15 @@ class SubmissionAdmin(admin.ModelAdmin):
         "runtime",
         "timestamp",
     )
-    list_filter = ("verdict", "language", "problem", "usr", "contest")
+    # RelatedOnly so the sidebar doesn't list problems or contests hidden by
+    # get_queryset.
+    list_filter = (
+        "verdict",
+        "language",
+        ("problem", admin.RelatedOnlyFieldListFilter),
+        "usr",
+        ("contest", admin.RelatedOnlyFieldListFilter),
+    )
     search_fields = ("problem__name", "verdict")
     ordering = ("-timestamp",)
     readonly_fields = ("timestamp",)
@@ -52,3 +62,20 @@ class SubmissionAdmin(admin.ModelAdmin):
     )
 
     actions = [rerun_submissions]
+
+    def get_queryset(self, request):
+        locked = Contest.locked_for(request.user)
+        return (
+            super()
+            .get_queryset(request)
+            .exclude(contest__in=locked)
+            .exclude(problem__contest__in=locked)
+        )
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        locked = Contest.locked_for(request.user)
+        if db_field.name == "contest":
+            kwargs["queryset"] = Contest.objects.exclude(id__in=locked)
+        elif db_field.name == "problem":
+            kwargs["queryset"] = Problem.objects.exclude(contest__in=locked)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)

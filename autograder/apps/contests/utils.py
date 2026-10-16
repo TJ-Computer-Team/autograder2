@@ -2,6 +2,7 @@ from .models import Contest
 from ..problems.models import Problem
 from ..index.models import GraderUser
 from ..runtests.models import Submission
+from django.utils import timezone
 import logging
 
 logger = logging.getLogger(__name__)
@@ -31,6 +32,8 @@ def get_contest_nav(request, expected_contest_id=None):
     # Same gate the contest views apply.
     if contest.tjioi and not request.user.is_staff and not request.user.is_tjioi:
         return None
+    if timezone.now() < contest.start and not contest.is_admin_for(request.user):
+        return None
 
     return contest
 
@@ -42,7 +45,9 @@ def get_standings(cid):
     pid_index = {p.contest_letter: i for i, p in enumerate(problems)}
     start, end = contest.start, contest.end
 
-    users = GraderUser.objects.filter(is_staff=False)
+    # Testers rather than all staff: admins left off visible_to couldn't see the
+    # contest beforehand, so they compete like anyone else.
+    users = GraderUser.objects.exclude(visible_contests=contest)
     stats = {
         u.id: {
             "id": u.id,

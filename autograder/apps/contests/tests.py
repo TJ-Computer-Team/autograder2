@@ -7,7 +7,7 @@ from ..index.models import GraderUser
 from ..problems.models import Problem
 from ..runtests.models import Submission
 from .models import Contest
-from .utils import get_contest_nav
+from .utils import get_contest_nav, get_standings
 
 
 class GetContestNavTests(TestCase):
@@ -247,3 +247,144 @@ class ContestSeasonGroupingTests(TestCase):
         resp = self.client.get(reverse("contests:contests"))
         self.assertEqual(resp.context["groups"], [])
         self.assertContains(resp, "No contests yet")
+
+
+class ContestVisibilityTests(TestCase):
+    """Admins left off visible_to are treated as participants until it ends."""
+
+    def setUp(self):
+        self.factory = RequestFactory()
+        now = timezone.now()
+        self.upcoming = Contest.objects.create(
+            name="Secret Upcoming",
+            season=2027,
+            start=now + timedelta(days=1),
+            end=now + timedelta(days=2),
+        )
+        self.running = Contest.objects.create(
+            name="Running", season=2027, start=now - timedelta(hours=1),
+            end=now + timedelta(hours=1),
+        )
+        self.tester = GraderUser.objects.create_user(
+            email="t@example.com", username="2027tester", display_name="Tester",
+            is_staff=True,
+        )
+        self.outsider = GraderUser.objects.create_user(
+            email="o@example.com", username="2027outsider", display_name="Outsider",
+            is_staff=True,
+        )
+        for contest in (self.upcoming, self.running):
+            contest.visible_to.add(self.tester)
+        self.problem = self._problem(self.upcoming, "Leaky Problem")
+        self.running_problem = self._problem(self.running, "Running Problem")
+
+    def _problem(self, contest, name):
+        return Problem.objects.create(
+            name=name, contest=contest, points=100, contest_letter="A",
+            statement="s", inputtxt="i", outputtxt="o", samples="x", tl=1000, ml=256,
+        )
+
+    def test_is_admin_for(self):
+        self.assertTrue(self.upcoming.is_admin_for(self.tester))
+        self.assertFalse(self.upcoming.is_admin_for(self.outsider))
+
+    def test_every_admin_regains_access_once_it_ends(self):
+        self.upcoming.end = timezone.now() - timedelta(minutes=1)
+        self.upcoming.save()
+        self.assertTrue(self.upcoming.is_admin_for(self.outsider))
+
+    def test_contest_list_hides_unstarted_contest_from_outsider(self):
+        self.client.force_login(self.outsider)
+        names = [
+            c.name
+            for g in self.client.get(reverse("contests:contests")).context["groups"]
+            for c in g["contests"]
+        ]
+        self.assertNotIn("Secret Upcoming", names)
+        self.assertIn("Running", names)
+
+    def test_contest_list_shows_unstarted_contest_to_tester(self):
+        self.client.force_login(self.tester)
+        self.assertContains(self.client.get(reverse("contests:contests")), "Secret Upcoming")
+
+    def test_outsider_cannot_open_unstarted_contest_or_problem(self):
+        self.client.force_login(self.outsider)
+        resp = self.client.get(reverse("contests:contest", args=[self.upcoming.id]))
+        self.assertEqual(resp.status_code, 403)
+        resp = self.client.get(reverse("problems:problem", args=[self.problem.id]))
+        self.assertEqual(resp.status_code, 302)
+        resp = self.client.get(reverse("problems:problemset"))
+        self.assertNotContains(resp, "Leaky Problem")
+
+    def test_tester_can_open_unstarted_problem(self):
+        self.client.force_login(self.tester)
+        resp = self.client.get(reverse("problems:problem", args=[self.problem.id]))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_outsider_cannot_read_tester_submission(self):
+        sub = Submission.objects.create(
+            usr=self.tester, code="secret code", problem=self.problem,
+            language="python", contest=self.upcoming,
+        )
+        self.client.force_login(self.outsider)
+        resp = self.client.get(reverse("runtests:submission", args=[sub.id]))
+        self.assertNotContains(resp, "secret code")
+
+    def test_outsider_is_ranked_and_tester_is_not(self):
+        for usr in (self.tester, self.outsider):
+            Submission.objects.create(
+                usr=usr, code="x", problem=self.running_problem, language="python",
+                contest=self.running, verdict="Accepted",
+            )
+        names = [row["name"] for row in get_standings(self.running.id)["load"]]
+        self.assertEqual(names, ["Outsider"])
+
+    def _admin_request(self, user):
+        request = self.factory.get("/admin/")
+        request.user = user
+        return request
+
+    def test_admin_site_hides_contest_and_its_problems_and_submissions(self):
+        from django.contrib import admin as django_admin
+
+        Submission.objects.create(
+            usr=self.tester, code="x", problem=self.problem, language="python",
+            contest=self.upcoming,
+        )
+        site = django_admin.site
+        for model, hidden in (
+            (Contest, {"contest": self.upcoming}),
+            (Problem, {"problem": self.problem}),
+            (Submission, {"submission": Submission.objects.get()}),
+        ):
+            obj = next(iter(hidden.values()))
+            model_admin = site._registry[model]
+            outsider_qs = model_admin.get_queryset(self._admin_request(self.outsider))
+            tester_qs = model_admin.get_queryset(self._admin_request(self.tester))
+            self.assertNotIn(obj, outsider_qs)
+            self.assertIn(obj, tester_qs)
+
+    def test_contest_form_requires_visible_to(self):
+        from .admin import ContestAdminForm
+
+        data = {
+            "name": "New", "season": 2027,
+            "start": "2027-01-01 10:00", "end": "2027-01-01 12:00",
+            "writers": [self.tester.pk],
+        }
+        form = ContestAdminForm(data=data)
+        self.assertFalse(form.is_valid())
+        self.assertIn("visible_to", form.errors)
+
+        form = ContestAdminForm(data={**data, "visible_to": [self.tester.pk]})
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_contest_form_only_offers_admins(self):
+        from .admin import ContestAdminForm
+
+        student = GraderUser.objects.create_user(
+            email="s@example.com", username="2027s", display_name="Student"
+        )
+        choices = ContestAdminForm().fields["visible_to"].queryset
+        self.assertNotIn(student, choices)
+        self.assertIn(self.outsider, choices)

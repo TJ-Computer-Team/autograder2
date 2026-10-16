@@ -7,7 +7,7 @@ from ..oauth.decorators import login_required
 from ..contests.utils import get_contest_nav
 from ..runtests.utils import solved_problem_ids
 from .models import Problem
-from .utils import can_see_problem
+from .utils import can_see_problem, exclude_locked_problems
 import logging
 
 logger = logging.getLogger(__name__)
@@ -26,6 +26,8 @@ def problemset_view(request):
         # Prevent non-TJIOI users from seeing TJIOI problems
         if not request.user.is_tjioi:
             problems = problems.exclude(contest__tjioi=True)
+    else:
+        problems = exclude_locked_problems(problems, request.user)
 
     problems = list(problems.select_related("contest").order_by("-number"))
     solved = solved_problem_ids(request.user, [p.id for p in problems])

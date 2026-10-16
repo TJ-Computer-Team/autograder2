@@ -8,7 +8,7 @@ from django.utils import timezone
 from datetime import timedelta
 from ..oauth.decorators import login_required
 from ..problems.models import Problem
-from ..problems.utils import can_see_problem
+from ..problems.utils import can_see_problem, exclude_locked_problems
 from ..contests.models import Contest
 from ..contests.utils import get_contest_nav
 from .models import Submission
@@ -50,7 +50,7 @@ def submit_view(request, cid=None, pid=None):
             return redirect("runtests:submit")
 
         problems = Problem.objects.filter(contest__id=cid)
-        if not request.user.is_staff:
+        if not contest.is_admin_for(request.user):
             problems = problems.filter(secret=False)
             if contest.start > timezone.now():
                 return redirect("runtests:submit")
@@ -69,6 +69,8 @@ def submit_view(request, cid=None, pid=None):
             problems = problems.filter(secret=False).filter(
                 Q(contest__isnull=True) | Q(contest__start__lte=timezone.now())
             )
+        else:
+            problems = exclude_locked_problems(problems, request.user)
 
         if request.user.is_tjioi:
             problems = problems.filter(contest__tjioi=True)
@@ -84,6 +86,14 @@ def status_view(request, page, cid=None, mine=False):
     submissions = Submission.objects.all()
     if not request.user.is_staff:
         submissions = submissions.filter(usr__is_staff=False)
+    else:
+        # Match what a regular user sees on contests this admin is locked out
+        # of: no staff submissions (the testers'), apart from their own.
+        submissions = submissions.exclude(
+            Q(contest__in=Contest.locked_for(request.user))
+            & Q(usr__is_staff=True)
+            & ~Q(usr=request.user)
+        )
 
     if cid is not None:
         contest = get_object_or_404(Contest, id=cid)
@@ -126,13 +136,16 @@ def status_view(request, page, cid=None, mine=False):
 def submission_view(request, id):
     submission = get_object_or_404(Submission, id=id)
 
-    if submission.usr == request.user or request.user.is_staff:
+    admin = request.user.is_staff and (
+        submission.contest is None or submission.contest.is_admin_for(request.user)
+    )
+    if submission.usr == request.user or admin:
         context = {
-            "admin": request.user.is_staff,
+            "admin": admin,
             "submission": submission,
             "contest_nav": get_contest_nav(request, submission.contest_id),
         }
-        if request.user.is_staff:
+        if admin:
             context["insight"] = submission.insight
 
         return render(request, "runtests/submission.html", context)
@@ -181,7 +194,7 @@ def submit_post(request):
     # Lecture-only problems have no contest, so there is nothing to wait for.
     if (
         problem.contest is not None
-        and not request.user.is_staff
+        and not problem.contest.is_admin_for(request.user)
         and timezone.now() < problem.contest.start
     ):
         return HttpResponse("Contest has not started yet", status=403)

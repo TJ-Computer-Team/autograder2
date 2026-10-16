@@ -7,6 +7,7 @@ from django.urls import path
 from django.utils.html import format_html
 from django.views.decorators.http import require_POST
 
+from ..contests.models import Contest
 from .models import Problem, renumber_problems
 
 
@@ -32,7 +33,9 @@ class ProblemAdmin(admin.ModelAdmin):
         "interactive",
         "secret",
     )
-    list_filter = ("interactive", "secret", "contest")
+    # RelatedOnly so the sidebar doesn't list the names of contests hidden by
+    # get_queryset.
+    list_filter = ("interactive", "secret", ("contest", admin.RelatedOnlyFieldListFilter))
     search_fields = ("name",)
     ordering = ("-number",)
 
@@ -46,6 +49,18 @@ class ProblemAdmin(admin.ModelAdmin):
         ),
         ("Testcases zip", {"fields": ("testcases_zip",)}),
     )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).exclude(
+            contest__in=Contest.locked_for(request.user)
+        )
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "contest":
+            kwargs["queryset"] = Contest.objects.exclude(
+                id__in=Contest.locked_for(request.user)
+            )
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     @admin.display(description="")
     def drag_handle(self, obj):

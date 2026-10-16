@@ -23,7 +23,7 @@
         <th>Language</th>
         <th>Runtime</th>
         <th>Verdict</th>
-        {% if user.is_staff %}<th>Skip</th>{% endif %}
+        {% if admin %}<th>Skip</th>{% endif %}
     </tr>
     {% for sub in submissions  %}
     <tr class="submission-item" data-submission-id="{{ sub.id }}">
@@ -51,7 +51,7 @@
         <td class="submission-status {{ sub.verdict|verdict_class }}">
             {{sub.verdict}}
         </td>
-        {% if user.is_staff %}
+        {% if admin %}
         <td>
             {% if sub.verdict == 'Skipped' %}
             Already Skipped
