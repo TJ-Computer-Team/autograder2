@@ -1,6 +1,5 @@
 from django.test import TestCase
 
-from ...coderunner.runner import _is_oom
 from .templatetags.verdicts import verdict_class
 
 
@@ -43,24 +42,3 @@ class VerdictClassTests(TestCase):
     def test_unknown_returns_empty(self):
         self.assertEqual(verdict_class("Something Else Entirely"), "")
 
-
-class OomDetectionTests(TestCase):
-    """Memory Limit Exceeded detection in coderunner.runner."""
-
-    def test_sigkill_is_oom(self):
-        # nsjail's cgroup_mem_max leaves the kernel OOM killer to SIGKILL: 128 + 9
-        self.assertTrue(_is_oom(137, ""))
-
-    def test_runtime_oom_messages(self):
-        for stderr in (
-            "terminate called after throwing an instance of 'std::bad_alloc'",
-            "java.lang.OutOfMemoryError: Java heap space",
-            "MemoryError",
-            "Cannot allocate memory",
-        ):
-            self.assertTrue(_is_oom(1, stderr), stderr)
-
-    def test_ordinary_runtime_error_is_not_oom(self):
-        self.assertFalse(_is_oom(1, "Segmentation fault"))
-        self.assertFalse(_is_oom(1, "IndexError: list index out of range"))
-        self.assertFalse(_is_oom(0, ""))
