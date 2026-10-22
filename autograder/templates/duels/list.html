@@ -16,6 +16,10 @@
     <div class="subtitle"><br>Race someone to solve a Codeforces problem. First accepted submission wins.</div>
 </div>
 
+<div class="option-buttons">
+    <a href="{% url 'duels:ladders' %}"><div class="button">Battle Royale</div></a>
+</div>
+
 {% if messages %}
 {% for message in messages %}
 <div class="main-block small-padding"><div class="info">{{ message }}</div></div>

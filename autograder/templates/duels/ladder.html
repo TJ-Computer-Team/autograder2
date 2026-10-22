@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block stylesheet %}
+<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
+{% endblock stylesheet %}
+
+{% block title %}Battle Royale{% endblock title %}
+
+{% block content %}
+{% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
+{% include "partials/header.html" %}
+
+<div class="main-block">
+    <div class="title"><strong>Battle Royale by {{ ladder.host.display_name|default:ladder.host.username }}</strong></div>
+    <div class="subtitle"><br>
+        {{ ladder.rung_count }} problems, {{ ladder.rating_min }}&ndash;{{ ladder.rating_max }},
+        {{ ladder.duration_minutes }} minutes, {{ ladder.skips }} skip{{ ladder.skips|pluralize }},
+        tags {{ ladder.tags|default:"any" }}.
+        <br><span id="headline">{% if ladder.status == "pending" and ladder.start_requested_at %}Drawing problems&hellip;{% else %}{{ ladder.get_status_display }}{% endif %}</span>
+        <span id="clock" class="field-hint"></span>
+    </div>
+</div>
+
+{% if messages %}
+{% for message in messages %}
+<div class="main-block small-padding"><div class="info">{{ message }}</div></div>
+{% endfor %}
+{% endif %}
+
+{% if ladder.selection_error %}
+<div class="main-block small-padding"><div class="info"><span class="v-wa">{{ ladder.selection_error }}</span></div></div>
+{% endif %}
+
+{# --- join / host controls --- #}
+{% if ladder.status == "pending" or ladder.status == "active" %}
+<div class="option-buttons">
+    {% if not entry and can_duel %}
+    <form method="POST" action="{% url 'duels:ladder_join' ladder_id=ladder.id %}">{% csrf_token %}
+        <button type="submit">Join</button>
+    </form>
+    {% endif %}
+    {% if is_host and ladder.status == "pending" and not ladder.start_requested_at %}
+    <form method="POST" action="{% url 'duels:ladder_start' ladder_id=ladder.id %}">{% csrf_token %}
+        <button type="submit">Start</button>
+    </form>
+    <form method="POST" action="{% url 'duels:ladder_cancel' ladder_id=ladder.id %}">{% csrf_token %}
+        <button type="submit">Cancel</button>
+    </form>
+    {% endif %}
+</div>
+{% if ladder.status == "pending" %}
+<div class="main-block small-padding">
+    <div class="field-hint">
+        Problems are picked when the host starts. Nobody who joined will have solved
+        them already. You can still join after it starts, you just get less time.
+    </div>
+</div>
+{% endif %}
+{% endif %}
+
+{# --- your rung --- #}
+{% if entry and ladder.status == "active" %}
+<div class="main-block">
+    {% if rung %}
+    <div class="info">
+        <strong>Problem {{ rung.position }} of {{ ladder.rung_count }}:</strong>
+        <a href="{{ rung.problem_url }}" target="_blank" rel="noopener">
+            {{ rung.cf_contest_id }}{{ rung.cf_index }} &mdash; {{ rung.cf_name }}
+        </a>
+        {% if rung.cf_rating %}(rated {{ rung.cf_rating }}){% endif %}
+        <div class="field-hint">
+            Submit on Codeforces. Once it's accepted, this page shows the next problem.
+            Solved {{ entry.solved }}, skips left {{ entry.skips_left }}.
+        </div>
+    </div>
+    {% if entry.skips_left %}
+    <div class="option-buttons">
+        <form method="POST" action="{% url 'duels:ladder_skip' ladder_id=ladder.id %}"
+              onsubmit="return confirm('Skip this problem? You won't get a point for it.');">
+            {% csrf_token %}
+            <button type="submit">Skip</button>
+        </form>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="info"><span class="v-ac">You've finished every problem.</span> Solved {{ entry.solved }} of {{ ladder.rung_count }}.</div>
+    {% endif %}
+</div>
+{% endif %}
+
+{# --- standings --- #}
+<div class="main-block">
+    <div class="info"><strong>Standings</strong></div>
+    <table>
+        <thead><tr><th>#</th><th>Player</th><th>Solved</th><th>On problem</th><th>Skips</th></tr></thead>
+        <tbody id="standings">
+            {% for e in standings %}
+            <tr>
+                <td class="centertext">{{ forloop.counter }}</td>
+                <td>{% if e.user == user %}<strong>{{ e.user.display_name|default:e.user.username }}</strong>{% else %}{{ e.user.display_name|default:e.user.username }}{% endif %}</td>
+                <td class="centertext">{{ e.solved }}</td>
+                <td class="centertext">{% if e.position > ladder.rung_count %}done{% else %}{{ e.position }}{% endif %}</td>
+                <td class="centertext">{{ e.skips_used }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="centertext v-pending">Nobody yet</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{# --- full sequence, only once it's over --- #}
+{% if all_rungs %}
+<div class="main-block">
+    <div class="info"><strong>The problems</strong></div>
+    <table>
+        <tr><th>#</th><th>Problem</th><th>Rating</th></tr>
+        {% for r in all_rungs %}
+        <tr>
+            <td class="centertext">{{ r.position }}</td>
+            <td><a href="{{ r.problem_url }}" target="_blank" rel="noopener">{{ r.cf_contest_id }}{{ r.cf_index }} &mdash; {{ r.cf_name }}</a></td>
+            <td class="centertext">{{ r.cf_rating|default:"&mdash;" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
+<div class="option-buttons">
+    <a href="{% url 'duels:ladders' %}"><div class="button">Back to Battle Royale</div></a>
+</div>
+
+{% if ladder.status == "pending" or ladder.status == "active" %}
+<script>
+(function () {
+    // CF polling behind this endpoint is throttled per player, and only your own
+    // handle is checked, so spectators cost a database read.
+    var STATE_URL = "{% url 'duels:ladder_state' ladder_id=ladder.id %}";
+    var POLL_MS = 3000;
+    // Reload only on a real transition: start, finish, or you moving up a rung.
+    var rendered = {
+        status: "{{ ladder.status }}",
+        starting: {% if ladder.start_requested_at %}true{% else %}false{% endif %},
+        position: {% if entry %}{{ entry.position }}{% else %}null{% endif %}
+    };
+    var deadline = null;
+    var timer = null;
+
+    function esc(s) {
+        var d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+
+    function render(data) {
+        deadline = data.deadline ? new Date(data.deadline) : null;
+
+        var body = document.getElementById('standings');
+        if (!data.standings.length) {
+            body.innerHTML = '<tr><td colspan="5" class="centertext v-pending">Nobody yet</td></tr>';
+        } else {
+            body.innerHTML = data.standings.map(function (s, i) {
+                var name = s.me ? '<strong>' + esc(s.name) + '</strong>' : esc(s.name);
+                return '<tr><td class="centertext">' + (i + 1) + '</td>' +
+                       '<td>' + name + '</td>' +
+                       '<td class="centertext">' + s.solved + '</td>' +
+                       '<td class="centertext">' + (s.done ? 'done' : s.rung) + '</td>' +
+                       '<td class="centertext">' + s.skips_used + '</td></tr>';
+            }).join('');
+        }
+
+        if (data.status !== rendered.status || data.starting !== rendered.starting ||
+            data.my_position !== rendered.position) {
+            if (timer) { clearInterval(timer); timer = null; }
+            window.location.reload();
+        }
+    }
+
+    function tickClock() {
+        var el = document.getElementById('clock');
+        if (!el || !deadline) return;
+        var left = Math.max(0, Math.floor((deadline - new Date()) / 1000));
+        var m = Math.floor(left / 60), s = left % 60;
+        el.textContent = ' · ' + m + 'm ' + (s < 10 ? '0' : '') + s + 's left';
+    }
+
+    function poll() {
+        fetch(STATE_URL, {headers: {'X-Requested-With': 'fetch'}})
+            .then(function (r) { return r.json(); })
+            .then(render)
+            .catch(function (e) { console.error('ladder poll failed', e); });
+    }
+
+    poll();
+    timer = setInterval(poll, POLL_MS);
+    setInterval(tickClock, 1000);
+})();
+</script>
+{% endif %}
+{% endblock content %}

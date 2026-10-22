@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Duel, DuelSubmission
+from .models import Duel, DuelSubmission, Ladder, LadderEntry, LadderRung
 
 
 class DuelSubmissionInline(admin.TabularInline):
@@ -53,3 +53,32 @@ class DuelAdmin(admin.ModelAdmin):
             {"fields": ("created_at", "accepted_at", "started_at", "ended_at")},
         ),
     )
+
+
+class LadderRungInline(admin.TabularInline):
+    model = LadderRung
+    extra = 0
+
+
+class LadderEntryInline(admin.TabularInline):
+    model = LadderEntry
+    extra = 0
+    autocomplete_fields = ("user",)
+
+
+@admin.register(Ladder)
+class LadderAdmin(admin.ModelAdmin):
+    inlines = (LadderRungInline, LadderEntryInline)
+    list_display = (
+        "id",
+        "host",
+        "status",
+        "rating_min",
+        "rating_max",
+        "rung_count",
+        "started_at",
+    )
+    list_filter = ("status",)
+    search_fields = ("host__display_name",)
+    autocomplete_fields = ("host",)
+    readonly_fields = ("created_at", "start_requested_at", "started_at", "ended_at")
