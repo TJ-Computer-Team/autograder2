@@ -111,7 +111,14 @@ def refresh_entry(entry, force=False):
 
 
 def _copy_progress(src, dst):
-    for field in ("position", "solved", "skips_used", "last_solve_at", "reached_at"):
+    for field in (
+        "position",
+        "solved",
+        "skips_used",
+        "last_solve_at",
+        "solve_times",
+        "reached_at",
+    ):
         setattr(dst, field, getattr(src, field))
 
 
@@ -123,8 +130,17 @@ def _credit(entry, position, solved_at):
         return
     locked.solved += 1
     locked.last_solve_at = solved_at
+    locked.solve_times = [*locked.solve_times, solved_at.isoformat()]
     locked.move_up()
-    locked.save(update_fields=["position", "solved", "last_solve_at", "reached_at"])
+    locked.save(
+        update_fields=[
+            "position",
+            "solved",
+            "last_solve_at",
+            "solve_times",
+            "reached_at",
+        ]
+    )
     _copy_progress(locked, entry)
     _finish_if_everyone_done(locked.ladder_id)
 

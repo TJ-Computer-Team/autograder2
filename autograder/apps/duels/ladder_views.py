@@ -71,6 +71,24 @@ def create_ladder(request):
     return redirect("duels:ladder", ladder_id=ladder.id)
 
 
+def _chart(ladder, entry):
+    """Everyone's solve times, for the solves-over-time graph."""
+    return {
+        "started_at": ladder.started_at.isoformat() if ladder.started_at else None,
+        "deadline": ladder.deadline.isoformat() if ladder.deadline else None,
+        "ended_at": ladder.ended_at.isoformat() if ladder.ended_at else None,
+        "max": ladder.rung_count,
+        "players": [
+            {
+                "name": _name(e.user),
+                "solves": e.solve_times,
+                "me": entry is not None and e.pk == entry.pk,
+            }
+            for e in ladder.standings()
+        ],
+    }
+
+
 def _my_entry(ladder, user):
     return ladder.entries.select_related("user", "ladder").filter(user=user).first()
 
@@ -96,6 +114,7 @@ def ladder_detail(request, ladder_id):
         "is_host": ladder.host_id == request.user.pk,
         "can_duel": _can_duel(request.user),
         "standings": ladder.standings(),
+        "chart": _chart(ladder, entry),
         # The whole sequence stays hidden until the end, or a spectator could read
         # ahead, solve offline, then join and paste.
         "all_rungs": ladder.rungs.all() if ladder.status == Ladder.FINISHED else None,
@@ -123,6 +142,7 @@ def ladder_state(request, ladder_id):
             "selection_error": ladder.selection_error,
             "deadline": ladder.deadline.isoformat() if ladder.deadline else None,
             "my_position": entry.position if entry else None,
+            "chart": _chart(ladder, entry),
             "standings": [
                 {
                     "name": _name(e.user),

@@ -287,6 +287,8 @@ class LadderEntry(models.Model):
     skips_used = models.PositiveIntegerField(default=0)
     # CF time of your latest accepted rung; the tiebreak.
     last_solve_at = models.DateTimeField(null=True, blank=True)
+    # CF time of every accepted rung, oldest first, as ISO strings. Drives the graph.
+    solve_times = models.JSONField(default=list, blank=True)
     # When you reached the current rung. Only submissions after this count, so an
     # accepted run from before you could see the problem never advances you.
     reached_at = models.DateTimeField(null=True, blank=True)

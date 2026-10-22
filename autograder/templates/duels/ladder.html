@@ -89,6 +89,225 @@
 </div>
 {% endif %}
 
+{# --- solves over time --- #}
+{% if ladder.started_at %}
+<div class="main-block">
+    <div class="info"><strong>Solves over time</strong></div>
+    <div id="solves-chart" class="solves-chart">
+        <div class="solves-legend" id="solves-legend"></div>
+        <svg id="solves-svg" viewBox="0 0 720 260" role="img" aria-label="Problems solved over time for each player"></svg>
+        <div class="solves-tip" id="solves-tip" hidden></div>
+    </div>
+</div>
+{{ chart|json_script:"chart-data" }}
+<style>
+    /* The site is always dark, so these are the dark-surface steps only. */
+    .solves-chart {
+        --series-me: #3987e5;
+        --series-rest: #8a8996;
+        --surface: rgb(25, 25, 35);
+        --ink: #f0efec;
+        --ink-muted: #a9a8b3;
+        --grid: rgba(255, 255, 255, 0.08);
+        position: relative;
+        color: var(--ink);
+    }
+    .solves-chart svg { width: 100%; height: auto; display: block; touch-action: none; }
+    .solves-legend { display: flex; gap: 16px; font-size: 13px; color: var(--ink-muted); margin: 4px 0 6px; flex-wrap: wrap; }
+    .solves-legend span::before {
+        content: ""; display: inline-block; width: 14px; height: 3px; border-radius: 2px;
+        margin-right: 6px; vertical-align: middle; background: var(--c);
+    }
+    .solves-tip {
+        position: absolute; pointer-events: none; background: rgba(15, 15, 22, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; padding: 6px 8px;
+        font-size: 12px; color: var(--ink); min-width: 120px; white-space: nowrap;
+    }
+    /* Site-wide div padding would otherwise space these rows out. */
+    .solves-tip div { padding: 0; margin: 0; line-height: 1.5; }
+    .solves-tip .t { color: var(--ink-muted); margin-bottom: 4px; }
+    .solves-tip .row { display: flex; justify-content: space-between; gap: 12px; }
+    .solves-tip .row.me { font-weight: bold; }
+</style>
+<script>
+(function () {
+    var W = 720, H = 260, M = {l: 34, r: 60, t: 10, b: 28};
+    var NS = 'http://www.w3.org/2000/svg';
+    var svg = document.getElementById('solves-svg');
+    var tip = document.getElementById('solves-tip');
+    var box = document.getElementById('solves-chart');
+    var state = null;  // what the last draw computed, for hover
+    var hoverX = null;
+
+    function el(name, attrs, parent) {
+        var n = document.createElementNS(NS, name);
+        for (var k in attrs) n.setAttribute(k, attrs[k]);
+        if (parent) parent.appendChild(n);
+        return n;
+    }
+
+    function fmt(ms) {
+        var s = Math.max(0, Math.round(ms / 1000));
+        var m = Math.floor(s / 60);
+        s = s % 60;
+        return m + 'm ' + (s < 10 ? '0' : '') + s + 's';
+    }
+
+    function niceStep(total, maxTicks, steps) {
+        for (var i = 0; i < steps.length; i++) {
+            if (total / steps[i] <= maxTicks) return steps[i];
+        }
+        return steps[steps.length - 1];
+    }
+
+    function countAt(p, t) {
+        var n = 0;
+        for (var i = 0; i < p.times.length; i++) if (p.times[i] <= t) n++;
+        return n;
+    }
+
+    window.drawSolvesChart = function (data) {
+        if (!data.started_at) return;
+        var start = new Date(data.started_at).getTime();
+        var span = new Date(data.deadline).getTime() - start;
+        var stop = data.ended_at ? new Date(data.ended_at).getTime() : Date.now();
+        var now = Math.min(stop, start + span) - start;
+        var maxY = Math.max(1, data.max);
+
+        var players = data.players.map(function (p) {
+            return {
+                name: p.name,
+                me: p.me,
+                times: p.solves.map(function (s) { return new Date(s).getTime() - start; })
+            };
+        });
+        // Your line, or the leader's if you are only watching.
+        var hi = players.filter(function (p) { return p.me; })[0] || players[0];
+        if (hi) hi.hi = true;
+
+        var x = function (t) { return M.l + (W - M.l - M.r) * Math.min(t, span) / span; };
+        var y = function (n) { return H - M.b - (H - M.t - M.b) * n / maxY; };
+
+        while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+        // Grid and axes: recessive.
+        var yStep = niceStep(maxY, 6, [1, 2, 5, 10]);
+        for (var n = 0; n <= maxY; n += yStep) {
+            el('line', {x1: M.l, x2: W - M.r, y1: y(n), y2: y(n), stroke: 'var(--grid)'}, svg);
+            el('text', {x: M.l - 8, y: y(n) + 4, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--ink-muted)'}, svg)
+                .textContent = n;
+        }
+        var minutes = span / 60000;
+        var xStep = niceStep(minutes, 7, [1, 2, 5, 10, 15, 30, 60]);
+        for (var m = 0; m <= minutes; m += xStep) {
+            el('text', {x: x(m * 60000), y: H - 8, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--ink-muted)'}, svg)
+                .textContent = m + 'm';
+        }
+
+        function path(p) {
+            var d = 'M' + x(0) + ' ' + y(0), k = 0;
+            p.times.forEach(function (t) {
+                k++;
+                d += ' H' + x(t) + ' V' + y(k);
+            });
+            return d + ' H' + x(now);
+        }
+
+        players.forEach(function (p) {
+            if (p.hi) return;
+            el('path', {d: path(p), fill: 'none', stroke: 'var(--series-rest)', 'stroke-width': 1.5,
+                        'stroke-opacity': 0.55, 'stroke-linejoin': 'round'}, svg);
+        });
+        if (hi) {
+            var d = path(hi);
+            // Surface ring so the highlighted line reads on top of the others.
+            el('path', {d: d, fill: 'none', stroke: 'var(--surface)', 'stroke-width': 6, 'stroke-linejoin': 'round'}, svg);
+            el('path', {d: d, fill: 'none', stroke: 'var(--series-me)', 'stroke-width': 2.5, 'stroke-linejoin': 'round'}, svg);
+            hi.times.forEach(function (t, i) {
+                el('circle', {cx: x(t), cy: y(i + 1), r: 4, fill: 'var(--series-me)',
+                              stroke: 'var(--surface)', 'stroke-width': 2}, svg);
+            });
+            el('text', {x: x(now) + 6, y: y(hi.times.length) + 4, 'font-size': 12, fill: 'var(--ink)'}, svg)
+                .textContent = hi.me ? 'You' : hi.name;
+        }
+
+        var cross = el('line', {y1: M.t, y2: H - M.b, stroke: 'var(--ink-muted)', 'stroke-width': 1,
+                                visibility: 'hidden'}, svg);
+        var hit = el('rect', {x: M.l, y: 0, width: W - M.l - M.r, height: H, fill: 'transparent'}, svg);
+        hit.addEventListener('pointermove', function (e) { hoverX = e.clientX; hover(); });
+        hit.addEventListener('pointerleave', function () { hoverX = null; hover(); });
+
+        var legend = document.getElementById('solves-legend');
+        legend.innerHTML = '';
+        if (hi) {
+            var a = document.createElement('span');
+            a.style.setProperty('--c', 'var(--series-me)');
+            a.textContent = hi.me ? 'You' : 'Leader (' + hi.name + ')';
+            legend.appendChild(a);
+        }
+        if (players.length > 1) {
+            var b = document.createElement('span');
+            b.style.setProperty('--c', 'var(--series-rest)');
+            b.textContent = 'Everyone else';
+            legend.appendChild(b);
+        }
+
+        state = {players: players, x: x, span: span, now: now, cross: cross};
+        hover();
+    };
+
+    function hover() {
+        if (!state || hoverX === null) {
+            tip.hidden = true;
+            if (state) state.cross.setAttribute('visibility', 'hidden');
+            return;
+        }
+        var r = svg.getBoundingClientRect();
+        var px = (hoverX - r.left) * W / r.width;
+        var t = (px - M.l) / (W - M.l - M.r) * state.span;
+        t = Math.max(0, Math.min(t, state.now));
+        var cx = state.x(t);
+        state.cross.setAttribute('x1', cx);
+        state.cross.setAttribute('x2', cx);
+        state.cross.setAttribute('visibility', 'visible');
+
+        var rows = state.players.map(function (p) { return {p: p, n: countAt(p, t)}; })
+            .sort(function (a, b) { return b.n - a.n; });
+        // Keep it short, but always include the highlighted player.
+        var shown = rows.slice(0, 8);
+        var hiRow = rows.filter(function (r) { return r.p.hi; })[0];
+        if (hiRow && shown.indexOf(hiRow) === -1) shown.push(hiRow);
+
+        tip.innerHTML = '';
+        var head = document.createElement('div');
+        head.className = 't';
+        head.textContent = fmt(t) + ' in';
+        tip.appendChild(head);
+        shown.forEach(function (row) {
+            var d = document.createElement('div');
+            d.className = 'row' + (row.p.hi ? ' me' : '');
+            var name = document.createElement('span');
+            name.textContent = row.p.me ? 'You' : row.p.name;
+            var n = document.createElement('span');
+            n.textContent = row.n;
+            d.appendChild(name);
+            d.appendChild(n);
+            tip.appendChild(d);
+        });
+        tip.hidden = false;
+
+        var boxR = box.getBoundingClientRect();
+        var left = cx * r.width / W + (r.left - boxR.left) + 12;
+        if (left + tip.offsetWidth > boxR.width) left -= tip.offsetWidth + 24;
+        tip.style.left = Math.max(0, left) + 'px';
+        tip.style.top = (r.top - boxR.top + 16) + 'px';
+    }
+
+    drawSolvesChart(JSON.parse(document.getElementById('chart-data').textContent));
+})();
+</script>
+{% endif %}
+
 {# --- standings --- #}
 <div class="main-block">
     <div class="info"><strong>Standings</strong></div>
@@ -155,6 +374,7 @@
 
     function render(data) {
         deadline = data.deadline ? new Date(data.deadline) : null;
+        if (window.drawSolvesChart && data.chart) window.drawSolvesChart(data.chart);
 
         var body = document.getElementById('standings');
         if (!data.standings.length) {

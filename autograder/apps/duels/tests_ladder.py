@@ -114,6 +114,7 @@ class ClimbTests(LadderBase):
         self.assertEqual(entry.position, 2)
         self.assertEqual(entry.solved, 1)
         self.assertEqual(entry.last_solve_at, at)
+        self.assertEqual(entry.solve_times, [at.isoformat()])
 
     def test_wrong_answer_does_not_move_you(self):
         ladder = self.make_ladder()
@@ -316,6 +317,8 @@ class LadderViewTests(LadderBase):
         self.assertEqual(data["status"], "active")
         self.assertEqual(data["my_position"], 1)
         self.assertTrue(data["standings"][0]["me"])
+        self.assertEqual(data["chart"]["max"], 3)
+        self.assertEqual(data["chart"]["players"][0]["solves"], [])
 
     def test_skip_view_checks_cf_first(self):
         ladder = self.make_ladder()
