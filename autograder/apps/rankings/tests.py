@@ -1,10 +1,17 @@
+from datetime import timedelta
 from decimal import Decimal
+from io import StringIO
 from unittest.mock import patch
 
+from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
 
+from ..contests.models import Contest
 from ..index.models import GraderUser
+from ..problems.models import Problem
+from ..runtests.models import Submission
 from .formula import compute_index, index_for_user
 from .tasks import update_codeforces_rating, update_user_index
 
@@ -348,3 +355,53 @@ class SignalLoopTests(TestCase):
         """The full path: running the index task must not feed itself."""
         update_user_index(self.user.id)
         task.delay.assert_not_called()
+
+
+@override_settings(CURRENT_SEASON=2027)
+@patch("autograder.apps.index.signals.update_codeforces_rating.delay")
+class UpdateRankingsContestSelectionTests(TestCase):
+    """Only finished rated contests feed the in-house average.
+
+    A rated contest created ahead of time used to be scored as a 0 for everyone,
+    and with fewer than three contests there is no drop to absorb it, so every
+    participant's in-house came out at half its real value.
+    """
+
+    def make_contest(self, name, start, end):
+        return Contest.objects.create(
+            name=name, season=2027, rated=True, start=start, end=end
+        )
+
+    def test_unfinished_rated_contest_is_not_scored(self, _task):
+        now = timezone.now()
+        done = self.make_contest("Done", now - timedelta(days=2), now - timedelta(days=1))
+        self.make_contest("Upcoming", now + timedelta(days=6), now + timedelta(days=7))
+        problem = Problem.objects.create(
+            name="P",
+            contest=done,
+            points=100,
+            contest_letter="A",
+            statement="s",
+            inputtxt="i",
+            outputtxt="o",
+            samples="x",
+        )
+        user = GraderUser.objects.create_user(
+            email="2027a@example.com", username="2027a", display_name="A"
+        )
+        Submission.objects.create(
+            language="python",
+            code="",
+            usr=user,
+            verdict="Accepted",
+            contest=done,
+            problem=problem,
+            timestamp=done.start + timedelta(minutes=10),
+        )
+
+        call_command("update_rankings", stdout=StringIO())
+
+        user.refresh_from_db()
+        # Sole participant: 1200 * (1 - 1 + 1) / 1 + 800.
+        self.assertEqual(user.inhouses, [Decimal("2000")])
+        self.assertEqual(user.inhouse, Decimal("2000"))

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 
 from ....index.models import GraderUser
 from ....contests.models import Contest
@@ -30,8 +31,13 @@ class Command(BaseCommand):
             for user in users
         ]
 
-        # Load all rated contests for current season
-        contests = Contest.objects.filter(rated=True, season=settings.CURRENT_SEASON)
+        # Load all rated contests for current season that have finished. A rated
+        # contest that is scheduled or still running would otherwise count as a 0
+        # for everyone, and with fewer than three contests there is no drop to
+        # absorb it -- every participant's in-house average gets halved.
+        contests = Contest.objects.filter(
+            rated=True, season=settings.CURRENT_SEASON, end__lte=timezone.now()
+        )
 
         # Compute inhouse scores for each contest
         for contest in contests:
