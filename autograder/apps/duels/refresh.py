@@ -4,7 +4,7 @@ from django.core.cache import cache
 from django.db import transaction
 from django.utils import timezone
 
-from ..index.cf_utils import fetch_recent_submissions
+from ..index.cf_utils import fetch_recent_submissions, take_cf_slot
 from .models import Duel, DuelSubmission
 
 logger = logging.getLogger(__name__)
@@ -31,6 +31,8 @@ def refresh_duel(duel, force=False):
     # Timeout is checked before the lock so an abandoned duel still closes even
     # when the throttle would otherwise skip this call.
     if duel.is_overdue:
+        if duel.bracket_match_id:
+            _final_check(duel)
         _finish_on_timeout(duel)
         return False
 
@@ -38,7 +40,9 @@ def refresh_duel(duel, force=False):
         return False
 
     for player in duel.players:
-        _sync_player(duel, player)
+        # Out of site-wide budget: this player waits for the next window.
+        if take_cf_slot():
+            _sync_player(duel, player)
 
     _settle(duel)
     return True
@@ -65,18 +69,31 @@ def _sync_player(duel, player):
         )
 
 
+def _final_check(duel):
+    """One last look at CF before a cup duel is called a draw.
+
+    A draw there means a sudden-death rematch, and with the site-wide budget a
+    solve from the last few seconds may not have been seen yet. Runs once per duel.
+    """
+    if not cache.add(f"{_lock_key(duel.id)}:final", 1, 60):
+        return
+    for player in duel.players:
+        if take_cf_slot(wait=3):
+            _sync_player(duel, player)
+    _settle(duel, before=duel.deadline)
+
+
 @transaction.atomic
-def _settle(duel):
+def _settle(duel, before=None):
     """Award the duel to whoever has the earliest accepted submission."""
     locked = Duel.objects.select_for_update().get(pk=duel.pk)
     if locked.status != Duel.ACTIVE:
         return
 
-    first = (
-        DuelSubmission.objects.filter(duel=locked, verdict="OK")
-        .order_by("created_at", "cf_submission_id")
-        .first()
-    )
+    accepted = DuelSubmission.objects.filter(duel=locked, verdict="OK")
+    if before is not None:
+        accepted = accepted.filter(created_at__lt=before)
+    first = accepted.order_by("created_at", "cf_submission_id").first()
     if first is None:
         return
 
@@ -103,6 +120,7 @@ def _finish_on_timeout(duel):
 def expire_stale_challenges():
     """Close out challenges nobody accepted. Cheap; no external calls."""
     cutoff = timezone.now() - Duel.CHALLENGE_TTL
-    return Duel.objects.filter(status=Duel.PENDING, created_at__lt=cutoff).update(
-        status=Duel.EXPIRED, ended_at=timezone.now()
-    )
+    # Cup matches are never "challenges"; one stuck drawing a problem waits for staff.
+    return Duel.objects.filter(
+        status=Duel.PENDING, created_at__lt=cutoff, bracket_match__isnull=True
+    ).update(status=Duel.EXPIRED, ended_at=timezone.now())

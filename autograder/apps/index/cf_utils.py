@@ -1,13 +1,39 @@
 import requests
 import random
 import logging
+import time
 from datetime import datetime, timedelta, timezone as dt_timezone
 from django.utils import timezone
+from django.conf import settings
 from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
 CF_LANGUAGES = ["GNU C++17", "Python 3", "Java 11", "PyPy 3", "GNU C++20 (64)"]
+
+# Codeforces allows roughly one API call per second per IP, and every duel, battle
+# royale and cup on the site shares that one budget. Going over gets "Call limit
+# exceeded" back, which looks like "no new submissions" and stalls everyone.
+CF_CALL_INTERVAL = 1.0
+
+
+def take_cf_slot(wait=0):
+    """Reserve the site's next Codeforces call.
+
+    Returns False if no slot came free within `wait` seconds. Polling callers pass
+    wait=0 and simply try again on their next poll; background tasks can afford to
+    wait. Backed by the shared cache, so it holds across processes and workers.
+    """
+    if not getattr(settings, "CF_RATE_LIMIT", True):
+        return True
+    give_up = time.monotonic() + wait
+    while True:
+        slot = int(time.time() / CF_CALL_INTERVAL)
+        if cache.add(f"cf_slot:{slot}", 1, timeout=5):
+            return True
+        if time.monotonic() >= give_up:
+            return False
+        time.sleep(0.2)
 
 
 def fetch_cf_problems():
@@ -16,6 +42,9 @@ def fetch_cf_problems():
         return cached_problems
 
     url = "https://codeforces.com/api/problemset.problems"
+    if not take_cf_slot(wait=10):
+        logger.error("No Codeforces API slot for the problemset fetch.")
+        return []
     try:
         resp = requests.get(url, timeout=10)
         data = resp.json()
@@ -90,7 +119,7 @@ SOLVED_SET_TTL = 600  # 10 min; a tournament reuses a player's set across duels
 CF_API_TIMEOUT = 15
 
 
-def fetch_solved_set(handle, force=False):
+def fetch_solved_set(handle, force=False, wait=10):
     """{(contestId, index)} the handle has ever had accepted, or None on failure.
 
     Returning None rather than an empty set matters: an empty set would look like
@@ -105,6 +134,10 @@ def fetch_solved_set(handle, force=False):
         cached = cache.get(key)
         if cached is not None:
             return cached
+
+    if not take_cf_slot(wait=wait):
+        logger.error(f"No Codeforces API slot for {handle}'s history.")
+        return None
 
     url = f"https://codeforces.com/api/user.status?handle={handle}&from=1&count=10000"
     try:

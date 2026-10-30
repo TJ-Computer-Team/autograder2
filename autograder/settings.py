@@ -281,6 +281,10 @@ CELERY_BROKER_URL = "redis://redis:6379/0" if DEBUG else "redis://127.0.0.1:6379
 if "test" in sys.argv:
     CELERY_BROKER_URL = "memory://"
 
+# Site-wide Codeforces call budget (see cf_utils.take_cf_slot). Off in tests, which
+# never reach Codeforces and often poll twice within the same second.
+CF_RATE_LIMIT = "test" not in sys.argv
+
 CELERY_ACCEPT_CONTENT = ["json", "pickle"]
 CELERY_TASK_SERIALIZER = "pickle"
 

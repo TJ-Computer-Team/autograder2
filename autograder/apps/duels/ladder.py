@@ -4,23 +4,15 @@ from django.core.cache import cache
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 
-from ..index.cf_utils import fetch_recent_submissions, fetch_solved_set
+from ..index.cf_utils import fetch_recent_submissions, fetch_solved_set, take_cf_slot
 from .models import Ladder, LadderEntry
 
 logger = logging.getLogger(__name__)
 
-# Each player's own page drives the CF polling for their handle, so a ladder costs
-# one request per climbing player per window. Spectators never trigger a CF call.
-# The window stretches with the field so a big ladder stays near ~0.7 req/s, under
-# Codeforces' ~1 req/s per-IP limit. CF judging takes 5-30s anyway, so the extra
-# few seconds of lag are barely noticeable.
-MIN_POLL_WINDOW_SECONDS = 4
-SECONDS_PER_PLAYER = 1.5
-
-
-def poll_window(ladder):
-    climbing = ladder.entries.filter(position__lte=ladder.rung_count).count()
-    return max(MIN_POLL_WINDOW_SECONDS, round(SECONDS_PER_PLAYER * climbing))
+# Each player's own page drives the CF polling for their handle, at most once per
+# window. Spectators never trigger a CF call. With many players the site-wide
+# budget (take_cf_slot) is what actually spaces checks out.
+POLL_WINDOW_SECONDS = 4
 
 
 class JoinError(Exception):
@@ -90,7 +82,14 @@ def refresh_entry(entry, force=False):
     ladder = entry.ladder
     if ladder.status != Ladder.ACTIVE or entry.is_done or entry.reached_at is None:
         return False
-    if not force and not cache.add(f"ladder_poll:{entry.pk}", 1, poll_window(ladder)):
+    lock = f"ladder_poll:{entry.pk}"
+    if not force and not cache.add(lock, 1, POLL_WINDOW_SECONDS):
+        return False
+    # Forced checks (skip, the closing sweep) can afford to wait for a slot.
+    if not take_cf_slot(wait=5 if force else 0):
+        # No budget this second; drop the lock so the next poll tries again
+        # instead of waiting out a whole window.
+        cache.delete(lock)
         return False
 
     rung = ladder.rungs.filter(position=entry.position).first()

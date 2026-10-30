@@ -2,11 +2,11 @@ from datetime import timedelta
 from unittest.mock import patch
 
 from django.core.cache import cache
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from .ladder import JoinError, join_ladder, poll_window, refresh_entry, skip_rung
+from .ladder import JoinError, join_ladder, refresh_entry, skip_rung
 from .models import Ladder, LadderEntry, LadderRung
 from .selection import SelectionError, ladder_ratings, pick_ladder_problems
 from .tests import make_user
@@ -339,22 +339,7 @@ class LadderViewTests(LadderBase):
         self.assertContains(self.client.get(reverse("duels:list")), "Battle Royale")
 
 
-class PollWindowTests(LadderBase):
-    def test_small_ladder_uses_the_floor(self):
-        ladder = self.make_ladder()
-        self.enter(ladder, self.alice)
-        self.enter(ladder, self.bob)
-        self.assertEqual(poll_window(ladder), 4)
-
-    def test_window_grows_with_climbers_only(self):
-        ladder = self.make_ladder(rungs=2)
-        for i in range(12):
-            self.enter(ladder, make_user(f"p{i}", f"p{i}_cf"))
-        self.assertEqual(poll_window(ladder), 18)
-        # Finished players are no longer polled, so they don't stretch the window.
-        ladder.entries.filter(user__username__in=["p0", "p1"]).update(position=3)
-        self.assertEqual(poll_window(ladder), 15)
-
+class PollThrottleTests(LadderBase):
     def test_repeat_polls_within_the_window_make_one_cf_call(self):
         ladder = self.make_ladder()
         entry = self.enter(ladder, self.alice)
@@ -363,4 +348,21 @@ class PollWindowTests(LadderBase):
         ) as fetch:
             refresh_entry(entry)
             refresh_entry(entry)
+        self.assertEqual(fetch.call_count, 1)
+
+    @override_settings(CF_RATE_LIMIT=True)
+    def test_no_site_budget_means_retry_on_the_next_poll(self):
+        ladder = self.make_ladder()
+        entry = self.enter(ladder, self.alice)
+        with (
+            patch(
+                "autograder.apps.duels.ladder.fetch_recent_submissions", return_value=[]
+            ) as fetch,
+            patch(
+                "autograder.apps.duels.ladder.take_cf_slot", side_effect=[False, True]
+            ),
+        ):
+            refresh_entry(entry)
+            refresh_entry(entry)
+        # The first poll found no budget and must not lock the player out.
         self.assertEqual(fetch.call_count, 1)

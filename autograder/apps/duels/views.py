@@ -216,6 +216,9 @@ def decline_duel(request, duel_id):
     duel = get_object_or_404(Duel, pk=duel_id)
     if not duel.includes(request.user):
         raise Http404
+    if duel.bracket_match_id:
+        messages.error(request, "Cup matches can't be declined.")
+        return redirect("duels:detail", duel_id=duel.id)
     if duel.status != Duel.PENDING:
         messages.error(request, "That challenge is no longer open.")
         return redirect("duels:list")

@@ -78,15 +78,14 @@ class Duel(models.Model):
     end_reason = models.CharField(max_length=20, choices=END_REASON_CHOICES, blank=True)
     selection_error = models.CharField(max_length=300, blank=True)
 
-    # Reserved for the Blitz Cup so a bracket can attach later without a data
-    # migration. Nothing reads it yet.
+    # Set when this duel is a Blitz Cup match. A match can take more than one duel
+    # (a sudden-death rematch after a draw).
     bracket_match = models.ForeignKey(
-        "self",
+        "CupMatch",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="+",
-        help_text="Unused; placeholder for the Blitz Cup bracket.",
+        related_name="duels",
     )
 
     class Meta:
@@ -144,6 +143,10 @@ class Duel(models.Model):
         self.status = self.FINISHED
         self.ended_at = timezone.now()
         self.save(update_fields=["winner", "end_reason", "status", "ended_at"])
+        if self.bracket_match_id:
+            from .cup import duel_finished
+
+            duel_finished(self)
 
 
 class DuelSubmission(models.Model):
@@ -326,3 +329,140 @@ class LadderEntry(models.Model):
         while self.position in presolved:
             self.position += 1
         self.reached_at = timezone.now()
+
+
+class Cup(models.Model):
+    """A live single-elimination tournament of 1v1 duels, run by staff.
+
+    Every match in a round is played at the same time; staff start each round once
+    the previous one is done. A match is an ordinary Duel, so the duel page, winner
+    detection and forfeits all work unchanged.
+    """
+
+    REGISTRATION = "registration"
+    RUNNING = "running"
+    FINISHED = "finished"
+    CANCELLED = "cancelled"
+    STATUS_CHOICES = (
+        (REGISTRATION, "Registration open"),
+        (RUNNING, "In progress"),
+        (FINISHED, "Finished"),
+        (CANCELLED, "Cancelled"),
+    )
+
+    name = models.CharField(max_length=100, default="Blitz Cup")
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default=REGISTRATION
+    )
+    created_by = models.ForeignKey(
+        "index.GraderUser", on_delete=models.SET_NULL, null=True, related_name="+"
+    )
+
+    # Round 1 draws from rating_min-rating_max; each later round adds rating_step.
+    rating_min = models.IntegerField(default=800)
+    rating_max = models.IntegerField(default=1100)
+    rating_step = models.IntegerField(default=200)
+    duel_minutes = models.PositiveIntegerField(default=15)
+    sudden_death_minutes = models.PositiveIntegerField(default=10)
+
+    # 0 until the bracket is drawn. A round is "started" once its duels exist.
+    current_round = models.PositiveIntegerField(default=0)
+    round_count = models.PositiveIntegerField(default=0)
+    champion = models.ForeignKey(
+        "index.GraderUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    # Why the last round could not start, shown to staff on the bracket.
+    error = models.CharField(max_length=300, blank=True)
+
+    created_at = models.DateTimeField(default=timezone.now)
+    ended_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.name} ({self.status})"
+
+    def rating_range(self, round_number):
+        bump = self.rating_step * (round_number - 1)
+        return self.rating_min + bump, self.rating_max + bump
+
+    def round_name(self, round_number):
+        from_end = self.round_count - round_number
+        return {0: "Final", 1: "Semifinals", 2: "Quarterfinals"}.get(
+            from_end, f"Round {round_number}"
+        )
+
+
+class CupEntry(models.Model):
+    cup = models.ForeignKey(Cup, on_delete=models.CASCADE, related_name="entries")
+    user = models.ForeignKey("index.GraderUser", on_delete=models.CASCADE)
+    seed = models.PositiveIntegerField(null=True, blank=True)
+    joined_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ("cup", "seed", "joined_at")
+        constraints = [
+            models.UniqueConstraint(fields=("cup", "user"), name="cupentry_unique_user")
+        ]
+
+    def __str__(self):
+        return f"{self.user} (seed {self.seed})"
+
+
+class CupMatch(models.Model):
+    """One slot in the bracket. The winner moves to match slot // 2 of the next round."""
+
+    cup = models.ForeignKey(Cup, on_delete=models.CASCADE, related_name="matches")
+    round = models.PositiveIntegerField()
+    # 0-based, top to bottom within the round.
+    slot = models.PositiveIntegerField()
+    player_a = models.ForeignKey(
+        "index.GraderUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    player_b = models.ForeignKey(
+        "index.GraderUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    # A round-1 match with one player is a bye and is won the moment it is drawn.
+    is_bye = models.BooleanField(default=False)
+    winner = models.ForeignKey(
+        "index.GraderUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    # How it was decided when it wasn't a plain solve: bye, seed, staff.
+    decided_by = models.CharField(max_length=20, blank=True)
+
+    class Meta:
+        ordering = ("cup", "round", "slot")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("cup", "round", "slot"), name="cupmatch_unique_slot"
+            )
+        ]
+
+    def __str__(self):
+        return f"R{self.round} #{self.slot}: {self.player_a} vs {self.player_b}"
+
+    @property
+    def players(self):
+        return [p for p in (self.player_a, self.player_b) if p is not None]
+
+    def loser(self):
+        if self.winner_id is None:
+            return None
+        return self.player_b if self.winner_id == self.player_a_id else self.player_a

@@ -5,7 +5,8 @@ from django.db import transaction
 from django.utils import timezone
 
 from ...celery import app
-from .models import Duel, Ladder, LadderRung
+from ..index.cf_utils import fetch_solved_set
+from .models import Cup, CupMatch, Duel, Ladder, LadderRung
 from .selection import SelectionError, pick_duel_problem, pick_ladder_problems
 
 logger = logging.getLogger(__name__)
@@ -138,3 +139,45 @@ def close_ladder(ladder_id):
         locked = Ladder.objects.select_for_update().get(id=ladder_id)
         if locked.status == Ladder.ACTIVE:
             locked.finish()
+
+
+@app.task
+def start_cup_round(cup_id, round_number):
+    """Start every undecided match in a round, one after another."""
+    match_ids = CupMatch.objects.filter(
+        cup_id=cup_id, round=round_number, winner__isnull=True
+    ).values_list("id", flat=True)
+    for match_id in match_ids:
+        start_cup_match(match_id)
+
+
+@app.task
+def start_cup_match(match_id):
+    """Draw a problem for one cup match and start its duel.
+
+    Also what staff's Retry button runs, so it reuses a duel stuck drawing.
+    """
+    from .cup import create_match_duel
+
+    match = CupMatch.objects.select_related("cup", "player_a", "player_b").get(
+        id=match_id
+    )
+    cup = match.cup
+    if match.winner_id or len(match.players) < 2:
+        return
+    if match.duels.filter(status=Duel.ACTIVE).exists():
+        return
+
+    # Forced: the cached list (10 min) can predate last round's problem, which
+    # they could otherwise just resubmit. Waits its turn in the site-wide budget.
+    for player in match.players:
+        if fetch_solved_set(player.cf_handle, force=True, wait=60) is None:
+            msg = f"Couldn't load {player.cf_handle}'s Codeforces history. Retry the match."
+            logger.warning(f"Cup {cup.pk}: {msg}")
+            Cup.objects.filter(pk=cup.pk).update(error=msg[:300])
+            return
+
+    duel = match.duels.filter(status=Duel.PENDING).first() or create_match_duel(
+        match, cup.duel_minutes
+    )
+    start_duel(duel.id)
