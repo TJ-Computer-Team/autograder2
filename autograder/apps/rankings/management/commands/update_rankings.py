@@ -1,12 +1,14 @@
-from django.conf import settings
-from django.shortcuts import get_object_or_404
 from django.core.management.base import BaseCommand
-from django.utils import timezone
 
 from ....index.models import GraderUser
-from ....contests.models import Contest
 from ....contests.utils import get_standings
-from ...formula import compute_index, usaco_rating_for
+from ...formula import (
+    SeasonContests,
+    finished_rated_contests,
+    index_for_user,
+    inhouse_contest_score,
+    inhouse_score,
+)
 from ...models import RatingChange
 
 
@@ -16,105 +18,34 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(self.style.NOTICE("Starting user ranking update..."))
 
-        # Load normal users
-        users = GraderUser.objects.filter(is_tjioi=False, is_staff=False)
+        users = list(GraderUser.objects.filter(is_tjioi=False, is_staff=False))
+        taken = {user.id: [] for user in users}
 
-        # Initialize ranking data for each user
-        rankings = [
-            {
-                "id": user.id,
-                "name": user.display_name,
-                "usaco": usaco_rating_for(user.usaco_division),
-                "cf": user.cf_rating,
-                "inhouses": [],
-            }
-            for user in users
-        ]
+        # Only rated contests this season that have finished. One still scheduled
+        # or running has no final standings, and must not look skipped.
+        contests = finished_rated_contests().prefetch_related("writers")
+        season = SeasonContests.load(contests)
 
-        # Load all rated contests for current season that have finished. A rated
-        # contest that is scheduled or still running would otherwise count as a 0
-        # for everyone, and with fewer than three contests there is no drop to
-        # absorb it -- every participant's in-house average gets halved.
-        contests = Contest.objects.filter(
-            rated=True, season=settings.CURRENT_SEASON, end__lte=timezone.now()
-        )
-
-        # Compute inhouse scores for each contest
+        # Collect the score of every in-house each user took. A contest someone
+        # wrote is left out entirely, even if they show up on its standings, and
+        # one they skipped simply adds nothing.
         for contest in contests:
-            contest_standings = get_standings(contest.id)
-            for i in range(len(rankings)):
-                user = get_object_or_404(GraderUser, id=rankings[i]["id"])
-
-                # Authors score their own contest at the writer formula rather
-                # than taking a zero for not competing in it.
-                if user in contest.writers.all():
-                    rankings[i]["inhouses"].append(
-                        compute_index(
-                            rankings[i]["usaco"],
-                            rankings[i]["cf"],
-                            0,
-                            has_inhouses=False,
-                        )
+            writer_ids = {w.id for w in contest.writers.all()}
+            standings = get_standings(contest.id)["load"]
+            for entry in standings:
+                if entry["id"] in taken and entry["id"] not in writer_ids:
+                    taken[entry["id"]].append(
+                        inhouse_contest_score(entry["rank"], len(standings))
                     )
-                    continue
 
-                # Check if user participated
-                took = False
-                for j, entry in enumerate(contest_standings["load"]):
-                    if rankings[i]["id"] == entry["id"]:
-                        score = 1200 * (len(contest_standings["load"]) - entry["rank"] + 1) / len(contest_standings["load"]) + 800
-                        rankings[i]["inhouses"].append(score)
-                        took = True
-                        break
+        for user in users:
+            user.inhouses = taken[user.id]
+            user.inhouse = inhouse_score(user.inhouses)
+            # Shared with the rankings page and update_user_index, which decides
+            # between the writer and standard formula.
+            user.index = index_for_user(user, season)
 
-                # If user did not participate, score is 0
-                if not took:
-                    rankings[i]["inhouses"].append(0)
-
-        # Compute inhouse averages and final index for each user
-        for r in range(len(rankings)):
-            # Remove None values from writer contests
-            valid_scores = [float(x) for x in rankings[r]["inhouses"] if x is not None]
-            valid_scores.sort()
-
-            user = get_object_or_404(GraderUser, id=rankings[r]["id"])
-
-            # Compute drops based on actual participated contests
-            drops = max(0, min(2, len(valid_scores) - 2) + user.author_drops)
-
-            # Compute overall inhouse score after drops
-            overall = sum(valid_scores[drops:]) if len(valid_scores) > drops else 0
-            if len(valid_scores) - drops > 0:
-                overall /= (len(valid_scores) - drops)
-
-            rankings[r]["inhouse"] = overall
-
-            # Shared with the rankings page and update_user_index.
-            rankings[r]["index"] = compute_index(
-                rankings[r]["usaco"],
-                rankings[r]["cf"],
-                rankings[r]["inhouse"],
-                use_writer_formula=user.use_writer_formula,
-                has_inhouses=bool(valid_scores),
-            )
-
-        # Sort users by index descending and assign ranks
-        rankings.sort(key=lambda x: x["index"], reverse=True)
-        for i in range(len(rankings)):
-            if i > 0 and rankings[i]["index"] == rankings[i - 1]["index"]:
-                rankings[i]["rank"] = rankings[i - 1]["rank"]
-            else:
-                rankings[i]["rank"] = i + 1
-
-        # Persist results to database
-        for r in rankings:
-            user = get_object_or_404(GraderUser, id=r["id"])
-            RatingChange.objects.create(user=user, rating=r["index"])
-
-            user.inhouses = r["inhouses"]
-            user.inhouse = r["inhouse"]
-            user.index = r["index"]
-            user.rank = r["rank"]
+            RatingChange.objects.create(user=user, rating=user.index)
             user.save()
 
         self.stdout.write(self.style.SUCCESS("Ranking update complete."))

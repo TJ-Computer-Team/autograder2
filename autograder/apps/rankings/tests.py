@@ -12,7 +12,7 @@ from ..contests.models import Contest
 from ..index.models import GraderUser
 from ..problems.models import Problem
 from ..runtests.models import Submission
-from .formula import compute_index, index_for_user
+from .formula import compute_index, index_for_user, uses_writer_formula
 from .tasks import update_codeforces_rating, update_user_index
 
 
@@ -57,14 +57,13 @@ class IndexFormulaTests(TestCase):
     so a user's rank silently changed when they edited their profile.
     """
 
-    def make(self, username, division, cf, inhouses=None, writer=False):
+    def make(self, username, division, cf, inhouses=None):
         user = GraderUser.objects.create_user(
             email=f"{username}@example.com",
             username=username,
             display_name=username,
             usaco_division=division,
             cf_rating=cf,
-            use_writer_formula=writer,
         )
         if inhouses is not None:
             GraderUser.objects.filter(pk=user.pk).update(inhouses=inhouses)
@@ -85,12 +84,6 @@ class IndexFormulaTests(TestCase):
         self.assertEqual(user.index, self.writer_index(1900, 2054))
         # The bug produced 0.2*0 + 0.35*1900 + 0.45*2054 = 1589.3
         self.assertNotEqual(user.index, Decimal("1589.300"))
-
-    def test_writer_flag_uses_writer_formula(self):
-        user = self.make("2027writer", GraderUser.GOLD, 1712, writer=True)
-        update_user_index(user.id)
-        user.refresh_from_db()
-        self.assertEqual(user.index, self.writer_index(1600, 1712))
 
     def test_with_inhouses_uses_standard_formula(self):
         user = self.make(
@@ -250,8 +243,9 @@ class IndexIsDerivedOnReadTests(TestCase):
             )
             if row is None:
                 continue  # filtered out for having nothing to rank on
+            # No contests this season yet, so everyone is on the writer formula.
             expected = compute_index(
-                row["usaco"], row["cf"], row["inhouse"], has_inhouses=False
+                row["usaco"], row["cf"], row["inhouse"], use_writer_formula=True
             )
             self.assertEqual(row["index"], expected, f"{division} / {cf}")
 
@@ -405,3 +399,161 @@ class UpdateRankingsContestSelectionTests(TestCase):
         # Sole participant: 1200 * (1 - 1 + 1) / 1 + 800.
         self.assertEqual(user.inhouses, [Decimal("2000")])
         self.assertEqual(user.inhouse, Decimal("2000"))
+
+
+class WriterFormulaRuleTests(TestCase):
+    """Writer formula only while someone has taken no in-house this season."""
+
+    def decide(self, **kw):
+        args = dict(took_any=False, wrote_any=False, any_finished=True)
+        args.update(kw)
+        return uses_writer_formula(**args)
+
+    def test_took_none_and_wrote_none_is_standard(self):
+        self.assertFalse(self.decide())
+
+    def test_wrote_one_and_took_none_is_writer(self):
+        self.assertTrue(self.decide(wrote_any=True))
+
+    def test_wrote_one_and_took_another_is_standard(self):
+        self.assertFalse(self.decide(wrote_any=True, took_any=True))
+
+    def test_no_contests_yet_is_writer(self):
+        self.assertTrue(self.decide(any_finished=False))
+
+
+@override_settings(CURRENT_SEASON=2027)
+@patch("autograder.apps.index.signals.update_codeforces_rating.delay")
+class UpdateRankingsInhouseTests(TestCase):
+    """In-house is the best contest taken; written contests never count."""
+
+    def setUp(self):
+        self.now = timezone.now()
+        self.viewer = GraderUser.objects.create_user(
+            email="2027viewer@example.com", username="2027viewer", display_name="V"
+        )
+
+    def user(self, name, division=GraderUser.GOLD, cf=1400):
+        return GraderUser.objects.create_user(
+            email=f"{name}@example.com",
+            username=f"2027{name}",
+            display_name=name,
+            usaco_division=division,
+            cf_rating=cf,
+        )
+
+    def contest(self, name, days_ago, writers=()):
+        start = self.now - timedelta(days=days_ago, hours=3)
+        contest = Contest.objects.create(
+            name=name, season=2027, rated=True, start=start, end=start + timedelta(hours=2)
+        )
+        contest.writers.set(writers)
+        Problem.objects.create(
+            name=f"{name}A",
+            contest=contest,
+            points=100,
+            contest_letter="A",
+            statement="s",
+            inputtxt="i",
+            outputtxt="o",
+            samples="x",
+        )
+        return contest
+
+    def solve(self, user, contest, minutes):
+        Submission.objects.create(
+            language="python",
+            code="",
+            usr=user,
+            verdict="Accepted",
+            contest=contest,
+            problem=contest.problem_set.get(),
+            timestamp=contest.start + timedelta(minutes=minutes),
+        )
+
+    def run_rankings(self):
+        call_command("update_rankings", stdout=StringIO())
+
+    def page_row(self, user):
+        self.client.force_login(self.viewer)
+        resp = self.client.get(reverse("rankings:rankings", args=[2027]))
+        return next(r for r in resp.context["rankings"] if r["id"] == user.id)
+
+    @staticmethod
+    def standard(usaco, cf, inhouse):
+        low, mid, high = sorted(Decimal(str(v)) for v in (usaco, cf, inhouse))
+        return Decimal("0.2") * low + Decimal("0.35") * mid + Decimal("0.45") * high
+
+    @staticmethod
+    def writer(usaco, cf):
+        return Decimal("0.4") * min(usaco, cf) + Decimal("0.6") * max(usaco, cf)
+
+    def test_inhouse_is_the_best_contest_taken(self, _task):
+        a, b = self.user("a"), self.user("b")
+        first, second = self.contest("One", 5), self.contest("Two", 2)
+        # One: a first of 2 (2000), b second (1400). Two: b first, a second.
+        self.solve(a, first, 10)
+        self.solve(b, first, 20)
+        self.solve(b, second, 10)
+        self.solve(a, second, 20)
+
+        self.run_rankings()
+
+        a.refresh_from_db()
+        self.assertEqual(sorted(a.inhouses), [Decimal("1400"), Decimal("2000")])
+        self.assertEqual(a.inhouse, Decimal("2000"))
+        self.assertEqual(a.index, self.standard(1600, 1400, 2000))
+
+    def test_took_none_has_zero_inhouse_on_standard_formula(self, _task):
+        player, skipper = self.user("p"), self.user("s", GraderUser.PLATINUM, 2054)
+        contest = self.contest("One", 2)
+        self.solve(player, contest, 10)
+
+        self.run_rankings()
+
+        skipper.refresh_from_db()
+        self.assertEqual(skipper.inhouses, [])
+        self.assertEqual(skipper.inhouse, Decimal("0"))
+        self.assertEqual(skipper.index, self.standard(1900, 2054, 0))
+        self.assertEqual(self.page_row(skipper)["index"], skipper.index)
+
+    def test_wrote_one_skipped_the_other_stays_writer(self, _task):
+        author, player = self.user("w", cf=1712), self.user("p")
+        self.contest("Written", 5, writers=[author])
+        other = self.contest("Other", 2)
+        self.solve(player, other, 10)
+
+        self.run_rankings()
+
+        author.refresh_from_db()
+        self.assertEqual(author.inhouses, [])
+        self.assertEqual(author.index, self.writer(1600, 1712))
+        self.assertEqual(self.page_row(author)["index"], author.index)
+
+    def test_wrote_one_took_another_uses_that_score(self, _task):
+        author, rival = self.user("w", cf=1712), self.user("r")
+        written = self.contest("Written", 5, writers=[author])
+        taken = self.contest("Taken", 2)
+        self.solve(rival, written, 10)
+        # Second of 2 on the contest they took: 1200 * 1 / 2 + 800 = 1400.
+        self.solve(rival, taken, 10)
+        self.solve(author, taken, 20)
+
+        self.run_rankings()
+
+        author.refresh_from_db()
+        self.assertEqual(author.inhouses, [Decimal("1400")])
+        self.assertEqual(author.inhouse, Decimal("1400"))
+        self.assertEqual(author.index, self.standard(1600, 1712, 1400))
+        self.assertEqual(self.page_row(author)["index"], author.index)
+
+    def test_own_contest_never_counts_even_if_on_standings(self, _task):
+        author = self.user("w", cf=1712)
+        written = self.contest("Written", 2, writers=[author])
+        self.solve(author, written, 10)
+
+        self.run_rankings()
+
+        author.refresh_from_db()
+        self.assertEqual(author.inhouses, [])
+        self.assertEqual(author.index, self.writer(1600, 1712))
