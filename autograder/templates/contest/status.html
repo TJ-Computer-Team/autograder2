@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load static %}
+{% load verdicts %}
 
 {% block stylesheet %}
 <link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
@@ -12,7 +13,6 @@
 {% block content %}
 {% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
 {% include "partials/header.html" %}
-{% include "partials/contestNavbar.html" %}
 
 <div class='main-block' id="submissions">
 <table>
@@ -20,15 +20,15 @@
         <th>Submission</th>
         <th>User</th>
         <th>Problem</th>
-        <th>Langauge</th>
+        <th>Language</th>
         <th>Runtime</th>
         <th>Verdict</th>
-        {% if user.is_staff %}<th>Skip</th>{% endif %}
+        {% if admin %}<th>Skip</th>{% endif %}
     </tr>
     {% for sub in submissions  %}
-    <tr>
+    <tr class="submission-item" data-submission-id="{{ sub.id }}">
         <td>
-            <a href="{% url "runtests:submission" sub.id %}">
+            <a href="{% url "runtests:submission" sub.id %}?contest={{ cid }}">
                 #{{sub.id}}
             </a>
         </td>
@@ -38,20 +38,20 @@
             </a>
         </td>
         <td>
-            <a href="{% url "problems:problem" sub.problem.id %}">
+            <a href="{% url "problems:problem" sub.problem.id %}?contest={{ cid }}">
                 {{sub.problem.name}}
             </a>
         </td>
         <td>
             {{sub.language}}
         </td>
-        <td>
+        <td class="submission-runtime">
             {{sub.runtime}}ms
         </td>
-        <td>
+        <td class="submission-status {{ sub.verdict|verdict_class }}">
             {{sub.verdict}}
         </td>
-        {% if user.is_staff %}
+        {% if admin %}
         <td>
             {% if sub.verdict == 'Skipped' %}
             Already Skipped
@@ -79,4 +79,59 @@
 </div>
 </div>
 
+<script>
+    // Mirrors the verdict_class template filter in
+    // autograder/apps/runtests/templatetags/verdicts.py -- keep the two in sync.
+    const VERDICT_PREFIXES = [
+        ['Accepted', 'v-ac'], ['AC', 'v-ac'],
+        ['Wrong Answer', 'v-wa'],
+        ['Time Limit Exceeded', 'v-tle'], ['Memory Limit Exceeded', 'v-tle'],
+        ['Query Limit Exceeded', 'v-tle'],
+        ['Runtime Error', 'v-err'], ['Compilation Error', 'v-err'],
+        ['Protocol Violation', 'v-err'], ['Grader Error', 'v-err'],
+        ['Checker Error', 'v-err'], ['Internal Server Error', 'v-err'], ['ER', 'v-err'],
+        ['Waiting in Queue', 'v-pending'], ['Compiling', 'v-pending'],
+        ['Running', 'v-pending'], ['Rerun', 'v-pending'],
+        ['Skipped', 'v-skipped'],
+    ];
+    function verdictClass(text) {
+        if (!text) return 'v-pending';
+        const t = String(text).trim();
+        for (const [prefix, cls] of VERDICT_PREFIXES) {
+            if (t.startsWith(prefix)) return cls;
+        }
+        return '';
+    }
+
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const socketUrl = `${protocol}://${window.location.host}/ws/submissions/`;
+    const submissionSocket = new WebSocket(socketUrl);
+
+    const submissionIds = Array.from(document.querySelectorAll('.submission-item'))
+                               .map(el => el.dataset.submissionId);
+
+    submissionSocket.onopen = function(e) {
+        submissionSocket.send(JSON.stringify({
+            'type': 'join_submissions',
+            'submission_ids': submissionIds
+        }));
+    };
+
+    submissionSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const { submission_id, message, runtime } = data;
+
+        const submissionElement = document.querySelector(`.submission-item[data-submission-id="${submission_id}"] .submission-status`);
+        if (submissionElement) {
+            submissionElement.textContent = message;
+            // Keep the color in sync with the new text, otherwise a live update
+            // leaves the previous verdict's class behind.
+            submissionElement.className = 'submission-status ' + verdictClass(message);
+        }
+        const submissionRuntimeElement = document.querySelector(`.submission-item[data-submission-id="${submission_id}"] .submission-runtime`);
+        if (submissionRuntimeElement) {
+            submissionRuntimeElement.textContent = runtime + "ms";
+        }
+    };
+</script>
 {% endblock content %}

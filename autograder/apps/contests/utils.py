@@ -2,9 +2,40 @@ from .models import Contest
 from ..problems.models import Problem
 from ..index.models import GraderUser
 from ..runtests.models import Submission
+from django.utils import timezone
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def get_contest_nav(request, expected_contest_id=None):
+    """Return the Contest named by ``?contest=<cid>``, or None.
+
+    Pages outside the contests app only show the contest navbar when the user
+    got there from a contest, which the URL has to say -- a problem's contest
+    FK can't distinguish that from browsing the problemset. Callers pass
+    ``expected_contest_id`` so a hand-edited cid for some other contest is
+    ignored rather than trusted.
+    """
+    cid = request.GET.get("contest", "")
+    if not cid.isdigit():
+        return None
+
+    cid = int(cid)
+    if expected_contest_id is not None and cid != expected_contest_id:
+        return None
+
+    contest = Contest.objects.filter(id=cid).first()
+    if contest is None:
+        return None
+
+    # Same gate the contest views apply.
+    if contest.tjioi and not request.user.is_staff and not request.user.is_tjioi:
+        return None
+    if timezone.now() < contest.start and not contest.is_admin_for(request.user):
+        return None
+
+    return contest
 
 
 def get_standings(cid):
@@ -14,7 +45,9 @@ def get_standings(cid):
     pid_index = {p.contest_letter: i for i, p in enumerate(problems)}
     start, end = contest.start, contest.end
 
-    users = GraderUser.objects.filter(is_staff=False)
+    # Testers rather than all staff: admins left off visible_to couldn't see the
+    # contest beforehand, so they compete like anyone else.
+    users = GraderUser.objects.exclude(visible_contests=contest)
     stats = {
         u.id: {
             "id": u.id,

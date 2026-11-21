@@ -1,0 +1,102 @@
+{% extends "admin/change_list.html" %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .problem-drag-handle { cursor: grab; user-select: none; font-size: 1.2em; padding: 0 4px; }
+    .problem-drag-disabled .problem-drag-handle { cursor: not-allowed; opacity: 0.3; }
+    #result_list tr.problem-dragging { opacity: 0.4; }
+    #result_list tr.problem-drop-above td { border-top: 2px solid var(--primary, #79aec8); }
+    #result_list tr.problem-drop-below td { border-bottom: 2px solid var(--primary, #79aec8); }
+    #problem-reorder-status { margin: 0 0 10px; }
+</style>
+{% endblock %}
+
+{% block result_list %}
+<p id="problem-reorder-status" class="help">
+    {% if request.GET.o %}
+        Drag-to-reorder is off while sorted by a column &mdash; <a href="?">clear sorting</a> to reorder.
+    {% else %}
+        Drag the &#9776; handle to reorder. Numbers stay 1..n; the top row is the highest.
+    {% endif %}
+</p>
+{{ block.super }}
+<script>
+(function () {
+    const table = document.getElementById("result_list");
+    if (!table) return;
+    const tbody = table.querySelector("tbody");
+    const status = document.getElementById("problem-reorder-status");
+    const enabled = {{ request.GET.o|yesno:"false,true" }};
+    if (!enabled) {
+        table.classList.add("problem-drag-disabled");
+        return;
+    }
+
+    const csrf = document.querySelector("[name=csrfmiddlewaretoken]").value;
+    const reorderUrl = "{% url 'admin:problems_problem_reorder' %}";
+    let dragged = null;
+
+    const rows = () => Array.from(tbody.querySelectorAll("tr"));
+    const clearMarks = () => rows().forEach(r => r.classList.remove("problem-drop-above", "problem-drop-below"));
+
+    // Only start a drag from the handle, so clicking links/checkboxes still works.
+    tbody.addEventListener("mousedown", e => {
+        const row = e.target.closest("tr");
+        if (row) row.draggable = !!e.target.closest(".problem-drag-handle");
+    });
+
+    tbody.addEventListener("dragstart", e => {
+        dragged = e.target.closest("tr");
+        dragged.classList.add("problem-dragging");
+        e.dataTransfer.effectAllowed = "move";
+    });
+
+    tbody.addEventListener("dragover", e => {
+        const row = e.target.closest("tr");
+        if (!dragged || !row || row === dragged) return;
+        e.preventDefault();
+        clearMarks();
+        const below = e.clientY > row.getBoundingClientRect().top + row.offsetHeight / 2;
+        row.classList.add(below ? "problem-drop-below" : "problem-drop-above");
+    });
+
+    tbody.addEventListener("drop", e => {
+        const row = e.target.closest("tr");
+        if (!dragged || !row || row === dragged) return;
+        e.preventDefault();
+        const below = row.classList.contains("problem-drop-below");
+        row.parentNode.insertBefore(dragged, below ? row.nextSibling : row);
+        save();
+    });
+
+    tbody.addEventListener("dragend", () => {
+        if (dragged) dragged.classList.remove("problem-dragging");
+        dragged = null;
+        clearMarks();
+    });
+
+    function save() {
+        const order = rows().map(r => r.querySelector(".problem-drag-handle").dataset.pk);
+        status.textContent = "Saving…";
+        fetch(reorderUrl, {
+            method: "POST",
+            headers: {"Content-Type": "application/json", "X-CSRFToken": csrf},
+            body: JSON.stringify({order}),
+        }).then(r => r.json().then(body => ({ok: r.ok, body})))
+          .then(({ok, body}) => {
+            if (!ok) throw new Error(body.error || "Save failed");
+            // The server permutes the numbers already on screen, so mirror that here.
+            const cells = rows().map(r => r.querySelector("td.field-number"));
+            const numbers = cells.map(c => parseInt(c.textContent, 10)).sort((a, b) => b - a);
+            cells.forEach((c, i) => { c.textContent = numbers[i]; });
+            status.textContent = "Saved.";
+          })
+          .catch(err => {
+            status.textContent = "Couldn't save order (" + err.message + "). Reloading…";
+            setTimeout(() => location.reload(), 1500);
+          });
+    }
+})();
+</script>
+{% endblock %}

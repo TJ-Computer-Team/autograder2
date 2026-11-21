@@ -31,6 +31,11 @@ urlpatterns = (
         path(
             "problems/", include("autograder.apps.problems.urls", namespace="problems")
         ),
+        path(
+            "lectures/",
+            include("autograder.apps.lectures.urls", namespace="lectures"),
+        ),
+        path("duels/", include("autograder.apps.duels.urls", namespace="duels")),
         path("status/", include("autograder.apps.runtests.urls", namespace="runtests")),
         path(
             "rankings/", include("autograder.apps.rankings.urls", namespace="rankings")

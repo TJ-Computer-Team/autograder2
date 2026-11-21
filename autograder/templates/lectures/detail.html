@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block stylesheet %}
+<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
+{% endblock stylesheet %}
+
+{% block title %}{{ lecture_set.title }}{% endblock title %}
+
+{% block content %}
+{% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
+{% include "partials/header.html" %}
+
+<div class="main-block">
+    <div class="title"><strong>{{ lecture_set.title }}</strong></div>
+    <div class="subtitle">
+        <br>
+        {% if lecture_set.topic %}{{ lecture_set.topic }}{% endif %}
+        {% if lecture_set.topic and lecture_set.date %} &mdash; {% endif %}
+        {% if lecture_set.date %}{{ lecture_set.date|date:"F j, Y" }}{% endif %}
+        {% if not lecture_set.published %}<br><span class="set-draft">Draft &mdash; only staff can see this</span>{% endif %}
+    </div>
+</div>
+
+{% if lecture_set.description %}
+<div class="main-block">
+    <div class="info">{{ lecture_set.description|linebreaks }}</div>
+</div>
+{% endif %}
+
+<div class="main-block">
+    {% if rows %}
+    <table>
+        <tr>
+            {% if lecture_set.label_style != "none" %}<th>#</th>{% endif %}
+            <th>Problem</th>
+            <th>Difficulty</th>
+            <th>Status</th>
+        </tr>
+        {% for row in rows %}
+        <tr>
+            {% if lecture_set.label_style != "none" %}
+            <td class="centertext">{{ row.label }}</td>
+            {% endif %}
+            <td>
+                {% if row.entry.is_external %}
+                    <a href="{{ row.entry.external_url }}" target="_blank" rel="noopener">
+                        {{ row.entry.display_title }}
+                    </a>
+                    <span class="set-external">external</span>
+                {% else %}
+                    <a href="{% url 'problems:problem' pid=row.entry.problem_id %}">
+                        {{ row.entry.display_title }}
+                    </a>
+                {% endif %}
+                {% if row.entry.note %}<div class="set-note">{{ row.entry.note }}</div>{% endif %}
+            </td>
+            <td class="centertext">
+                {% if row.entry.difficulty %}
+                <span class="diff-{{ row.entry.difficulty }}">{{ row.entry.get_difficulty_display }}</span>
+                {% else %}&mdash;{% endif %}
+            </td>
+            <td class="centertext">
+                {% if row.entry.is_external %}
+                    &mdash;
+                {% elif row.solved %}
+                    <span class="v-ac">Solved</span>
+                {% else %}
+                    <span class="v-pending">Unsolved</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <div class="info">No problems in this set yet.</div>
+    {% endif %}
+</div>
+
+<div class="option-buttons">
+    <a href="{% url 'lectures:list' %}">
+        <div class="button">Back to Lecture Sets</div>
+    </a>
+</div>
+
+{% endblock content %}

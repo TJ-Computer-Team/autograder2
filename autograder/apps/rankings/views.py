@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect
 from django.conf import settings
+from django.db.models import Q
 from ..oauth.decorators import login_required
 from ..index.models import GraderUser
+from .formula import SeasonContests, index_for_user, usaco_rating_for
 
 import logging
 
@@ -14,16 +16,27 @@ def rankings_view(request, season):
     if season != settings.CURRENT_SEASON:
         return redirect("rankings:rankings", season=settings.CURRENT_SEASON)
 
+    graduation_years = range(settings.CURRENT_SEASON, settings.CURRENT_SEASON + 4)
+    graduation_year_filter = Q()
+    for year in graduation_years:
+        graduation_year_filter |= Q(username__startswith=str(year))
+
+    # Derived here rather than read from user.index. The stored column is only as
+    # fresh as whatever last recomputed it, which let the page show an index that
+    # did not follow from the USACO/Codeforces/in-house numbers printed beside it.
+    season_contests = SeasonContests.load()
     rankings = [
         {
             "id": user.id,
-            "name": user.display_name,
-            "index": user.index,
-            "usaco": user.usaco_rating,
+            "name": user.display_name or user.username,
+            "index": index_for_user(user, season_contests),
+            "usaco": usaco_rating_for(user.usaco_division),
             "cf": user.cf_rating,
             "inhouse": user.inhouse,
         }
-        for user in GraderUser.objects.filter(is_tjioi=False, is_staff=False)
+        for user in GraderUser.objects.filter(
+            graduation_year_filter, is_tjioi=False, is_staff=False
+        )
     ]
 
     rankings = [

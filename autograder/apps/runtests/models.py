@@ -9,7 +9,12 @@ class Submission(models.Model):
     usr = models.ForeignKey("index.GraderUser", on_delete=models.CASCADE)
     verdict = models.TextField(default="Waiting in Queue")
     runtime = models.IntegerField(default=-1)
-    contest = models.ForeignKey("contests.Contest", on_delete=models.CASCADE)
+    # Mirrors Problem.contest: a submission to a lecture-only problem has no
+    # contest. Standings and contest status filter on this, so null rows simply
+    # never appear there.
+    contest = models.ForeignKey(
+        "contests.Contest", on_delete=models.CASCADE, null=True, blank=True
+    )
     problem = models.ForeignKey("problems.Problem", on_delete=models.CASCADE)
     insight = models.TextField(null=True, blank=True)
     timestamp = models.DateTimeField(default=timezone.now, editable=True)

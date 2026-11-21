@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load static %}
+{% load verdicts %}
 
 {% block stylesheet %}
 <link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
@@ -34,7 +35,7 @@
             <th>Submission</th>
             <th>User</th>
             <th>Problem</th>
-            <th>Langauge</th>
+            <th>Language</th>
             <th>Runtime</th>
             <th>Verdict</th>
         </tr>
@@ -61,7 +62,7 @@
             <td class="submission-runtime">
                 {{submission.runtime}}ms
             </td>
-            <td class="submission-status">
+            <td class="submission-status {{ submission.verdict|verdict_class }}">
                 {{submission.verdict}}
             </td>
         </tr>
@@ -83,6 +84,29 @@
 </div>
 
 <script>
+    // Mirrors the verdict_class template filter in
+    // autograder/apps/runtests/templatetags/verdicts.py -- keep the two in sync.
+    const VERDICT_PREFIXES = [
+        ['Accepted', 'v-ac'], ['AC', 'v-ac'],
+        ['Wrong Answer', 'v-wa'],
+        ['Time Limit Exceeded', 'v-tle'], ['Memory Limit Exceeded', 'v-tle'],
+        ['Query Limit Exceeded', 'v-tle'],
+        ['Runtime Error', 'v-err'], ['Compilation Error', 'v-err'],
+        ['Protocol Violation', 'v-err'], ['Grader Error', 'v-err'],
+        ['Checker Error', 'v-err'], ['Internal Server Error', 'v-err'], ['ER', 'v-err'],
+        ['Waiting in Queue', 'v-pending'], ['Compiling', 'v-pending'],
+        ['Running', 'v-pending'], ['Rerun', 'v-pending'],
+        ['Skipped', 'v-skipped'],
+    ];
+    function verdictClass(text) {
+        if (!text) return 'v-pending';
+        const t = String(text).trim();
+        for (const [prefix, cls] of VERDICT_PREFIXES) {
+            if (t.startsWith(prefix)) return cls;
+        }
+        return '';
+    }
+
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
     const socketUrl = `${protocol}://${window.location.host}/ws/submissions/`;
     const submissionSocket = new WebSocket(socketUrl);
@@ -105,6 +129,9 @@
         const submissionElement = document.querySelector(`.submission-item[data-submission-id="${submission_id}"] .submission-status`);
         if (submissionElement) {
             submissionElement.textContent = message;
+            // Keep the color in sync with the new text, otherwise a live update
+            // leaves the previous verdict's class behind.
+            submissionElement.className = 'submission-status ' + verdictClass(message);
         }
         const submissionRuntimeElement = document.querySelector(`.submission-item[data-submission-id="${submission_id}"] .submission-runtime`);
         if (submissionRuntimeElement) {

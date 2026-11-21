@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load static %}
+{% load verdicts %}
 
 {% block stylesheet %}
 <link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
@@ -35,10 +36,10 @@ onload="auto_grow()"
     {% if submission %}
 
     <div class="title">
-        Problem: {{submission.name}}, Language:
+        Problem: {{submission.problem.name}}, Language:
         {{submission.language}}, Runtime:
         {{submission.runtime}}ms, Verdict:
-        {{submission.verdict}}, Time: {{submission.timestamp}}
+        <span class="{{ submission.verdict|verdict_class }}">{{submission.verdict}}</span>, Time: {{submission.timestamp}}
         {% if admin %} - Viewing as Admin {% endif %}
     </div>
     <br/>
@@ -53,11 +54,11 @@ onload="auto_grow()"
 </div>
 <div class="option-buttons">
     {% if submission %}
-    <a href="{% url "problems:problem" submission.problem.id %}">
+    <a href="{% url "problems:problem" submission.problem.id %}{% if contest_nav %}?contest={{ contest_nav.id }}{% endif %}">
         <div class="button">Problem</div>
     </a>
     {% endif %}
-    <a href="{% url "runtests:status" page=1 %}">
+    <a href="{% if contest_nav %}{% url "contests:status" cid=contest_nav.id mine_only="mine" page=1 %}{% else %}{% url "runtests:status" page=1 %}{% endif %}">
         <div class="button">Back</div>
     </a>
 

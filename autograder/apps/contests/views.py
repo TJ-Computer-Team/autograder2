@@ -23,7 +23,37 @@ def contests_view(request):
             contests = contests.filter(tjioi=True)
         else:
             contests = contests.filter(start__lte=timezone.now())
-    context = {"contests": contests, "tjioi": settings.TJIOI_MODE}
+    else:
+        # Admins left off a contest's visible_to see it like everyone else:
+        # only once it starts.
+        contests = contests.exclude(
+            Q(id__in=Contest.locked_for(request.user)) & Q(start__gt=timezone.now())
+        )
+
+    # Grouped by season so past years collapse instead of burying this year's
+    # contests under every contest ever run.
+    seasons = {}
+    for contest in contests:
+        seasons.setdefault(contest.season, []).append(contest)
+
+    current = settings.CURRENT_SEASON
+    groups = [
+        {
+            "season": season,
+            "label": f"{season - 1}-{season}",
+            "contests": season_contests,
+            "is_current": season == current,
+        }
+        # Newest season first; anything newer than CURRENT_SEASON (a season that
+        # has been created but not switched to yet) still sorts to the top.
+        for season, season_contests in sorted(seasons.items(), reverse=True)
+    ]
+
+    context = {
+        "groups": groups,
+        "has_past": any(not g["is_current"] for g in groups),
+        "tjioi": settings.TJIOI_MODE,
+    }
     return render(request, "contest/contests.html", context)
 
 
@@ -35,13 +65,14 @@ def contest_view(request, cid):
     if contest.tjioi and not request.user.is_staff and not request.user.is_tjioi:
         return HttpResponse("You do not have permission to view this contest", status=403)
 
+    admin = contest.is_admin_for(request.user)
     problems = list(Problem.objects.filter(contest=contest).order_by("contest_letter"))
     if problems is None:
         problems = []
 
     time_message = contest.start if timezone.now() < contest.start else contest.end
     time_type = "start" if timezone.now() < contest.start else "end"
-    if not request.user.is_staff and timezone.now() < contest.start:
+    if not admin and timezone.now() < contest.start:
         return HttpResponse("Contest has not started yet", status=403)
 
     ordered = []
@@ -55,7 +86,7 @@ def contest_view(request, cid):
                 "points": getattr(problem, "points", 0),
                 "solves": 0,
                 "available": (
-                    not getattr(problem, "secret", False) or request.user.is_staff
+                    not getattr(problem, "secret", False) or admin
                 ),
                 "users": [],
             }
@@ -85,6 +116,7 @@ def contest_view(request, cid):
     context = {
         "not_empty": "yes" if ordered else "no",
         "title": contest.name,
+        "contest_nav": contest,
         "problems": ordered,
         "user": request.user.id,
         "cid": contest.id,
@@ -104,14 +136,15 @@ def contest_standings_view(request, cid):
     if contest.tjioi and not request.user.is_staff and not request.user.is_tjioi:
         return HttpResponse("You do not have permission to view this contest", status=403)
 
+    if not contest.is_admin_for(request.user) and timezone.now() < contest.start:
+        return HttpResponse("Contest has not started yet", status=403)
+
     standings = get_standings(cid)
     problems = Problem.objects.filter(contest_id=cid).order_by("contest_letter")
 
-    if not request.user.is_staff and timezone.now() < contest.start:
-        return HttpResponse("Contest has not started yet", status=403)
-
     context = {
         "title": standings["title"],
+        "contest_nav": contest,
         "cid": cid,
         "pnum": standings["pnum"],
         "load": standings["load"],
@@ -130,18 +163,18 @@ def contest_status_view(request, cid, mine_only, page):
     if contest.tjioi and not request.user.is_staff and not request.user.is_tjioi:
         return HttpResponse("You do not have permission to view this contest", status=403)
 
-    if not request.user.is_staff and timezone.now() < contest.start:
+    admin = contest.is_admin_for(request.user)
+    if not admin and timezone.now() < contest.start:
         return HttpResponse("Contest has not started yet", status=403)
     subs = Submission.objects.filter(contest=contest)
-    if not request.user.is_staff:
-        subs = subs.filter(usr__is_staff=False)
+    if not admin:
+        # Testers, not all staff: admins left off visible_to compete normally.
+        subs = subs.exclude(usr__in=contest.visible_to.all())
 
-    if mine_only == "mine" or (
-        timezone.now() < contest.end and not request.user.is_staff
-    ):
+    if mine_only == "mine" or (timezone.now() < contest.end and not admin):
         subs = subs.filter(usr=request.user)
 
-    if not request.user.is_staff:
+    if not admin:
         subs = subs.filter(timestamp__gte=contest.start)
 
     subs = subs.order_by("-timestamp")
@@ -153,12 +186,14 @@ def contest_status_view(request, cid, mine_only, page):
 
     context = {
         "title": contest.name,
+        "contest_nav": contest,
         "user_id": request.user.id,
         "cid": cid,
         "page_obj": page_obj,
         "submissions": page_obj.object_list,
         "contest_over": timezone.now() > contest.end,
         "mine_only": mine_only,
+        "admin": admin,
     }
     return render(request, "contest/status.html", context)
 
@@ -167,6 +202,8 @@ def contest_status_view(request, cid, mine_only, page):
 @admin_required
 def contest_skip_view(request, sid, cid, mine_only, page):
     sub = get_object_or_404(Submission, id=sid)
+    if sub.contest is not None and not sub.contest.is_admin_for(request.user):
+        return HttpResponse("You do not have permission to skip this submission", status=403)
     sub.verdict = "Skipped"
     sub.insight = "Your submission was manually skipped by an admin"
     sub.save()

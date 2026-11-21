@@ -18,6 +18,13 @@
                 <p class="help">Special rule to only enforce the check for users named "Samuel Zhang".</p>
             </div>
         </div>
+        <div class="form-row">
+            <div>
+                <label for="id_enable_code_attendance">Enable code-based attendance:</label>
+                <input type="checkbox" name="enable_code_attendance" id="id_enable_code_attendance" {% if settings.enable_code_attendance %}checked{% endif %}>
+                <p class="help">Enable the code-based attendance system for students.</p>
+            </div>
+        </div>
     </fieldset>
     <div class="submit-row">
         <input type="submit" value="Save" class="default">

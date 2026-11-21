@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block stylesheet %}
+<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
+{% endblock stylesheet %}
+
+{% block title %}Battle Royale{% endblock title %}
+
+{% block content %}
+{% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
+{% include "partials/header.html" %}
+
+<div class="main-block">
+    <div class="title"><strong>Battle Royale</strong></div>
+    <div class="subtitle"><br>You get a sequence of problems that you see one at a time. Once you solve one, it shows the next. Whoever solves the most before time runs out wins.</div>
+</div>
+
+{% if messages %}
+{% for message in messages %}
+<div class="main-block small-padding"><div class="info">{{ message }}</div></div>
+{% endfor %}
+{% endif %}
+
+{% if not can_duel %}
+<div class="main-block">
+    <div class="info">
+        You need a <strong>verified</strong> Codeforces handle before you can play.
+        Set one on your <a href="{% url 'index:profile' %}">profile</a> and complete
+        the verification challenge.
+    </div>
+</div>
+{% else %}
+<div class="main-block">
+    <div class="info"><strong>Host a battle royale</strong></div>
+    <form method="POST" action="{% url 'duels:ladder_create' %}">
+        {% csrf_token %}
+        <div class="statsInfo">
+            <label for="rating_min">Rating range</label>
+            <input type="text" name="rating_min" id="rating_min" value="800" size="5">
+            to
+            <input type="text" name="rating_max" id="rating_max" value="1600" size="5">
+            <div class="field-hint">Problems go from easiest to hardest. Codeforces ratings run {{ rating_floor }}&ndash;{{ rating_ceil }}.</div>
+        </div>
+        <div class="statsInfo">
+            <label for="rung_count">Problems</label>
+            <input type="text" name="rung_count" id="rung_count" value="8" size="3">
+            <div class="field-hint">Up to {{ max_rungs }}.</div>
+        </div>
+        <div class="statsInfo">
+            <label for="duration_minutes">Minutes</label>
+            <input type="text" name="duration_minutes" id="duration_minutes" value="60" size="3">
+        </div>
+        <div class="statsInfo">
+            <label for="skips">Skips</label>
+            <input type="text" name="skips" id="skips" value="1" size="3">
+            <div class="field-hint">Skipping shows you the next problem but you don't get a point.</div>
+        </div>
+        <div class="statsInfo">
+            <label for="tags">Tags (optional)</label>
+            <input type="text" name="tags" id="tags" placeholder="dp, greedy">
+            <div class="field-hint">Comma-separated. Leave blank for any problem.</div>
+        </div>
+        <div class="statsInfo"><input type="submit" value="Create"></div>
+    </form>
+</div>
+{% endif %}
+
+{% if open_ladders %}
+<div class="main-block">
+    <div class="info"><strong>Open</strong> <span class="set-external">anyone can join</span></div>
+    <table>
+        <tr><th>Host</th><th>Rating</th><th>Problems</th><th>Status</th></tr>
+        {% for l in open_ladders %}
+        <tr>
+            <td><a href="{% url 'duels:ladder' ladder_id=l.id %}">{{ l.host.display_name|default:l.host.username }}</a></td>
+            <td class="centertext">{{ l.rating_min }}&ndash;{{ l.rating_max }}</td>
+            <td class="centertext">{{ l.rung_count }}</td>
+            <td class="centertext">{{ l.get_status_display }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
+{% if finished %}
+<div class="main-block">
+    <div class="info"><strong>Recent results</strong></div>
+    <table>
+        <tr><th>Host</th><th>Rating</th><th>Problems</th><th>Ended</th></tr>
+        {% for l in finished %}
+        <tr>
+            <td><a href="{% url 'duels:ladder' ladder_id=l.id %}">{{ l.host.display_name|default:l.host.username }}</a></td>
+            <td class="centertext">{{ l.rating_min }}&ndash;{{ l.rating_max }}</td>
+            <td class="centertext">{{ l.rung_count }}</td>
+            <td class="centertext">{{ l.ended_at|date:"M j, H:i" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
+<div class="option-buttons">
+    <a href="{% url 'duels:list' %}"><div class="button">Back to Duels</div></a>
+</div>
+{% endblock content %}

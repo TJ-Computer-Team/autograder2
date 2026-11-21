@@ -1,1 +1,595 @@
-# Create your tests here.
+from datetime import timedelta
+from decimal import Decimal
+from io import StringIO
+from unittest.mock import patch
+
+from django.core.management import call_command
+from django.test import TestCase, override_settings
+from django.urls import reverse
+from django.utils import timezone
+
+from ..contests.models import Contest
+from ..index.models import GraderUser
+from ..problems.models import Problem
+from ..runtests.models import Submission
+from .formula import compute_index, index_for_user, inhouse_score, uses_writer_formula
+from .tasks import update_codeforces_rating, update_user_index
+
+
+@override_settings(CURRENT_SEASON=2027)
+class RankingsViewTests(TestCase):
+    def create_user(self, username, display_name):
+        # Set the division, not the rating: GraderUser's post_save signal
+        # recomputes usaco_rating from usaco_division, so passing a rating here
+        # is immediately overwritten with Bronze's 800 and the user then fails
+        # rankings_view's `usaco > 800` filter.
+        return GraderUser.objects.create_user(
+            email=f"{username}@example.com",
+            username=username,
+            display_name=display_name,
+            usaco_division=GraderUser.SILVER,
+        )
+
+    def test_only_users_graduating_within_four_seasons_are_shown(self):
+        viewer = self.create_user("2027viewer", "Current year")
+        self.create_user("2028student", "Next year")
+        self.create_user("2029student", "Two years out")
+        self.create_user("2030student", "Three years out")
+        self.create_user("2026student", "Past graduate")
+        self.create_user("2031student", "Four years out")
+
+        self.client.force_login(viewer)
+        response = self.client.get(reverse("rankings:rankings", args=[2027]))
+
+        self.assertEqual(response.status_code, 200)
+        names = [ranking["name"] for ranking in response.context["rankings"]]
+        self.assertCountEqual(
+            names,
+            ["Current year", "Next year", "Two years out", "Three years out"],
+        )
+
+
+class IndexFormulaTests(TestCase):
+    """The index must not depend on which code path last touched the user.
+
+    update_user_index runs on every GraderUser save; the update_rankings command
+    runs on demand. They previously disagreed for users with no in-house scores,
+    so a user's rank silently changed when they edited their profile.
+    """
+
+    def make(self, username, division, cf, inhouses=None):
+        user = GraderUser.objects.create_user(
+            email=f"{username}@example.com",
+            username=username,
+            display_name=username,
+            usaco_division=division,
+            cf_rating=cf,
+        )
+        if inhouses is not None:
+            GraderUser.objects.filter(pk=user.pk).update(inhouses=inhouses)
+            user.refresh_from_db()
+        return user
+
+    @staticmethod
+    def writer_index(usaco, cf):
+        return Decimal("0.4") * min(Decimal(cf), Decimal(usaco)) + Decimal("0.6") * max(
+            Decimal(cf), Decimal(usaco)
+        )
+
+    def test_no_inhouses_uses_writer_formula(self):
+        """The regression: highest USACO + highest CF must not rank below peers."""
+        user = self.make("2027zhang", GraderUser.PLATINUM, 2054)
+        update_user_index(user.id)
+        user.refresh_from_db()
+        self.assertEqual(user.index, self.writer_index(1900, 2054))
+        # The bug produced 0.2*0 + 0.35*1900 + 0.45*2054 = 1589.3
+        self.assertNotEqual(user.index, Decimal("1589.300"))
+
+    def test_with_inhouses_uses_standard_formula(self):
+        user = self.make(
+            "2027player", GraderUser.GOLD, 1400, inhouses=[Decimal("1500")]
+        )
+        GraderUser.objects.filter(pk=user.pk).update(inhouse=Decimal("1500"))
+        user.refresh_from_db()
+        update_user_index(user.id)
+        user.refresh_from_db()
+
+        vals = sorted([Decimal("1600"), Decimal("1400"), Decimal("1500")])
+        expected = (
+            Decimal("0.2") * vals[0]
+            + Decimal("0.35") * vals[1]
+            + Decimal("0.45") * vals[2]
+        )
+        self.assertEqual(user.index, expected)
+
+    def test_resaving_does_not_change_the_index(self):
+        """A profile edit must not silently re-rank someone."""
+        user = self.make("2027stable", GraderUser.PLATINUM, 2054)
+        update_user_index(user.id)
+        user.refresh_from_db()
+        before = user.index
+
+        user.display_name = "Renamed"
+        user.save()
+        update_user_index(user.id)
+        user.refresh_from_db()
+        self.assertEqual(user.index, before)
+
+
+class CodeforcesRefreshTests(TestCase):
+    """update_codeforces_rating must always leave the index consistent.
+
+    It used to recompute the index only when the CF rating changed, so a stale
+    index -- from an edited USACO division, recomputed in-houses, or a corrected
+    formula -- was never repaired.
+    """
+
+    def make(self, cf=1610, division=GraderUser.GOLD):
+        return GraderUser.objects.create_user(
+            email="zain@example.com",
+            username="2028zmarshal",
+            display_name="Zain",
+            usaco_division=division,
+            cf_rating=cf,
+            cf_handle="zen10",
+        )
+
+    def _cf_response(self, max_rating):
+        class Resp:
+            status_code = 200
+
+            def raise_for_status(self):
+                pass
+
+            def json(self):
+                return {"status": "OK", "result": [{"maxRating": max_rating}]}
+
+        return Resp()
+
+    @patch("autograder.apps.rankings.tasks.update_user_index")
+    @patch("autograder.apps.rankings.tasks.requests.get")
+    def test_recomputes_even_when_rating_is_unchanged(self, get, index_task):
+        user = self.make(cf=1669)
+        get.return_value = self._cf_response(1669)
+
+        update_codeforces_rating(user.id)
+
+        index_task.delay.assert_called_once_with(user.id)
+
+    @patch("autograder.apps.rankings.tasks.update_user_index")
+    @patch("autograder.apps.rankings.tasks.requests.get")
+    def test_recomputes_when_rating_changes(self, get, index_task):
+        user = self.make(cf=1610)
+        get.return_value = self._cf_response(1669)
+
+        update_codeforces_rating(user.id)
+
+        user.refresh_from_db()
+        self.assertEqual(user.cf_rating, 1669)
+        index_task.delay.assert_called_once_with(user.id)
+
+    @patch("autograder.apps.rankings.tasks.requests.get")
+    def test_index_follows_a_rating_rise(self, get):
+        """End to end: the stored index must track the new rating."""
+        user = self.make(cf=1610)
+        update_user_index(user.id)
+        user.refresh_from_db()
+        # writer formula, no in-houses: 0.4*1600 + 0.6*1610
+        self.assertEqual(user.index, Decimal("1606.000"))
+
+        get.return_value = self._cf_response(1669)
+        update_codeforces_rating(user.id)
+        update_user_index(user.id)
+        user.refresh_from_db()
+        # 0.4*1600 + 0.6*1669
+        self.assertEqual(user.index, Decimal("1641.400"))
+
+
+class IndexIsDerivedOnReadTests(TestCase):
+    """The rankings page must never show an index that contradicts its own columns.
+
+    The index used to be read from a stored column that three different code paths
+    wrote to. A gap between them left a value that disagreed with the USACO /
+    Codeforces / in-house numbers displayed next to it, and nothing ever noticed.
+    """
+
+    @override_settings(CURRENT_SEASON=2027)
+    def test_page_ignores_a_stale_stored_index(self):
+        user = GraderUser.objects.create_user(
+            email="zain@example.com",
+            username="2028zmarshal",
+            display_name="Zain",
+            usaco_division=GraderUser.GOLD,
+            cf_rating=1669,
+        )
+        # Exactly the reported bug: stored index left over from cf=1610.
+        GraderUser.objects.filter(pk=user.pk).update(index=Decimal("1606.000"))
+
+        viewer = GraderUser.objects.create_user(
+            email="v@example.com", username="2027viewer", display_name="V"
+        )
+        self.client.force_login(viewer)
+        resp = self.client.get(reverse("rankings:rankings", args=[2027]))
+
+        row = next(r for r in resp.context["rankings"] if r["name"] == "Zain")
+        # 0.4*1600 + 0.6*1669
+        self.assertEqual(row["index"], Decimal("1641.400"))
+        self.assertNotEqual(row["index"], Decimal("1606.000"))
+
+    @override_settings(CURRENT_SEASON=2027)
+    def test_displayed_index_always_follows_the_displayed_columns(self):
+        for division, cf in (
+            (GraderUser.PLATINUM, 2054),
+            (GraderUser.GOLD, 1669),
+            (GraderUser.SILVER, 900),
+            (GraderUser.BRONZE, 0),
+        ):
+            GraderUser.objects.all().delete()
+            user = GraderUser.objects.create_user(
+                email=f"u{cf}@example.com",
+                username=f"2028u{cf}",
+                display_name=f"U{cf}",
+                usaco_division=division,
+                cf_rating=cf,
+            )
+            GraderUser.objects.filter(pk=user.pk).update(index=Decimal("1"))
+            viewer = GraderUser.objects.create_user(
+                email="v@example.com", username="2027viewer", display_name="V"
+            )
+            self.client.force_login(viewer)
+            resp = self.client.get(reverse("rankings:rankings", args=[2027]))
+            row = next(
+                (r for r in resp.context["rankings"] if r["name"] == f"U{cf}"), None
+            )
+            if row is None:
+                continue  # filtered out for having nothing to rank on
+            # No contests this season yet, so everyone is on the writer formula.
+            expected = compute_index(
+                row["usaco"], row["cf"], row["inhouse"], use_writer_formula=True
+            )
+            self.assertEqual(row["index"], expected, f"{division} / {cf}")
+
+
+class FormulaAgreementTests(TestCase):
+    """All three paths must agree. They previously did not."""
+
+    def test_task_and_page_agree(self):
+        user = GraderUser.objects.create_user(
+            email="a@example.com",
+            username="2028agree",
+            display_name="A",
+            usaco_division=GraderUser.PLATINUM,
+            cf_rating=2054,
+        )
+        update_user_index(user.id)
+        user.refresh_from_db()
+        self.assertEqual(user.index, index_for_user(user))
+
+    def test_no_inhouses_uses_writer_in_both(self):
+        user = GraderUser.objects.create_user(
+            email="b@example.com",
+            username="2028nohouse",
+            display_name="B",
+            usaco_division=GraderUser.GOLD,
+            cf_rating=1669,
+        )
+        self.assertEqual(index_for_user(user), Decimal("1641.400"))
+
+    def test_with_inhouses_uses_standard_in_both(self):
+        user = GraderUser.objects.create_user(
+            email="c@example.com",
+            username="2028house",
+            display_name="C",
+            usaco_division=GraderUser.GOLD,
+            cf_rating=1400,
+        )
+        GraderUser.objects.filter(pk=user.pk).update(
+            inhouses=[Decimal("1500")], inhouse=Decimal("1500")
+        )
+        user.refresh_from_db()
+        vals = sorted([Decimal("1600"), Decimal("1400"), Decimal("1500")])
+        expected = (
+            Decimal("0.2") * vals[0]
+            + Decimal("0.35") * vals[1]
+            + Decimal("0.45") * vals[2]
+        )
+        self.assertEqual(index_for_user(user), expected)
+
+
+class SignalLoopTests(TestCase):
+    """Saves made *by* the ranking tasks must not re-queue those tasks.
+
+    update_codeforces_rating calls update_user_index, which writes user.index,
+    which fired post_save, which queued update_codeforces_rating again. Each lap
+    cost a Codeforces call throttled to 2/s, and the default queue backed up to
+    hundreds of tasks -- starving unrelated work like starting a duel.
+    """
+
+    def setUp(self):
+        self.user = GraderUser.objects.create_user(
+            email="loop@example.com",
+            username="2028loop",
+            display_name="Loop",
+            usaco_division=GraderUser.GOLD,
+            cf_rating=1500,
+        )
+
+    @patch("autograder.apps.index.signals.update_codeforces_rating")
+    def test_index_only_save_does_not_requeue(self, task):
+        self.user.index = Decimal("1234.000")
+        self.user.save(update_fields=["index"])
+        task.delay.assert_not_called()
+
+    @patch("autograder.apps.index.signals.update_codeforces_rating")
+    def test_cf_rating_only_save_does_not_requeue(self, task):
+        self.user.cf_rating = 1600
+        self.user.save(update_fields=["cf_rating"])
+        task.delay.assert_not_called()
+
+    @patch("autograder.apps.index.signals.update_codeforces_rating")
+    def test_inhouse_only_save_does_not_requeue(self, task):
+        self.user.inhouse = Decimal("1500")
+        self.user.save(update_fields=["inhouse"])
+        task.delay.assert_not_called()
+
+    @patch("autograder.apps.index.signals.update_codeforces_rating")
+    def test_a_real_profile_edit_still_refreshes(self, task):
+        self.user.display_name = "Renamed"
+        self.user.save()
+        task.delay.assert_called_once_with(self.user.id)
+
+    @patch("autograder.apps.index.signals.update_codeforces_rating")
+    def test_editing_a_handle_still_refreshes(self, task):
+        self.user.cf_handle = "somebody"
+        self.user.save(update_fields=["cf_handle"])
+        task.delay.assert_called_once_with(self.user.id)
+
+    @patch("autograder.apps.index.signals.update_codeforces_rating")
+    def test_update_user_index_does_not_requeue(self, task):
+        """The full path: running the index task must not feed itself."""
+        update_user_index(self.user.id)
+        task.delay.assert_not_called()
+
+
+@override_settings(CURRENT_SEASON=2027)
+@patch("autograder.apps.index.signals.update_codeforces_rating.delay")
+class UpdateRankingsContestSelectionTests(TestCase):
+    """Only finished rated contests feed the in-house average.
+
+    A rated contest created ahead of time used to be scored as a 0 for everyone,
+    and with fewer than three contests there is no drop to absorb it, so every
+    participant's in-house came out at half its real value.
+    """
+
+    def make_contest(self, name, start, end):
+        return Contest.objects.create(
+            name=name, season=2027, rated=True, start=start, end=end
+        )
+
+    def test_unfinished_rated_contest_is_not_scored(self, _task):
+        now = timezone.now()
+        done = self.make_contest("Done", now - timedelta(days=2), now - timedelta(days=1))
+        self.make_contest("Upcoming", now + timedelta(days=6), now + timedelta(days=7))
+        problem = Problem.objects.create(
+            name="P",
+            contest=done,
+            points=100,
+            contest_letter="A",
+            statement="s",
+            inputtxt="i",
+            outputtxt="o",
+            samples="x",
+        )
+        user = GraderUser.objects.create_user(
+            email="2027a@example.com", username="2027a", display_name="A"
+        )
+        Submission.objects.create(
+            language="python",
+            code="",
+            usr=user,
+            verdict="Accepted",
+            contest=done,
+            problem=problem,
+            timestamp=done.start + timedelta(minutes=10),
+        )
+
+        call_command("update_rankings", stdout=StringIO())
+
+        user.refresh_from_db()
+        # Sole participant: 1200 * (1 - 1 + 1) / 1 + 800.
+        self.assertEqual(user.inhouses, [Decimal("2000")])
+        self.assertEqual(user.inhouse, Decimal("2000"))
+
+
+class WriterFormulaRuleTests(TestCase):
+    """Writer formula only while someone has taken no in-house this season."""
+
+    def decide(self, **kw):
+        args = dict(took_any=False, wrote_any=False, any_finished=True)
+        args.update(kw)
+        return uses_writer_formula(**args)
+
+    def test_took_none_and_wrote_none_is_standard(self):
+        self.assertFalse(self.decide())
+
+    def test_wrote_one_and_took_none_is_writer(self):
+        self.assertTrue(self.decide(wrote_any=True))
+
+    def test_wrote_one_and_took_another_is_standard(self):
+        self.assertFalse(self.decide(wrote_any=True, took_any=True))
+
+    def test_no_contests_yet_is_writer(self):
+        self.assertTrue(self.decide(any_finished=False))
+
+
+class InhouseScoreTests(TestCase):
+    """Average of the two best contests taken, the one score if only one, else 0."""
+
+    def test_none_taken_is_zero(self):
+        self.assertEqual(inhouse_score([]), Decimal("0"))
+
+    def test_one_taken_is_that_score(self):
+        self.assertEqual(inhouse_score([Decimal("1400")]), Decimal("1400"))
+
+    def test_two_taken_is_their_average(self):
+        self.assertEqual(
+            inhouse_score([Decimal("1400"), Decimal("2000")]), Decimal("1700")
+        )
+
+    def test_more_than_two_averages_only_the_best_two(self):
+        scores = [Decimal("1000"), Decimal("2000"), Decimal("1200"), Decimal("1600")]
+        self.assertEqual(inhouse_score(scores), Decimal("1800"))
+
+    def test_rounds_to_the_stored_precision(self):
+        self.assertEqual(
+            inhouse_score([Decimal("1400.001"), Decimal("2000")]), Decimal("1700.000")
+        )
+
+
+@override_settings(CURRENT_SEASON=2027)
+@patch("autograder.apps.index.signals.update_codeforces_rating.delay")
+class UpdateRankingsInhouseTests(TestCase):
+    """In-house averages the two best contests taken; written ones never count."""
+
+    def setUp(self):
+        self.now = timezone.now()
+        self.viewer = GraderUser.objects.create_user(
+            email="2027viewer@example.com", username="2027viewer", display_name="V"
+        )
+
+    def user(self, name, division=GraderUser.GOLD, cf=1400):
+        return GraderUser.objects.create_user(
+            email=f"{name}@example.com",
+            username=f"2027{name}",
+            display_name=name,
+            usaco_division=division,
+            cf_rating=cf,
+        )
+
+    def contest(self, name, days_ago, writers=()):
+        start = self.now - timedelta(days=days_ago, hours=3)
+        contest = Contest.objects.create(
+            name=name, season=2027, rated=True, start=start, end=start + timedelta(hours=2)
+        )
+        contest.writers.set(writers)
+        Problem.objects.create(
+            name=f"{name}A",
+            contest=contest,
+            points=100,
+            contest_letter="A",
+            statement="s",
+            inputtxt="i",
+            outputtxt="o",
+            samples="x",
+        )
+        return contest
+
+    def solve(self, user, contest, minutes):
+        Submission.objects.create(
+            language="python",
+            code="",
+            usr=user,
+            verdict="Accepted",
+            contest=contest,
+            problem=contest.problem_set.get(),
+            timestamp=contest.start + timedelta(minutes=minutes),
+        )
+
+    def run_rankings(self):
+        call_command("update_rankings", stdout=StringIO())
+
+    def page_row(self, user):
+        self.client.force_login(self.viewer)
+        resp = self.client.get(reverse("rankings:rankings", args=[2027]))
+        return next(r for r in resp.context["rankings"] if r["id"] == user.id)
+
+    @staticmethod
+    def standard(usaco, cf, inhouse):
+        low, mid, high = sorted(Decimal(str(v)) for v in (usaco, cf, inhouse))
+        return Decimal("0.2") * low + Decimal("0.35") * mid + Decimal("0.45") * high
+
+    @staticmethod
+    def writer(usaco, cf):
+        return Decimal("0.4") * min(usaco, cf) + Decimal("0.6") * max(usaco, cf)
+
+    def test_inhouse_averages_the_two_best_contests_taken(self, _task):
+        a, b, c = self.user("a"), self.user("b"), self.user("c")
+        one, two, three = (
+            self.contest("One", 6),
+            self.contest("Two", 4),
+            self.contest("Three", 2),
+        )
+        # One: a first of 2 (2000). Two: a second of 2 (1400).
+        # Three: a second of 3 (1200 * 2 / 3 + 800 = 1600).
+        self.solve(a, one, 10)
+        self.solve(b, one, 20)
+        self.solve(b, two, 10)
+        self.solve(a, two, 20)
+        self.solve(c, three, 10)
+        self.solve(a, three, 20)
+        self.solve(b, three, 30)
+
+        self.run_rankings()
+
+        a.refresh_from_db()
+        self.assertEqual(
+            sorted(a.inhouses), [Decimal("1400"), Decimal("1600"), Decimal("2000")]
+        )
+        # (2000 + 1600) / 2; the 1400 is not counted.
+        self.assertEqual(a.inhouse, Decimal("1800"))
+        self.assertEqual(a.index, self.standard(1600, 1400, 1800))
+        self.assertEqual(self.page_row(a)["index"], a.index)
+
+    def test_took_none_has_zero_inhouse_on_standard_formula(self, _task):
+        player, skipper = self.user("p"), self.user("s", GraderUser.PLATINUM, 2054)
+        contest = self.contest("One", 2)
+        self.solve(player, contest, 10)
+
+        self.run_rankings()
+
+        skipper.refresh_from_db()
+        self.assertEqual(skipper.inhouses, [])
+        self.assertEqual(skipper.inhouse, Decimal("0"))
+        self.assertEqual(skipper.index, self.standard(1900, 2054, 0))
+        self.assertEqual(self.page_row(skipper)["index"], skipper.index)
+
+    def test_wrote_one_skipped_the_other_stays_writer(self, _task):
+        author, player = self.user("w", cf=1712), self.user("p")
+        self.contest("Written", 5, writers=[author])
+        other = self.contest("Other", 2)
+        self.solve(player, other, 10)
+
+        self.run_rankings()
+
+        author.refresh_from_db()
+        self.assertEqual(author.inhouses, [])
+        self.assertEqual(author.index, self.writer(1600, 1712))
+        self.assertEqual(self.page_row(author)["index"], author.index)
+
+    def test_wrote_one_took_another_uses_that_score(self, _task):
+        author, rival = self.user("w", cf=1712), self.user("r")
+        written = self.contest("Written", 5, writers=[author])
+        taken = self.contest("Taken", 2)
+        self.solve(rival, written, 10)
+        # Second of 2 on the contest they took: 1200 * 1 / 2 + 800 = 1400.
+        self.solve(rival, taken, 10)
+        self.solve(author, taken, 20)
+
+        self.run_rankings()
+
+        author.refresh_from_db()
+        self.assertEqual(author.inhouses, [Decimal("1400")])
+        self.assertEqual(author.inhouse, Decimal("1400"))
+        self.assertEqual(author.index, self.standard(1600, 1712, 1400))
+        self.assertEqual(self.page_row(author)["index"], author.index)
+
+    def test_own_contest_never_counts_even_if_on_standings(self, _task):
+        author = self.user("w", cf=1712)
+        written = self.contest("Written", 2, writers=[author])
+        self.solve(author, written, 10)
+
+        self.run_rankings()
+
+        author.refresh_from_db()
+        self.assertEqual(author.inhouses, [])
+        self.assertEqual(author.index, self.writer(1600, 1712))

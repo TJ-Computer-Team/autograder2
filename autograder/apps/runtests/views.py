@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage
+from django.db.models import Q
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 from django.conf import settings
@@ -7,7 +8,9 @@ from django.utils import timezone
 from datetime import timedelta
 from ..oauth.decorators import login_required
 from ..problems.models import Problem
+from ..problems.utils import can_see_problem, exclude_locked_problems
 from ..contests.models import Contest
+from ..contests.utils import get_contest_nav
 from .models import Submission
 from .tasks import grade_submission_task
 import logging
@@ -29,17 +32,15 @@ def submit_view(request, cid=None, pid=None):
     if pid is not None:
         problem = get_object_or_404(Problem, id=pid)
 
-        # Prevent non-TJIOI users from submitting to TJIOI problems
-        if problem.contest.tjioi and not request.user.is_staff and not request.user.is_tjioi:
-            return redirect("runtests:submit")
-
-        if (
-            not request.user.is_staff
-            and (problem.secret or problem.contest.start > timezone.now())
-        ) or (problem.secret or problem.contest.start > timezone.now()):
+        # Covers secret problems, unreleased contests and TJIOI-only contests,
+        # and allows lecture-only problems, which have no contest at all.
+        # (The old inline check also blocked staff: its second clause repeated
+        # the condition without the is_staff guard.)
+        if not can_see_problem(problem, request.user):
             return redirect("runtests:submit")
 
         context["problem"] = problem
+        context["contest_nav"] = get_contest_nav(request, problem.contest_id)
 
     elif cid is not None:
         contest = get_object_or_404(Contest, id=cid)
@@ -48,27 +49,33 @@ def submit_view(request, cid=None, pid=None):
         if contest.tjioi and not request.user.is_staff and not request.user.is_tjioi:
             return redirect("runtests:submit")
 
-        problems = Problem.objects.filter(
-            contest__id=cid
-        )
-        if not request.user.is_staff:
+        problems = Problem.objects.filter(contest__id=cid)
+        if not contest.is_admin_for(request.user):
             problems = problems.filter(secret=False)
             if contest.start > timezone.now():
                 return redirect("runtests:submit")
 
         problems = problems.order_by("contest_letter")
         context["contest"] = contest
+        # cid is in the path here, so reaching this route is itself the signal.
+        context["contest_nav"] = contest
         context["problems"] = problems
 
     else:
         problems = Problem.objects.all()
         if not request.user.is_staff:
-            problems = problems.filter(secret=False, contest__start__lte=timezone.now())
+            # `contest__start__lte` alone would drop lecture-only problems,
+            # which have no contest, making them impossible to submit to.
+            problems = problems.filter(secret=False).filter(
+                Q(contest__isnull=True) | Q(contest__start__lte=timezone.now())
+            )
+        else:
+            problems = exclude_locked_problems(problems, request.user)
 
         if request.user.is_tjioi:
             problems = problems.filter(contest__tjioi=True)
 
-        problems = problems.order_by("id")
+        problems = problems.order_by("number")
         context["problems"] = problems
 
     return render(request, "runtests/submit.html", context)
@@ -79,14 +86,25 @@ def status_view(request, page, cid=None, mine=False):
     submissions = Submission.objects.all()
     if not request.user.is_staff:
         submissions = submissions.filter(usr__is_staff=False)
+    else:
+        # Match what a regular user sees on contests this admin is locked out
+        # of: no staff submissions (the testers'), apart from their own.
+        submissions = submissions.exclude(
+            Q(contest__in=Contest.locked_for(request.user))
+            & Q(usr__is_staff=True)
+            & ~Q(usr=request.user)
+        )
 
     if cid is not None:
         contest = get_object_or_404(Contest, id=cid)
-        
+
         # Prevent non-TJIOI users from viewing submissions of TJIOI contests
         if contest.tjioi and not request.user.is_staff and not request.user.is_tjioi:
-            return HttpResponse("You do not have permission to view submissions for this contest", status=403)
-        
+            return HttpResponse(
+                "You do not have permission to view submissions for this contest",
+                status=403,
+            )
+
         submissions = submissions.filter(contest=cid)
 
     if mine:
@@ -118,9 +136,16 @@ def status_view(request, page, cid=None, mine=False):
 def submission_view(request, id):
     submission = get_object_or_404(Submission, id=id)
 
-    if submission.usr == request.user or request.user.is_staff:
-        context = {"admin": request.user.is_staff, "submission": submission}
-        if request.user.is_staff:
+    admin = request.user.is_staff and (
+        submission.contest is None or submission.contest.is_admin_for(request.user)
+    )
+    if submission.usr == request.user or admin:
+        context = {
+            "admin": admin,
+            "submission": submission,
+            "contest_nav": get_contest_nav(request, submission.contest_id),
+        }
+        if admin:
             context["insight"] = submission.insight
 
         return render(request, "runtests/submission.html", context)
@@ -143,12 +168,15 @@ def submit_post(request):
 
     problem = Problem.objects.select_related("contest").get(id=pid)
 
-    # Prevent non-TJIOI users from submitting to TJIOI problems
-    if problem.contest.tjioi and not request.user.is_staff and not request.user.is_tjioi:
+    # Same gate as the GET page. This also closes the secret-problem submit
+    # bypass: submit_view blocked secret problems but this handler never did.
+    if not can_see_problem(problem, request.user):
         logger.info(
-            f"User {request.user} attempted to submit to TJIOI problem {problem.name}"
+            f"User {request.user} attempted to submit to gated problem {problem.name}"
         )
-        return HttpResponse("You do not have permission to submit to this problem", status=403)
+        return HttpResponse(
+            "You do not have permission to submit to this problem", status=403
+        )
 
     if len(code) > 60000:
         return HttpResponse(status=413)
@@ -162,7 +190,13 @@ def submit_post(request):
         lang = {"py": "python", "cpp": "cpp", "java": "java"}[ext]
         code = uploaded_file.read().decode("utf-8")
 
-    if not request.user.is_staff and timezone.now() < problem.contest.start:
+    # Redundant with can_see_problem above, but kept for its clearer message.
+    # Lecture-only problems have no contest, so there is nothing to wait for.
+    if (
+        problem.contest is not None
+        and not problem.contest.is_admin_for(request.user)
+        and timezone.now() < problem.contest.start
+    ):
         return HttpResponse("Contest has not started yet", status=403)
 
     last_sub_time = None
@@ -187,6 +221,18 @@ def submit_post(request):
         new_sub.save()
 
         grade_submission_task.delay(new_sub.id)
+
+        # Submitted from inside a contest: land back in the contest rather than
+        # the global list, so the contest navbar survives the POST.
+        submitted_contest = request.POST.get("contest", "")
+        if submitted_contest.isdigit() and int(submitted_contest) == problem.contest_id:
+            return redirect(
+                "contests:status",
+                cid=problem.contest_id,
+                mine_only="mine",
+                page=1,
+            )
+
         return redirect("runtests:status", page=1)
     else:
         return HttpResponse(

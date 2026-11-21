@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from decouple import config
 import os
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,7 +30,13 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG") == "True"
 
-ALLOWED_HOSTS = ["tjctgrader.org", "localhost", "127.0.0.1", "34.86.71.31", "www.tjctgrader.org"]
+ALLOWED_HOSTS = [
+    "tjctgrader.org",
+    "localhost",
+    "127.0.0.1",
+    "34.86.71.31",
+    "www.tjctgrader.org",
+]
 
 
 # Application definition
@@ -47,6 +54,8 @@ INSTALLED_APPS = [
     "autograder.apps.oauth",
     "autograder.apps.contests",
     "autograder.apps.problems",
+    "autograder.apps.lectures",
+    "autograder.apps.duels",
     "autograder.apps.runtests",
     "autograder.apps.rankings",
     "autograder.apps.tjioi",
@@ -55,6 +64,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "autograder.middleware.access_log.AccessLogMiddleware",
     "django_user_agents.middleware.UserAgentMiddleware",
     "autograder.middleware.mobile.MobileRedirectMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -87,6 +97,8 @@ TEMPLATES = [
                 "social_django.context_processors.backends",
                 "social_django.context_processors.login_redirect",
                 "autograder.context_processors.active_nav_item",
+                "autograder.context_processors.cnav_active_item",
+                "autograder.context_processors.attendance_enabled",
             ],
         },
     },
@@ -101,6 +113,23 @@ LOGGING = {
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+        },
+        "access": {
+            "class": "logging.StreamHandler",
+            "formatter": "access",
+        },
+    },
+    "formatters": {
+        "access": {
+            "format": "%(asctime)s %(message)s",
+            "datefmt": "[%d/%b/%Y:%H:%M:%S]",
+        },
+    },
+    "loggers": {
+        "autograder.access": {
+            "handlers": ["access"],
+            "level": "INFO",
+            "propagate": False,
         },
     },
     "root": {
@@ -171,6 +200,23 @@ STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",  # For admin and other app static
 ]
 
+# In production, serve hashed filenames (profile.<hash>.css) so Cloudflare's
+# four-hour edge cache cannot hold a stale copy: a changed file is a new URL.
+# Left as plain storage in DEBUG, where there is no manifest and runserver
+# serves straight from STATICFILES_DIRS.
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": (
+            "django.contrib.staticfiles.storage.StaticFilesStorage"
+            if DEBUG
+            else "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+        ),
+    },
+}
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -179,7 +225,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 TJIOI_MODE = False
 
-CURRENT_SEASON = 2026
+CURRENT_SEASON = 2027
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -212,8 +258,32 @@ SOCIAL_AUTH_PIPELINE = (
 )
 
 
+# Shared cache. Without this Django falls back to a per-process LocMemCache, so
+# anything relying on cross-worker state silently breaks: the duel poll throttle
+# would keep a separate counter per worker and multiply Codeforces API calls, and
+# cf_utils' 24h problemset cache would be refetched once per worker.
+# Redis db 1 -- db 0 is the Celery broker.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": ("redis://redis:6379/1" if DEBUG else "redis://127.0.0.1:6379/1"),
+    }
+}
+
 CELERY_TIMEZONE = "America/New_York"
 CELERY_BROKER_URL = "redis://redis:6379/0" if DEBUG else "redis://127.0.0.1:6379"
+
+# Tests run against a throwaway database but would otherwise publish to the real
+# broker: every GraderUser created in a test fires post_save -> update_codeforces_
+# rating.delay(id), and once the test database is dropped the worker looks those
+# ids up in the real one and fails. A few test runs is enough to bury the queue in
+# dead tasks and starve everything else. An in-memory broker keeps them contained.
+if "test" in sys.argv:
+    CELERY_BROKER_URL = "memory://"
+
+# Site-wide Codeforces call budget (see cf_utils.take_cf_slot). Off in tests, which
+# never reach Codeforces and often poll twice within the same second.
+CF_RATE_LIMIT = "test" not in sys.argv
 
 CELERY_ACCEPT_CONTENT = ["json", "pickle"]
 CELERY_TASK_SERIALIZER = "pickle"

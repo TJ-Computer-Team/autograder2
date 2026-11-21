@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block stylesheet %}
+    <link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
+    <style>
+        .attendance-shell {
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        .attendance-box {
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.04);
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .attendance-note {
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .attendance-code-input {
+            width: 100% !important;
+            display: block;
+            min-height: 54px;
+            padding: 12px 16px;
+            font-size: 1.8rem !important;
+            letter-spacing: 0.1em;
+            background-color: rgba(0, 0, 0, 0.6) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            caret-color: #ffffff !important;
+            box-sizing: border-box;
+            border-radius: 4px;
+        }
+        .attendance-code-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5) !important;
+            background-color: #000000 !important;
+        }
+
+        .submit-btn {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            border: none !important;
+            padding: 10px 20px !important;
+            font-size: 1rem !important;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .submit-btn:hover {
+            background-color: #e0e0e0 !important;
+        }
+    </style>
+{% endblock stylesheet %}
+
+{% block title %}Attendance{% endblock title %}
+
+{% block content %}
+{% include "partials/header.html" %}
+{% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
+<div id="mainContent">
+    <div id="subContent">
+        <div class="info-block attendance-shell" style="padding: 3em;">
+            <div class="title" style="margin-bottom: 1em;"><p>Attendance</p></div>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div style="color: white; margin-bottom: 15px; font-size: 1.1em;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if sessions_data %}
+                {% for item in sessions_data %}
+                    <div class="attendance-box">
+                        <div class="subtitle" style="text-align: left; font-size: 1.3em; margin-bottom: 15px; color: #ffffff;">{{ item.session.get_block_display }}</div>
+                        
+                        {% if item.already_marked %}
+                            <div style="color: #4caf50; font-size: 1.1em; padding: 10px 0;">
+                                ✓ Marked present
+                            </div>
+                        {% else %}
+                            <form action="{% url 'index:attendance' %}" method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="block" value="{{ item.session.block }}">
+                                <div class="statsInfo" style="margin: 0 0 15px 0;">
+                                    <input type="text" name="code" class="attendance-code-input" placeholder="Enter Code" autocomplete="off" required>
+                                </div>
+                                <div>
+                                    <input type="submit" class="submit-btn" value="Submit">
+                                </div>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <div class="attendance-note">Date: {{ sessions_data.0.session.date }}</div>
+            {% else %}
+                <div class="userinfo" style="text-align: center; opacity: 0.8;">No active sessions for today.</div>
+            {% endif %}
+            
+            <div style="margin-top: 30px; text-align: center;">
+                <a href="{% url 'index:profile' %}" style="text-decoration: none; opacity: 0.7;">← Back to Profile</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

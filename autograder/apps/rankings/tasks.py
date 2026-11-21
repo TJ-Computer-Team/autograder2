@@ -2,15 +2,22 @@ import requests
 import logging
 import string
 from ..index.models import GraderUser
-from decimal import Decimal
 from ...celery import app
+from .formula import index_for_user
 
 logger = logging.getLogger(__name__)
 
 
 @app.task(rate_limit="2/s")
 def update_codeforces_rating(user_id):
-    user = GraderUser.objects.get(id=user_id)
+    try:
+        user = GraderUser.objects.get(id=user_id)
+    except GraderUser.DoesNotExist:
+        # The user was deleted between queueing and running. Nothing to do, and
+        # raising here just fills the worker log with tracebacks.
+        logger.info(f"User {user_id} no longer exists; skipping CF refresh.")
+        return
+
     if not user.cf_handle:
         update_user_index.delay(user.id)
         return
@@ -41,7 +48,13 @@ def update_codeforces_rating(user_id):
         if user.cf_rating != max_rating:
             user.cf_rating = max_rating
             user.save(update_fields=["cf_rating"])
-            update_user_index.delay(user.id)
+
+        # Recompute unconditionally. This used to sit inside the branch above, so
+        # an index only ever refreshed when the Codeforces rating itself moved --
+        # a changed USACO division, recomputed in-houses, or a corrected formula
+        # would leave the stored index stale forever, because every later run saw
+        # the rating already matching and returned without touching it.
+        update_user_index.delay(user.id)
     else:
         logger.error(
             f"Codeforces API error for handle {handle}: {data.get('comment', 'No comment')}"
@@ -56,36 +69,9 @@ def update_user_index(user_id):
         logger.error(f"User with ID {user_id} not found.")
         return
 
-    usaco_map = {
-        "Not Participated": 800,
-        "Bronze": 800,
-        "Silver": 1200,
-        "Gold": 1600,
-        "Platinum": 1900,
-    }
-
-    new_usaco_rating = usaco_map.get(user.usaco_division, 800)
-
-    # Use writer formula if enabled: 0.4 * min(cf, usaco) + 0.6 * max(cf, usaco)
-    # Otherwise use standard formula: 0.2 * min + 0.35 * mid + 0.45 * max
-    if user.use_writer_formula:
-        cf_rating = Decimal(str(user.cf_rating))
-        usaco_rating = Decimal(str(new_usaco_rating))
-        new_index = (
-            Decimal("0.4") * min(cf_rating, usaco_rating)
-            + Decimal("0.6") * max(cf_rating, usaco_rating)
-        )
-    else:
-        vals = sorted(
-            [
-                Decimal(str(new_usaco_rating)),
-                Decimal(str(user.cf_rating)),
-                Decimal(str(user.inhouse)),
-            ]
-        )
-        new_index = (
-            Decimal("0.2") * vals[0] + Decimal("0.35") * vals[1] + Decimal("0.45") * vals[2]
-        )
+    # Single source of truth, shared with the rankings page and the
+    # update_rankings command; these had drifted into three separate copies.
+    new_index = index_for_user(user)
 
     if user.index != new_index:
         user.index = new_index

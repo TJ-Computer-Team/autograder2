@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block stylesheet %}
+<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
+{% endblock stylesheet %}
+
+{% block title %}Blitz Cup{% endblock title %}
+
+{% block content %}
+{% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
+{% include "partials/header.html" %}
+
+<div class="main-block">
+    <div class="title"><strong>Blitz Cup</strong></div>
+    <div class="subtitle"><br>A knockout tournament of 1v1 duels. Win your duel to move on to the next round. Last one standing wins the cup.</div>
+</div>
+
+{% if messages %}
+{% for message in messages %}
+<div class="main-block small-padding"><div class="info">{{ message }}</div></div>
+{% endfor %}
+{% endif %}
+
+{% if open_cups %}
+<div class="main-block">
+    <div class="info"><strong>Happening now</strong></div>
+    <table>
+        <tr><th>Cup</th><th>Players</th><th>Status</th></tr>
+        {% for c in open_cups %}
+        <tr>
+            <td><a href="{% url 'duels:cup' cup_id=c.id %}">{{ c.name }}</a></td>
+            <td class="centertext">{{ c.players }}</td>
+            <td class="centertext">{{ c.get_status_display }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% else %}
+<div class="main-block"><div class="info">No cup running right now.</div></div>
+{% endif %}
+
+{% if user.is_staff %}
+<div class="main-block">
+    <div class="info"><strong>Create a cup</strong> <span class="set-external">staff</span></div>
+    <form method="POST" action="{% url 'duels:cup_create' %}">
+        {% csrf_token %}
+        <div class="statsInfo">
+            <label for="name">Name</label>
+            <input type="text" name="name" id="name" value="Blitz Cup">
+        </div>
+        <div class="statsInfo">
+            <label for="rating_min">Round 1 rating</label>
+            <input type="text" name="rating_min" id="rating_min" value="800" size="5">
+            to
+            <input type="text" name="rating_max" id="rating_max" value="1100" size="5">
+        </div>
+        <div class="statsInfo">
+            <label for="rating_step">Harder each round by</label>
+            <input type="text" name="rating_step" id="rating_step" value="200" size="5">
+            <div class="field-hint">With 200, round 2 is 1000&ndash;1300, round 3 is 1200&ndash;1500, and so on.</div>
+        </div>
+        <div class="statsInfo">
+            <label for="duel_minutes">Minutes per match</label>
+            <input type="text" name="duel_minutes" id="duel_minutes" value="15" size="3">
+        </div>
+        <div class="statsInfo">
+            <label for="sudden_death_minutes">Sudden death minutes</label>
+            <input type="text" name="sudden_death_minutes" id="sudden_death_minutes" value="10" size="3">
+            <div class="field-hint">If nobody solves it, they play one more problem. If that's a draw too, the higher seed goes through.</div>
+        </div>
+        <div class="statsInfo"><input type="submit" value="Create"></div>
+    </form>
+</div>
+{% endif %}
+
+{% if finished %}
+<div class="main-block">
+    <div class="info"><strong>Past cups</strong></div>
+    <table>
+        <tr><th>Cup</th><th>Champion</th><th>Players</th><th>Date</th></tr>
+        {% for c in finished %}
+        <tr>
+            <td><a href="{% url 'duels:cup' cup_id=c.id %}">{{ c.name }}</a></td>
+            <td class="centertext">{% if c.champion %}<span class="v-ac">{{ c.champion.display_name|default:c.champion.username }}</span>{% endif %}</td>
+            <td class="centertext">{{ c.players }}</td>
+            <td class="centertext">{{ c.ended_at|date:"M j, Y" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
+<div class="option-buttons">
+    <a href="{% url 'duels:list' %}"><div class="button">Back to Duels</div></a>
+</div>
+{% endblock content %}

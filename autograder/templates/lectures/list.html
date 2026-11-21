@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block stylesheet %}
+<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
+{% endblock stylesheet %}
+
+{% block title %}Lecture Sets{% endblock title %}
+
+{% block content %}
+{% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
+{% include "partials/header.html" %}
+
+<div class="main-block">
+    <div class="title"><strong>Lecture Sets</strong></div>
+</div>
+
+{% for group in groups %}
+    {% if group.sets %}
+    <div class="main-block">
+        <div class="info">
+            <strong>{{ group.label }}</strong>
+        </div>
+        <table>
+            <tr>
+                <th>Title</th>
+                <th>Topic</th>
+                <th>Date</th>
+                <th>Problems</th>
+            </tr>
+            {% for s in group.sets %}
+            <tr>
+                <td>
+                    <a href="{% url 'lectures:detail' slug=s.slug %}">{{ s.title }}</a>
+                    {% if not s.published %}<span class="set-draft">draft</span>{% endif %}
+                </td>
+                <td class="centertext">{{ s.topic|default:"&mdash;" }}</td>
+                <td class="centertext">{{ s.date|date:"M j, Y"|default:"&mdash;" }}</td>
+                <td class="centertext">{{ s.entry_count }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% endif %}
+{% endfor %}
+
+{% if not any_sets %}
+<div class="main-block">
+    <div class="info">No problem sets yet.</div>
+</div>
+{% endif %}
+
+{% endblock content %}

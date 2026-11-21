@@ -1,6 +1,14 @@
+import json
+
 from django import forms
 from django.contrib import admin
-from .models import Problem
+from django.http import JsonResponse
+from django.urls import path
+from django.utils.html import format_html
+from django.views.decorators.http import require_POST
+
+from ..contests.models import Contest
+from .models import Problem, renumber_problems
 
 
 class ProblemAdminForm(forms.ModelForm):
@@ -12,9 +20,12 @@ class ProblemAdminForm(forms.ModelForm):
 @admin.register(Problem)
 class ProblemAdmin(admin.ModelAdmin):
     form = ProblemAdminForm
+    change_list_template = "admin/problems/problem/change_list.html"
+    list_per_page = 500
 
     list_display = (
-        "id",
+        "drag_handle",
+        "number",
         "name",
         "contest",
         "contest_letter",
@@ -22,12 +33,14 @@ class ProblemAdmin(admin.ModelAdmin):
         "interactive",
         "secret",
     )
-    list_filter = ("interactive", "secret", "contest")
+    # RelatedOnly so the sidebar doesn't list the names of contests hidden by
+    # get_queryset.
+    list_filter = ("interactive", "secret", ("contest", admin.RelatedOnlyFieldListFilter))
     search_fields = ("name",)
-    ordering = ("-id",)
+    ordering = ("-number",)
 
     fieldsets = (
-        (None, {"fields": ("id", "name", "contest", "points", "contest_letter")}),
+        (None, {"fields": ("name", "contest", "points", "contest_letter")}),
         ("Limits", {"fields": ("tl", "ml")}),
         ("Flags", {"fields": ("interactive", "secret")}),
         (
@@ -36,3 +49,42 @@ class ProblemAdmin(admin.ModelAdmin):
         ),
         ("Testcases zip", {"fields": ("testcases_zip",)}),
     )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).exclude(
+            contest__in=Contest.locked_for(request.user)
+        )
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "contest":
+            kwargs["queryset"] = Contest.objects.exclude(
+                id__in=Contest.locked_for(request.user)
+            )
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    @admin.display(description="")
+    def drag_handle(self, obj):
+        return format_html(
+            '<span class="problem-drag-handle" data-pk="{}" title="Drag to reorder">'
+            "&#9776;</span>",
+            obj.pk,
+        )
+
+    def get_urls(self):
+        return [
+            path(
+                "reorder/",
+                self.admin_site.admin_view(require_POST(self.reorder_view)),
+                name="problems_problem_reorder",
+            ),
+        ] + super().get_urls()
+
+    def reorder_view(self, request):
+        if not self.has_change_permission(request):
+            return JsonResponse({"error": "Permission denied"}, status=403)
+        try:
+            order = [int(pk) for pk in json.loads(request.body)["order"]]
+            renumber_problems(order)
+        except (ValueError, KeyError, TypeError) as e:
+            return JsonResponse({"error": str(e)}, status=400)
+        return JsonResponse({"ok": True})

@@ -14,16 +14,14 @@
 <div class="main-block">
     <div class="title">Submit</div>
     <div class="problem-text">
-        Java users, make sure you are
-        <a href="https://docs.google.com/document/d/17r0fh2rezqDhNoCoUtwVtExn8hRml0BjeAqxQZk9MCs/edit?usp=sharing" target="_blank">
-        naming the class "usercode"
-        </a>
+        Java users: any class name works, just keep <code>main</code> in the public class.
     </div>
 </div>
 
 <div class="main-block">
     <form action="{% url "runtests:submit_post" %}" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
+        {% if contest_nav %}<input type="hidden" name="contest" value="{{ contest_nav.id }}">{% endif %}
 
         <div class="problem-text">
             <select id="problemid" name="problemid">
@@ -31,11 +29,11 @@
                     {% for p in problems %}
                         <option value="{{ p.id }}"
                             {% if problem and p.id == problem.id %}selected{% endif %}>
-                            {{ p.id }}: {{ p.name }}
+                            {% if contest_nav %}{{ p.contest_letter }}{% else %}{{ p.number }}{% endif %}: {{ p.name }}
                         </option>
                     {% endfor %}
                 {% elif problem %}
-                    <option value="{{ problem.id }}" selected>{{ problem.id }}: {{ problem.name }}</option>
+                    <option value="{{ problem.id }}" selected>{% if contest_nav %}{{ problem.contest_letter }}{% else %}{{ problem.number }}{% endif %}: {{ problem.name }}</option>
                 {% else %}
                     <option disabled selected>No problems available</option>
                 {% endif %}

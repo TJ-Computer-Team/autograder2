@@ -5,6 +5,7 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.utils import timezone
 
 
 class GraderUserManager(BaseUserManager):
@@ -28,12 +29,14 @@ class GraderUser(AbstractBaseUser, PermissionsMixin):
     SILVER = "Silver"
     GOLD = "Gold"
     PLATINUM = "Platinum"
+    CAMPER = "Camper"
     NOT_PARTICIPATED = "Not Participated"
     USACO_DIVISIONS = {
         BRONZE: "Bronze",
         SILVER: "Silver",
         GOLD: "Gold",
         PLATINUM: "Platinum",
+        CAMPER: "Camper",
         NOT_PARTICIPATED: "Not Participated",
     }
 
@@ -49,6 +52,7 @@ class GraderUser(AbstractBaseUser, PermissionsMixin):
     usaco_rating = models.IntegerField(default=800)
     cf_handle = models.CharField(max_length=30, blank=True, null=True)
     cf_rating = models.IntegerField(blank=True, null=True, default=0)
+    cf_verified_at = models.DateTimeField(blank=True, null=True)
     grade = models.CharField(max_length=10, default="N/A")
     first_time = models.BooleanField(default=True)
     is_tjioi = models.BooleanField(default=False)
@@ -59,7 +63,6 @@ class GraderUser(AbstractBaseUser, PermissionsMixin):
     )
     inhouse = models.DecimalField(max_digits=10, decimal_places=3, default=0)
     index = models.DecimalField(max_digits=10, decimal_places=3, default=0)
-    use_writer_formula = models.BooleanField(default=False)
 
     particles_enabled = models.BooleanField(default=True)
 
@@ -88,3 +91,54 @@ class ProblemOfTheWeek(models.Model):
 
     def __str__(self):
         return f"PoTW ({self.get_level_display()})"
+
+
+class CodeforcesVerification(models.Model):
+    STATUS_PENDING = "pending"
+    STATUS_VERIFIED = "verified"
+    STATUS_EXPIRED = "expired"
+    STATUS_FAILED = "failed"
+
+    user = models.ForeignKey(GraderUser, on_delete=models.CASCADE)
+    handle = models.CharField(max_length=30)
+    contest_id = models.IntegerField()
+    problem_index = models.CharField(max_length=5)
+    language = models.CharField(max_length=50)
+    issued_at = models.DateTimeField(default=timezone.now)
+    expires_at = models.DateTimeField()
+    verified_at = models.DateTimeField(blank=True, null=True)
+    last_checked_at = models.DateTimeField(blank=True, null=True)
+    status = models.CharField(max_length=20, default=STATUS_PENDING)
+
+    def __str__(self):
+        return f"CF verify {self.handle} ({self.status})"
+class AttendanceSession(models.Model):
+    BLOCK_A = "A"
+    BLOCK_B = "B"
+    BLOCK_CHOICES = (
+        (BLOCK_A, "A Block"),
+        (BLOCK_B, "B Block"),
+    )
+
+    date = models.DateField()
+    block = models.CharField(max_length=1, choices=BLOCK_CHOICES, default=BLOCK_A)
+    code = models.CharField(max_length=10)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ("date", "block")
+
+    def __str__(self):
+        return f"{self.date} - {self.get_block_display()} - {self.code}"
+
+
+class AttendanceRecord(models.Model):
+    user = models.ForeignKey(GraderUser, on_delete=models.CASCADE)
+    session = models.ForeignKey(AttendanceSession, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "session")
+
+    def __str__(self):
+        return f"{self.user.username} - {self.session.date}"

@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block stylesheet %}
+<link rel="stylesheet" type="text/css" href="{% static 'profile.css' %}" />
+<style>
+    .cup {
+        --card: rgba(255, 255, 255, 0.06);
+        --card-live: rgba(57, 135, 229, 0.16);
+        --line: rgba(255, 255, 255, 0.22);
+        --live: #3987e5;
+        --ink: #f0efec;
+        --muted: #8f8e99;
+        --gap: 28px;
+        color: var(--ink);
+    }
+    .cup-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px 24px; margin-bottom: 12px; }
+    .cup-head h1 { margin: 0; font-size: 28px; }
+    .cup-head .now { font-size: 20px; color: var(--muted); }
+    .cup-head .now strong { color: var(--ink); }
+
+    /* .main-block sets line-height: 3em, which would make every row 39px tall. */
+    .cup { line-height: 1.35; }
+    .bracket { display: flex; gap: var(--gap); overflow-x: auto; padding: 4px 4px 12px; }
+    .round { flex: 1 0 200px; display: flex; flex-direction: column; }
+    .round-name { text-align: center; color: var(--muted); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+    .round-name.current { color: var(--live); font-weight: bold; }
+    .round-body { flex: 1; display: flex; flex-direction: column; }
+    .pair { flex: 1; display: flex; flex-direction: column; position: relative; }
+    /* Equal-height slots keep every card centred on its quarter of the pair, so the
+       joining lines meet the cards whatever is inside them (a bye is shorter). */
+    .slot { flex: 1; display: flex; align-items: center; position: relative; padding: 5px 0; min-height: var(--slot-h, 96px); box-sizing: border-box; }
+
+    /* Joins: a stub out of each match, a bar across each pair, a stub into the next. */
+    .round:not(:last-child) .slot::after {
+        content: ""; position: absolute; right: calc(var(--gap) / -2); top: 50%;
+        width: calc(var(--gap) / 2); border-top: 1px solid var(--line);
+    }
+    .round:not(:last-child) .pair:has(.slot + .slot)::after {
+        content: ""; position: absolute; right: calc(var(--gap) / -2); top: 25%; bottom: 25%;
+        border-right: 1px solid var(--line);
+    }
+    .round:not(:first-child) .slot::before {
+        content: ""; position: absolute; left: calc(var(--gap) / -2); top: 50%;
+        width: calc(var(--gap) / 2); border-top: 1px solid var(--line);
+    }
+
+    .match { width: 100%; background: var(--card); border-radius: 6px; border: 1px solid transparent; font-size: 14px; color: inherit; text-decoration: none; display: block; }
+    a.match:hover { border-color: var(--line); }
+    .match.live { background: var(--card-live); border-color: var(--live); }
+    .match.bye { opacity: 0.45; }
+    /* A bye is one player going straight through: one row is enough. */
+    .match.bye .p + .p { display: none; }
+    .match.bye .p:first-child::after { content: "bye"; font-size: 11px; font-style: italic; color: var(--muted); }
+    .match.bye .v-ac { display: none; }
+    .match .p { display: flex; align-items: center; gap: 8px; padding: 5px 9px; }
+    .match .p + .p { border-top: 1px solid rgba(255, 255, 255, 0.06); }
+    .match .seed { color: var(--muted); font-size: 11px; min-width: 16px; text-align: right; }
+    .match .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .match .won .name { font-weight: bold; }
+    .match .lost .name { color: var(--muted); text-decoration: line-through; }
+    .match .tbd .name { color: var(--muted); font-style: italic; }
+    .match .wa { font-size: 11px; color: #e66767; }
+    .match .foot { padding: 3px 9px 5px; font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+    .match.live .foot { color: var(--live); font-weight: bold; }
+    .match .foot .err { color: #e66767; }
+
+    /* More than 8 first-round matches (17-32 players): squeeze to fit one screen.
+       The round clock in the header stands in for each card's footer. */
+    .bracket.dense { --slot-h: 56px; }
+    .bracket.dense .slot { padding: 2px 0; }
+    .bracket.dense .match .p { padding: 2px 8px; }
+    .bracket.dense .match .foot { display: none; }
+
+    .staff-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0; }
+    .staff-bar form { margin: 0; }
+    .staff-bar button[disabled] { opacity: 0.4; cursor: not-allowed; }
+    .staff-round form { margin: 0; display: inline; }
+    .entrants { columns: 4 160px; font-size: 15px; }
+    .champion { font-size: 26px; text-align: center; padding: 10px; }
+
+    /* Projector: no site chrome, bigger type, use the whole screen. */
+    body.projector .main-block { max-width: none; width: auto; margin: 10px 16px; padding: 18px 26px; }
+    body.projector .cup-head h1 { font-size: 40px; }
+    body.projector .cup-head .now { font-size: 30px; }
+    body.projector .match { font-size: 17px; }
+    body.projector .round-name { font-size: 15px; }
+</style>
+{% endblock stylesheet %}
+
+{% block title %}{{ cup.name }}{% endblock title %}
+
+{% block bodyattr %}{% if projector %}class="projector"{% endif %}{% endblock bodyattr %}
+
+{% block content %}
+{% if not projector %}
+{% if user.particles_enabled %}{% include "partials/particles.html" %}{% endif %}
+{% include "partials/header.html" %}
+{% endif %}
+
+<div class="main-block cup">
+    <div class="cup-head">
+        <h1>{{ cup.name }}</h1>
+        <div class="now">
+            {% if cup.status == "registration" %}
+                Registration open &middot; <strong id="entrant-count">{{ entrants|length }}</strong> player{{ entrants|length|pluralize }}
+            {% elif cup.status == "running" %}
+                {% if cup.current_round %}
+                    <strong>{{ current_round_name }}</strong>
+                    {% if round_done %}&middot; done{% else %}<span id="round-clock"></span>{% endif %}
+                {% else %}
+                    Bracket drawn &middot; waiting to start
+                {% endif %}
+            {% elif cup.status == "finished" %}
+                Finished
+            {% else %}
+                Cancelled
+            {% endif %}
+        </div>
+    </div>
+
+    {% if cup.champion %}
+    <div class="champion">🏆 <strong>{{ cup.champion.display_name|default:cup.champion.username }}</strong> wins the {{ cup.name }}</div>
+    {% endif %}
+
+    {% if not projector %}
+        {% if messages %}{% for message in messages %}<div class="info">{{ message }}</div>{% endfor %}{% endif %}
+
+        {% if my_live_duel %}
+        <div class="info"><a href="{% url 'duels:detail' duel_id=my_live_duel.id %}"><strong>Your match is live. Open it &rarr;</strong></a></div>
+        {% endif %}
+
+        {% if cup.status == "registration" %}
+        <div class="option-buttons">
+            {% if registered %}
+            <form method="POST" action="{% url 'duels:cup_unregister' cup_id=cup.id %}">{% csrf_token %}<button type="submit">Leave</button></form>
+            {% elif can_duel %}
+            <form method="POST" action="{% url 'duels:cup_register' cup_id=cup.id %}">{% csrf_token %}<button type="submit">Enter</button></form>
+            {% else %}
+            <div class="info">Verify your Codeforces handle on your <a href="{% url 'index:profile' %}">profile</a> to enter.</div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if is_staff and cup.status != "finished" and cup.status != "cancelled" %}
+        <div class="staff-bar">
+            <span class="set-external">staff</span>
+            {% if cup.status == "registration" %}
+            <form method="POST" action="{% url 'duels:cup_draw' cup_id=cup.id %}"
+                  onsubmit="return confirm('Close registration and draw the bracket?');">{% csrf_token %}
+                <button type="submit">Close registration &amp; draw bracket</button>
+            </form>
+            {% elif next_round_name %}
+            <form method="POST" action="{% url 'duels:cup_start_round' cup_id=cup.id %}">{% csrf_token %}
+                <button type="submit" {% if not round_done %}disabled title="Wait for every match in this round to finish"{% endif %}>Start {{ next_round_name }}</button>
+            </form>
+            {% endif %}
+            <a href="?projector=1" target="_blank"><div class="button">Projector view</div></a>
+            <form method="POST" action="{% url 'duels:cup_cancel' cup_id=cup.id %}"
+                  onsubmit="return confirm('Cancel the whole cup? Live matches are stopped.');">{% csrf_token %}
+                <button type="submit">Cancel cup</button>
+            </form>
+        </div>
+        {% if cup.error %}<div class="info"><span class="v-wa">{{ cup.error }}</span></div>{% endif %}
+        {% endif %}
+    {% endif %}
+
+    {% if cup.status == "registration" %}
+    <div class="info"><strong>Players</strong></div>
+    <div class="entrants">
+        {% for e in entrants %}<div>{{ e.user.display_name|default:e.user.username }}{% if e.user.cf_rating %} <span class="field-hint">{{ e.user.cf_rating }}</span>{% endif %}</div>{% empty %}<div class="field-hint">Nobody yet.</div>{% endfor %}
+    </div>
+    <div class="field-hint"><br>Players are seeded by Codeforces rating when registration closes. If the count isn't a power of two, the top seeds skip round 1.</div>
+    {% endif %}
+
+    {% if rounds %}
+    <div class="bracket {% if rounds.0.matches|length > 8 %}dense{% endif %}">
+        {% for r in rounds %}
+        <div class="round">
+            <div class="round-name {% if r.number == cup.current_round and cup.status == 'running' %}current{% endif %}">{{ r.name }}</div>
+            <div class="round-body">
+                {% for pair in r.pairs %}
+                <div class="pair">
+                    {% for m in pair %}
+                    <div class="slot">
+                        {% if m.duel_id %}<a class="match {{ m.state }}" href="{% url 'duels:detail' duel_id=m.duel_id %}" data-match="{{ m.id }}">{% else %}<div class="match {{ m.state }}" data-match="{{ m.id }}">{% endif %}
+                            {% with p=m.a %}
+                            <div class="p {% if not p %}tbd{% elif p.won %}won{% elif p.lost %}lost{% endif %}">
+                                <span class="seed">{{ p.seed|default:"" }}</span>
+                                <span class="name">{% if p %}{{ p.name }}{% else %}&mdash;{% endif %}</span>
+                                {% if p.won %}<span class="v-ac">&#10003;</span>{% endif %}
+                                {% if m.state == "live" %}<span class="wa" data-wa="a">{% if p.wa %}{{ p.wa }} WA{% endif %}</span>{% endif %}
+                            </div>
+                            {% endwith %}
+                            {% with p=m.b %}
+                            <div class="p {% if not p %}tbd{% elif p.won %}won{% elif p.lost %}lost{% endif %}">
+                                <span class="seed">{{ p.seed|default:"" }}</span>
+                                <span class="name">{% if p %}{{ p.name }}{% elif m.state == "bye" %}bye{% else %}&mdash;{% endif %}</span>
+                                {% if p.won %}<span class="v-ac">&#10003;</span>{% endif %}
+                                {% if m.state == "live" %}<span class="wa" data-wa="b">{% if p.wa %}{{ p.wa }} WA{% endif %}</span>{% endif %}
+                            </div>
+                            {% endwith %}
+                            {% if m.state != "waiting" and m.state != "bye" %}
+                            <div class="foot">
+                                {% if m.state == "live" %}<span>{% if m.sudden_death %}SUDDEN DEATH{% else %}LIVE{% endif %}</span><span class="clock" data-deadline="{{ m.deadline }}"></span>
+                                {% elif m.state == "drawing" %}<span>Picking a problem&hellip;</span>
+                                {% elif m.state == "stuck" %}<span class="err">Couldn't pick a problem</span>
+                                {% elif m.state == "ready" %}<span>Up next</span>
+                                {% elif m.state == "done" %}<span>{% if m.decided_by == "seed" %}Two draws, higher seed through{% elif m.decided_by == "staff" %}Decided by staff{% elif m.sudden_death %}Won in sudden death{% else %}{{ m.problem }}{% endif %}</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        {% if m.duel_id %}</a>{% else %}</div>{% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if is_staff and not projector and cup.status == "running" and cup.current_round %}
+    <div class="info"><br><strong>This round</strong> <span class="set-external">staff</span></div>
+    <table class="staff-round">
+        <tr><th>Match</th><th>State</th><th>Set winner</th><th></th></tr>
+        {% for r in rounds %}{% if r.number == cup.current_round %}{% for m in r.matches %}{% if m.state != "bye" %}
+        <tr>
+            <td>{{ m.a.name|default:"?" }} vs {{ m.b.name|default:"?" }}</td>
+            <td class="centertext">
+                {% if m.state == "done" %}<span class="v-ac">{% if m.a.won %}{{ m.a.name }}{% else %}{{ m.b.name }}{% endif %} won</span>
+                {% elif m.state == "stuck" %}<span class="v-wa">couldn't pick a problem</span>
+                {% else %}{{ m.state }}{% endif %}
+                {% if m.error %}<div class="field-hint v-wa">{{ m.error }}</div>{% endif %}
+            </td>
+            <td class="centertext">
+                {% if m.state != "done" and m.a and m.b %}
+                <form method="POST" action="{% url 'duels:cup_override' cup_id=cup.id match_id=m.id %}"
+                      onsubmit="return confirm('Set this winner? A live duel is stopped.');">{% csrf_token %}
+                    <select name="winner"><option value="{{ m.a.id }}">{{ m.a.name }}</option><option value="{{ m.b.id }}">{{ m.b.name }}</option></select>
+                    <button type="submit">Set</button>
+                </form>
+                {% endif %}
+            </td>
+            <td class="centertext">
+                {% if m.state == "stuck" or m.state == "ready" %}
+                <form method="POST" action="{% url 'duels:cup_retry' cup_id=cup.id match_id=m.id %}">{% csrf_token %}
+                    <button type="submit">Retry start</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endif %}{% endfor %}{% endif %}{% endfor %}
+    </table>
+    {% endif %}
+</div>
+
+{% if not projector %}
+<div class="option-buttons">
+    <a href="{% url 'duels:cups' %}"><div class="button">Back to Blitz Cup</div></a>
+</div>
+{% endif %}
+
+{% if cup.status == "registration" or cup.status == "running" %}
+<script>
+(function () {
+    // The bracket redraws (a reload) only when something actually changes: a
+    // match starts or ends, a round starts, someone registers. Timers and wrong
+    // answer counts update in place.
+    var STATE_URL = "{% url 'duels:cup_state' cup_id=cup.id %}";
+    var version = "{{ version|escapejs }}";
+    var POLL_MS = 3000;
+
+    function fmt(ms) {
+        var s = Math.max(0, Math.floor(ms / 1000));
+        var m = Math.floor(s / 60);
+        s = s % 60;
+        return m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
+    function tick() {
+        var latest = 0;
+        document.querySelectorAll('.clock[data-deadline]').forEach(function (el) {
+            var d = new Date(el.getAttribute('data-deadline')).getTime();
+            if (!d) return;
+            latest = Math.max(latest, d);
+            el.textContent = fmt(d - Date.now());
+        });
+        var round = document.getElementById('round-clock');
+        if (round && latest) round.textContent = ' · ' + fmt(latest - Date.now()) + ' left';
+    }
+
+    function poll() {
+        fetch(STATE_URL, {headers: {'X-Requested-With': 'fetch'}})
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.version !== version) { window.location.reload(); return; }
+                Object.keys(data.matches).forEach(function (id) {
+                    var card = document.querySelector('[data-match="' + id + '"]');
+                    if (!card) return;
+                    var m = data.matches[id];
+                    ['a', 'b'].forEach(function (side) {
+                        var el = card.querySelector('[data-wa="' + side + '"]');
+                        var n = m[side + '_wa'];
+                        if (el) el.textContent = n ? n + ' WA' : '';
+                    });
+                });
+            })
+            .catch(function (e) { console.error('cup poll failed', e); });
+    }
+
+    tick();
+    setInterval(tick, 1000);
+    setInterval(poll, POLL_MS);
+})();
+</script>
+{% endif %}
+{% endblock content %}
