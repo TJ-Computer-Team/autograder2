@@ -12,7 +12,7 @@ from ..contests.models import Contest
 from ..index.models import GraderUser
 from ..problems.models import Problem
 from ..runtests.models import Submission
-from .formula import compute_index, index_for_user, uses_writer_formula
+from .formula import compute_index, index_for_user, inhouse_score, uses_writer_formula
 from .tasks import update_codeforces_rating, update_user_index
 
 
@@ -422,10 +422,34 @@ class WriterFormulaRuleTests(TestCase):
         self.assertTrue(self.decide(any_finished=False))
 
 
+class InhouseScoreTests(TestCase):
+    """Average of the two best contests taken, the one score if only one, else 0."""
+
+    def test_none_taken_is_zero(self):
+        self.assertEqual(inhouse_score([]), Decimal("0"))
+
+    def test_one_taken_is_that_score(self):
+        self.assertEqual(inhouse_score([Decimal("1400")]), Decimal("1400"))
+
+    def test_two_taken_is_their_average(self):
+        self.assertEqual(
+            inhouse_score([Decimal("1400"), Decimal("2000")]), Decimal("1700")
+        )
+
+    def test_more_than_two_averages_only_the_best_two(self):
+        scores = [Decimal("1000"), Decimal("2000"), Decimal("1200"), Decimal("1600")]
+        self.assertEqual(inhouse_score(scores), Decimal("1800"))
+
+    def test_rounds_to_the_stored_precision(self):
+        self.assertEqual(
+            inhouse_score([Decimal("1400.001"), Decimal("2000")]), Decimal("1700.000")
+        )
+
+
 @override_settings(CURRENT_SEASON=2027)
 @patch("autograder.apps.index.signals.update_codeforces_rating.delay")
 class UpdateRankingsInhouseTests(TestCase):
-    """In-house is the best contest taken; written contests never count."""
+    """In-house averages the two best contests taken; written ones never count."""
 
     def setUp(self):
         self.now = timezone.now()
@@ -488,21 +512,33 @@ class UpdateRankingsInhouseTests(TestCase):
     def writer(usaco, cf):
         return Decimal("0.4") * min(usaco, cf) + Decimal("0.6") * max(usaco, cf)
 
-    def test_inhouse_is_the_best_contest_taken(self, _task):
-        a, b = self.user("a"), self.user("b")
-        first, second = self.contest("One", 5), self.contest("Two", 2)
-        # One: a first of 2 (2000), b second (1400). Two: b first, a second.
-        self.solve(a, first, 10)
-        self.solve(b, first, 20)
-        self.solve(b, second, 10)
-        self.solve(a, second, 20)
+    def test_inhouse_averages_the_two_best_contests_taken(self, _task):
+        a, b, c = self.user("a"), self.user("b"), self.user("c")
+        one, two, three = (
+            self.contest("One", 6),
+            self.contest("Two", 4),
+            self.contest("Three", 2),
+        )
+        # One: a first of 2 (2000). Two: a second of 2 (1400).
+        # Three: a second of 3 (1200 * 2 / 3 + 800 = 1600).
+        self.solve(a, one, 10)
+        self.solve(b, one, 20)
+        self.solve(b, two, 10)
+        self.solve(a, two, 20)
+        self.solve(c, three, 10)
+        self.solve(a, three, 20)
+        self.solve(b, three, 30)
 
         self.run_rankings()
 
         a.refresh_from_db()
-        self.assertEqual(sorted(a.inhouses), [Decimal("1400"), Decimal("2000")])
-        self.assertEqual(a.inhouse, Decimal("2000"))
-        self.assertEqual(a.index, self.standard(1600, 1400, 2000))
+        self.assertEqual(
+            sorted(a.inhouses), [Decimal("1400"), Decimal("1600"), Decimal("2000")]
+        )
+        # (2000 + 1600) / 2; the 1400 is not counted.
+        self.assertEqual(a.inhouse, Decimal("1800"))
+        self.assertEqual(a.index, self.standard(1600, 1400, 1800))
+        self.assertEqual(self.page_row(a)["index"], a.index)
 
     def test_took_none_has_zero_inhouse_on_standard_formula(self, _task):
         player, skipper = self.user("p"), self.user("s", GraderUser.PLATINUM, 2054)

@@ -67,8 +67,16 @@ def inhouse_contest_score(rank, participants):
 
 
 def inhouse_score(taken_scores):
-    """A user's in-house: their best contest taken this season, or 0 if none."""
-    return max(taken_scores, default=Decimal(0))
+    """A user's in-house from the contests they took this season.
+
+    The average of their two best, or the single score if they took one, or 0
+    if they took none. Rounded like the stored column, so the update_rankings
+    command and the rankings page compute the index from the same value.
+    """
+    best = sorted(taken_scores, reverse=True)[:2]
+    if not best:
+        return Decimal(0)
+    return (sum(best, Decimal(0)) / len(best)).quantize(INHOUSE_PRECISION)
 
 
 def uses_writer_formula(*, took_any, wrote_any, any_finished):
