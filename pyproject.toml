@@ -20,7 +20,7 @@ dependencies = [
     "requests>=2.34.2",
     "redis>=8.0.0",
     "ruff>=0.15.16",
-    "social-auth-app-django>=5.9.0",
+    "social-auth-app-django>=7.2.0",
     "ua-parser>=1.0.2",
     "user-agents>=2.2.0",
 ]
